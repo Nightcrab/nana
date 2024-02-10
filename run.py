@@ -7,7 +7,7 @@ import numpy as np
 import raylib as rl
 import os
 
-from numba import int8, int16, int32, uint32, uint64
+from numba import int8, int16, int32, uint32, uint64, float32
 
 from umap import UMap
 
@@ -267,6 +267,13 @@ class Board:
         out.board = np.copy(self.board)
         return out
 
+    @jitmethod
+    def hash(board):
+        out = 0
+        for i in range(10):
+            out = xor_hash(out, board[i])
+        return out
+
 
 def factorial(x):
     if x == 1:
@@ -274,6 +281,19 @@ def factorial(x):
     if x < 1:
         raise Exception("tried to calculate x! where x <= 0")
     return x * factorial(x - 1)
+
+
+@nb.njit(float32(int32))
+def logfactorial(x):
+    out = 0
+    for i in range(x):
+        out += np.log(i + 1)
+    return out
+
+
+@nb.njit(float32(float32, float32))
+def logscore(f_k, LUT_k):
+    return f_k * np.log(LUT_k) - logfactorial(f_k)
 
 
 class Eval:
@@ -329,7 +349,7 @@ class Eval:
             f_k = f[index]
             # clip at 3 to prevent negatives
             LUT_k = max(self.v_lut.get(*index), 3.0)
-            log_score += f_k * np.log(float(LUT_k)) - np.log(factorial(f_k))
+            log_score += logscore(f_k, LUT_k)
 
         return log_score
 
