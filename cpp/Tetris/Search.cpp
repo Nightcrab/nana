@@ -79,7 +79,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 				double diff = e1 / (e1 + e2);
 
-				avg.second += diff * 0.2 + app * 0.775 + b2b * 0.025;
+				avg.second += diff * 0.4 + app * 0.575 + b2b * 0.025;
 			}
 
 			if (outcome == DRAW) {
