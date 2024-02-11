@@ -13,3 +13,6 @@ project ("cfr_tetris")
 
 # Include sub-projects.
 add_subdirectory ("cpp")
+# copy files to where the binary file will be located
+file(COPY ${CMAKE_SOURCE_DIR}/python/DLUTH.bin DESTINATION ${CMAKE_BINARY_DIR}/cpp)
+file(COPY ${CMAKE_SOURCE_DIR}/python/DLUTV.bin DESTINATION ${CMAKE_BINARY_DIR}/cpp)
