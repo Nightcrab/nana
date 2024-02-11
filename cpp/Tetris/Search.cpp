@@ -11,92 +11,96 @@ double sigmoid(double x) {
 	return 1 / (1 + exp(-x));
 }
 
-Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int N, int id) {
+Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samples, int N, int id) {
 	std::map<Move, std::pair<int, double>> action_rewards;
 
-	auto run_this = [game, id, N](std::map<Move, std::pair<int, double>> &state) {
-		int o_id = id == 0 ? 1 : 0;
-		VersusGame sim_game = game;
-		int depth = 0;
+	int samples_per_thread = samples / threads;
 
-		Outcomes outcome = NONE;
+	auto run_this = [game, id, N, samples_per_thread](std::map<Move, std::pair<int, double>>& state) {
+		for (int i = 0; i < samples_per_thread; i++) {
 
-		Move root_move;
+			int o_id = id == 0 ? 1 : 0;
+			VersusGame sim_game = game;
+			int depth = 0;
 
-		while (depth < N) {
+			Outcomes outcome = NONE;
 
-			Move p1_move;
-			Move p2_move;
+			Move root_move;
 
-			// randomly select moves
-			p1_move = sim_game.get_N_moves(id,1)[0];
-			p2_move = sim_game.get_N_moves(o_id, 1)[0];
+			while (depth < N) {
 
-			if (id == 1) {
-				std::swap(p1_move, p2_move);
+				Move p1_move;
+				Move p2_move;
+
+				// randomly select moves
+				p1_move = sim_game.get_N_moves(id, 1)[0];
+				p2_move = sim_game.get_N_moves(o_id, 1)[0];
+
+				if (id == 1) {
+					std::swap(p1_move, p2_move);
+				}
+
+
+				if (depth == 0) {
+					// p1 is us
+					root_move = p1_move;
+				}
+
+				sim_game.p1_move = std::make_pair(p1_move.piece, p1_move.null_move);
+				sim_game.p2_move = std::make_pair(p1_move.piece, p1_move.null_move);
+				sim_game.play_moves();
+
+				outcome = sim_game.get_winner();
+
+				if (outcome != NONE) {
+					break;
+				}
+
+				depth++;
 			}
 
+			auto& avg = state[root_move];
 
-			if (depth == 0) {
-				// p1 is us
-				root_move = p1_move;
+			// update rewards table
+
+			//avg.first++;
+			//avg.second += id == 0 ? Eval::eval(sim_game.p1_game.board) : Eval::eval(sim_game.p2_game.board);
+			//continue;
+
+			if ((outcome == P1_WIN && id == 0) || (outcome == P2_WIN && id == 1)) {
+				avg.first++;
+				avg.second += 1;
 			}
 
-			sim_game.p1_move = std::make_pair(p1_move.piece, p1_move.null_move);
-			sim_game.p2_move = std::make_pair(p1_move.piece, p1_move.null_move);
-			sim_game.play_moves();
+			// game didn't end
+			if (outcome == NONE) {
+				avg.first++;
 
-			outcome = sim_game.get_winner();
+				double e1 = Eval::eval(sim_game.p1_game.board);
+				double e2 = Eval::eval(sim_game.p2_game.board);
 
-			if (outcome != NONE) {
-				break;
+				if (id != 0) {
+					std::swap(e1, e2);
+				}
+
+				double diff = e1 / (e1 + e2);
+
+
+				avg.second += diff;
 			}
 
-			depth++;
-		}
-
-		auto& avg = state[root_move];
-
-		// update rewards table
-
-		//avg.first++;
-		//avg.second += id == 0 ? Eval::eval(sim_game.p1_game.board) : Eval::eval(sim_game.p2_game.board);
-		//continue;
-
-		if ((outcome == P1_WIN && id == 0) || (outcome == P2_WIN && id == 1)) {
-			avg.first++;
-			avg.second += 1;
-		}
-
-		// game didn't end
-		if (outcome == NONE) {
-			avg.first++;
-
-			double e1 = Eval::eval(sim_game.p1_game.board);
-			double e2 = Eval::eval(sim_game.p2_game.board);
-
-			if (id != 0) {
-				std::swap(e1, e2);
+			if (outcome == DRAW) {
+				// draw
+				avg.first++;
+				avg.second += 0.5;
 			}
 
-			double diff = e1 / (e1 + e2);
-
-
-			avg.second += diff;
-		}
-
-		if (outcome == DRAW) {
-			// draw
-			avg.first++;
-			avg.second += 0.5;
-		}
-
-		if ((outcome == P1_WIN && id == 1) || (outcome == P2_WIN && id == 0)) {
-			// reward of loss is 0
-			avg.first++;
+			if ((outcome == P1_WIN && id == 1) || (outcome == P2_WIN && id == 0)) {
+				// reward of loss is 0
+				avg.first++;
+			}
 		}
 	};
-
 
 	std::vector<std::map<Move, std::pair<int, double>>> indices(samples);
 
@@ -129,7 +133,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int N, i
 		}
 
 		double v = r / n;
-		
+
 		if (v >= best_score) {
 			best_move = key;
 			best_score = v;

@@ -145,7 +145,7 @@ private:
 			// t = time.time()
 			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 			//game.p1_move = game.p1_game.get_best_piece();
-			game.p1_move = Search::monte_carlo_best_move(game, 5000,7, 0).as_pair();
+			game.p1_move = Search::monte_carlo_best_move(game, 16, 128, 7, 0).as_pair();
 			//game.p2_move = Search::monte_carlo_best_move(game, 5,5, 1).as_pair();
 			game.p2_move = game.p2_game.get_best_piece();
 			game.p2_move.second = false;
