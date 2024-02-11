@@ -1,4 +1,5 @@
 #include "VersusGame.hpp"
+#include "Move.hpp"
 
 #include <iostream>
 
@@ -107,25 +108,27 @@ void VersusGame::play_moves()
 
 }
 
-std::vector<std::optional<Piece>> VersusGame::get_moves(int id) const
+std::vector<Move> VersusGame::get_moves(int id) const
 {
-	std::vector<std::optional<Piece>> moves = { std::nullopt };
+	std::vector<Move> moves;
 
 	const Game& player = id == 0 ? p1_game : p2_game;
 
-	auto movegen_moves = player.movegen(player.current_piece.type);
+	auto movegen_pieces = player.movegen(player.current_piece.type);
 
 	PieceType hold = player.hold.has_value() ? player.hold.value().type : player.queue.front();
-	std::vector<Piece> hold_moves = player.movegen(hold);
+	std::vector<Piece> hold_pieces = player.movegen(hold);
 
-	moves.reserve(movegen_moves.size() + hold_moves.size() + 1);
+	moves.reserve((movegen_pieces.size() + hold_pieces.size()) * 2);
 
-	for (auto& move : movegen_moves) {
-		moves.emplace_back(move);
+	for (auto& piece : movegen_pieces) {
+		moves.emplace_back(Move(piece, false));
+		moves.emplace_back(Move(piece, true));
 	}
 
-	for (auto& move : hold_moves) {
-		moves.emplace_back(move);
+	for (auto& piece : hold_pieces) {
+		moves.emplace_back(Move(piece, false));
+		moves.emplace_back(Move(piece, true));
 	}
 
 	return moves;

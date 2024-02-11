@@ -17,12 +17,12 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 
 		int outcome = -1;
 
-		std::optional<Piece> root_move;
+		Move root_move;
 
 		while (depth < N) {
 
-			std::vector<std::optional<Piece>> p1_moves = game.get_moves(id);
-			std::vector<std::optional<Piece>> p2_moves = game.get_moves(o_id);
+			std::vector<Move> p1_moves = game.get_moves(id);
+			std::vector<Move> p2_moves = game.get_moves(o_id);
 
 			std::mt19937 gen;
 			gen.seed(std::random_device()());
@@ -30,16 +30,16 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			std::uniform_int_distribution<int> dis2(0, p1_moves.size());
 
 			// randomly select moves
-			std::optional<Piece> p1_move = p1_moves[dis1(gen)];
-			std::optional<Piece> p2_move = p1_moves[dis2(gen)];
+			Move p1_move = p1_moves[dis1(gen)];
+			Move p2_move = p1_moves[dis2(gen)];
 
 			if (depth == 0) {
 				// p1 is us
 				root_move = p1_move;
 			}
 
-			sim_game.p1_move = p1_move;
-			sim_game.p2_move = p2_move;
+			sim_game.p1_move = std::make_pair(p1_move.piece, p1_move.null_move);
+			sim_game.p2_move = std::make_pair(p1_move.piece, p1_move.null_move);
 			sim_game.play_moves();
 
 			outcome = sim_game.get_winner();
@@ -51,7 +51,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			depth++;
 		}
 
-		auto& avg = action_rewards[Move(root_move)];
+		auto& avg = action_rewards[root_move];
 
 		// update rewards table
 

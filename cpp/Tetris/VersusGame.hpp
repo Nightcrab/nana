@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.hpp"
 #include "Piece.hpp"
+#include "Move.hpp"
 
 #include <optional>
 #include <vector>
@@ -21,7 +22,7 @@ public:
 	std::pair<Piece, bool> p2_move = std::make_pair(Piece(PieceType::Empty), false);
 
 	void play_moves();
-	std::vector<std::optional<Piece>> get_moves(int id) const;
+	std::vector<Move> get_moves(int id) const;
 
 	int get_winner() const;
 
