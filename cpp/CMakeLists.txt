@@ -17,6 +17,8 @@ set(TETRIS_SOURCES
 	"Tetris/CFR.cpp"
 	"Tetris/Search.cpp"
 	"Tetris/Search.hpp"
+	"Tetris/Move.cpp"
+	"Tetris/Move.hpp"
 )
 
 # Add source to this project's executable.

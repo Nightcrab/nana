@@ -107,7 +107,7 @@ std::vector<std::optional<Piece>> VersusGame::get_moves(int id) const
 {
 	std::vector<std::optional<Piece>> moves = { std::nullopt };
 
-	Game& player = id == 0 ? p1_game : p2_game;
+	const Game& player = id == 0 ? p1_game : p2_game;
 
 	auto movegen_moves = player.movegen(player.current_piece.type);
 

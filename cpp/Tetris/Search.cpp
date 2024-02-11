@@ -1,19 +1,12 @@
+#pragma once
+
 #include "Search.hpp"
-#include <unordered_map>
+#include "Move.hpp"
+#include <map>
 #include <optional>
 
-class HashOptionalPiece {
-public:
-	size_t operator()(std::optional<Piece> piece) {
-		if (!piece) {
-			return 0b01010101010101;
-		}
-		return (*piece).hash();
-	}
-};
-
-std::pair<Piece, bool> Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) {
-	std::unordered_map<std::optional<Piece>, std::pair<int, double>, HashOptionalPiece> action_rewards;
+Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) {
+	std::map<Move, std::pair<int, double>> action_rewards;
 
 	int o_id = (id + 1) % 2;
 
@@ -58,7 +51,7 @@ std::pair<Piece, bool> Search::monte_carlo_best_move(const VersusGame& game, int
 			depth++;
 		}
 
-		auto& avg = action_rewards[root_move];
+		auto& avg = action_rewards[Move(root_move)];
 
 		// update rewards table
 
@@ -87,11 +80,9 @@ std::pair<Piece, bool> Search::monte_carlo_best_move(const VersusGame& game, int
 
 	// this is a bandit model, so there exists a determinstic optimal policy. 
 
-	std::optional<Piece> best_move;
-	std::optional<Piece> second_best_move;
+	Move best_move;
 
 	double best_score = 0;
-	double second_best_score = 0;
 
 	for (auto const& [key, val] : action_rewards)
 	{
@@ -105,24 +96,11 @@ std::pair<Piece, bool> Search::monte_carlo_best_move(const VersusGame& game, int
 
 		double v = r / n;
 		
-		if (v > second_best_score) {
-			if (v < best_score) {
-				second_best_move = key;
-				second_best_score = v;
-			}
-			else {
-				second_best_move = best_move;
-				second_best_score = best_score;
-				best_move = key;
-				best_score = v;
-			}
+		if (v > best_score) {
+			best_move = key;
 		}
 	}
 
-	if (best_move == std::nullopt) {
-		return std::make_pair(*second_best_move, true);
-	}
-
-	return std::make_pair(*best_move, false);
+	return best_move;
 
 }
