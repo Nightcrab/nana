@@ -29,28 +29,21 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 			while (depth < N) {
 
-				Move p1_move;
-				Move p2_move;
+				Move our_move;
+				Move opp_move;
 
 				// randomly select moves
-				p1_move = sim_game.get_N_moves(id, 1)[0];
-				//p2_move = sim_game.get_N_moves(o_id, 1)[0];
-
-				p1_move = sim_game.get_bestish_move(id);
-				p2_move = sim_game.get_bestish_move(o_id);
-
-				if (id == 1) {
-					std::swap(p1_move, p2_move);
-				}
-
+				our_move = sim_game.get_bestish_move(id);
+				opp_move = sim_game.get_best_move(o_id);
 
 				if (depth == 0) {
 					// p1 is us
-					root_move = p1_move;
+					root_move = our_move;
 				}
 
-				sim_game.p1_move = std::make_pair(p1_move.piece, p1_move.null_move);
-				sim_game.p2_move = std::make_pair(p1_move.piece, p1_move.null_move);
+				sim_game.set_move(id, our_move);
+				sim_game.set_move(o_id, opp_move);
+
 				sim_game.play_moves();
 
 				outcome = sim_game.get_winner();
@@ -86,10 +79,13 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 					std::swap(e1, e2);
 				}
 
+				double app = sim_game.get_app(id);
+
+				double b2b = std::min(sim_game.get_b2b(id), 2.0) / 2.0;
+
 				double diff = e1 / (e1 + e2);
 
-
-				avg.second += diff;
+				avg.second += diff * 0.3 + app * 0.675 + b2b * 0.025;
 			}
 
 			if (outcome == DRAW) {
@@ -107,9 +103,11 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 	std::vector<std::map<Move, std::pair<int, double>>> indices(threads);
 
+	// gag console during simulations
 	std::cout.setstate(std::ios_base::failbit);
-	// this is a bandit model, so there exists a determinstic optimal policy. 
+
 	std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), run_this);
+
 	std::cout.clear();
 
 
@@ -121,7 +119,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 		}
 	}
 
-
+	// this is a bandit model, so there exists a determinstic optimal policy. 
 	Move best_move;
 
 	double best_score = 0;
@@ -132,7 +130,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 		double r = val.second;
 
 
-		if (n < 3) {
+		if (n < 2) {
 			// sample amount too low
 			continue;
 		}

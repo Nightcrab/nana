@@ -76,7 +76,11 @@ void VersusGame::play_moves()
 			std::cout << "p1 did perfect clear" << std::endl;
 		}
 
-		p2_meter += p1_game.damage_sent(p1_cleared_lines, spin, pc);
+		int dmg = p1_game.damage_sent(p1_cleared_lines, spin, pc);
+
+		p1_atk += dmg;
+
+		p2_meter += dmg;
 	}
 	int p2_cleared_lines = 0;
 	// player 2 move
@@ -119,7 +123,11 @@ void VersusGame::play_moves()
 			std::cout << "p2 did perfect clear" << std::endl;
 		}
 
-		p1_meter += p2_game.damage_sent(p2_cleared_lines, spin, pc);
+		int dmg = p2_game.damage_sent(p2_cleared_lines, spin, pc);
+
+		p2_atk += dmg;
+
+		p1_meter += dmg;
 	}
 	pptRNG rng;
 
@@ -241,6 +249,17 @@ Outcomes VersusGame::get_winner() const
 	return out;
 }
 
+void VersusGame::set_move(int id, Move move)
+{
+	if (id == 0) {
+		p1_move = move.as_pair();
+	}
+	else {
+		p2_move = move.as_pair();
+	}
+}
+
+
 
 Move VersusGame::get_bestish_move(int id) const
 {
@@ -249,3 +268,13 @@ Move VersusGame::get_bestish_move(int id) const
 	}
 	return p2_game.get_bestish_piece();
 }
+
+
+Move VersusGame::get_best_move(int id) const
+{
+	if (id == 0) {
+		return p1_game.get_best_piece();
+	}
+	return p2_game.get_best_piece();
+}
+
