@@ -1,6 +1,7 @@
 #include "Game.hpp"
-
 #include "Eval.hpp"
+
+#include <iostream>
 
 #include <map>
 #include <tuple>
@@ -76,8 +77,8 @@ void Game::rotate(Piece& piece, TurnDirection dir) const {
 					Coord c = corners[piece.rotation][u];
 					c.x += piece.position.x;
 					c.y += piece.position.y;
-					if(c.x >= 0 && c.x < BOARD_WIDTH)
-						filled[u] = board.get(c.x,c.y);
+					if (c.x >= 0 && c.x < BOARD_WIDTH)
+						filled[u] = board.get(c.x, c.y);
 				}
 
 
@@ -111,7 +112,7 @@ void Game::shift(Piece& piece, int dir) const
 
 	if (collides(board, piece))
 		piece.position.x -= dir;
-	else 
+	else
 		piece.spin = spinType::null;
 }
 
@@ -138,6 +139,9 @@ void Game::add_garbage(int lines, int loc) {
 // ported from
 // https://github.com/emmachase/tetrio-combo
 int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
+
+	std::cout << "b2b count of: " << b2b << std::endl;
+
 	auto maintainsB2B = false;
 	if (linesCleared) {
 		combo++;
@@ -258,7 +262,7 @@ int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
 	return combinedGarbage;
 }
 
-void Game::process_movement(Piece& piece, Movement movement) const{
+void Game::process_movement(Piece& piece, Movement movement) const {
 	switch (movement)
 	{
 	case Movement::Left:
@@ -333,7 +337,7 @@ std::vector<Piece> Game::movegen(PieceType piece_type) const {
 			piece.position.y--;
 
 			if (collides(board, piece))
-			{	
+			{
 				piece.position.y++;
 				valid_moves.emplace_back(piece);
 			}
@@ -346,8 +350,7 @@ std::vector<Piece> Game::movegen(PieceType piece_type) const {
 	return valid_moves;
 }
 
-std::optional<Piece> Game::get_best_piece() const
-{
+std::pair<Piece, bool> Game::get_best_piece() const {
 	std::vector<Piece> valid_pieces = movegen(current_piece.type);
 	PieceType holdType = hold.has_value() ? hold->type : queue.front();
 
@@ -359,7 +362,7 @@ std::optional<Piece> Game::get_best_piece() const
 	}
 
 	std::optional<Piece> best_piece;
-	std::vector<std::pair<double, Piece>> moves;
+	std::vector<std::pair<double, std::optional<Piece>>> moves;
 
 	double total_score = 0;
 	double max_score = 0;
@@ -373,6 +376,14 @@ std::optional<Piece> Game::get_best_piece() const
 		total_score += score;
 		max_score = std::max(max_score, score);
 		moves.emplace_back(score, piece);
+	}
+
+	// try the null move
+	const double null_score = Eval::eval(board);
+	{
+		total_score += null_score;
+		max_score = std::max(max_score, null_score);
+		moves.emplace_back(null_score, std::nullopt);
 	}
 	// sort the moves by score
 	std::sort(moves.begin(), moves.end(), [](auto& a, auto& b) { return a.first > b.first; });
@@ -396,19 +407,62 @@ std::optional<Piece> Game::get_best_piece() const
 	{
 		total_score += exp(score);
 	}
-
+	bool null_move = false;
 	for (auto& [score, piece] : moves)
 	{
-		sum += softmax(score,total_score);
+		sum += softmax(score, total_score);
 		if (r < sum)
 		{
 			best_piece = piece;
+
+			if (!best_piece.has_value())
+				null_move = true;
+
 			break;
 		}
 	}
 
-	if (best_piece)
-		return *best_piece;
-	else
-		return std::nullopt;
+	if (null_move)
+	{
+		r = dis(gen);
+
+		auto it = std::find(moves.begin(), moves.end(), std::make_pair(null_score - max_score, std::nullopt));
+		if (it != moves.end())
+		{
+			// take out the nullopt
+			moves.erase(it);
+		}
+
+		sum = 0;
+
+		// recompute
+		for (auto& [score, piece] : moves)
+		{
+			max_score = std::min(max_score, score);
+		}
+
+		for (auto& [score, piece] : moves)
+		{
+			score -= max_score;
+		}
+
+		total_score = 0;
+		for (auto& [score, piece] : moves)
+		{
+			total_score += exp(score);
+		}
+
+		for (auto& [score, piece] : moves)
+		{
+			sum += softmax(score, total_score);
+			if (r < sum)
+			{
+				best_piece = piece;
+				break;
+			}
+		}
+	}
+
+	// if null_move is true, we attempt null move
+	return std::make_pair(*best_piece, null_move);
 }
