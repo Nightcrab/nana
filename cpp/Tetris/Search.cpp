@@ -50,7 +50,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 
 			outcome = sim_game.get_winner();
 
-			if (outcome != -1) {
+			if (outcome != NONE) {
 				break;
 			}
 
@@ -65,13 +65,13 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 		//avg.second += id == 0 ? Eval::eval(sim_game.p1_game.board) : Eval::eval(sim_game.p2_game.board);
 		//continue;
 
-		if (outcome == id) {
+		if ((outcome == P1_WIN && id == 0) || (outcome == P2_WIN && id == 1)) {
 			avg.first++;
 			avg.second += 1;
 		}
 		
 		// game didn't end
-		if (outcome == -1) {
+		if (outcome == NONE) {
 			avg.first++;
 
 			double e1 = Eval::eval(sim_game.p1_game.board);
@@ -87,13 +87,13 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			avg.second += diff;
 		}
 
-		if (outcome == 2) {
+		if (outcome == DRAW) {
 			// draw
 			avg.first++;
 			avg.second += 0.5;
 		}
 
-		if (outcome == o_id) {
+		if ((outcome == P1_WIN && id == 1) || (outcome == P2_WIN && id == 0)) {
 			// reward of loss is 0
 			avg.first++;
 		}

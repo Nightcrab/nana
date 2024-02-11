@@ -189,20 +189,22 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 	return out;
 }
 
+
 int VersusGame::get_winner() const
 {
 
-	int out = -1;
+	int out = Outcomes::NONE;
+
 	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
-		out = 1;
+		out = Outcomes::P2_WIN;
 	}
 
 	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
-		if (out == 0) {
-			out = 0;
+		if (out == Outcomes::P2_WIN) {
+			out = Outcomes::DRAW;
 		}
 		else {
-			out = 2; // draw
+			out = Outcomes::P1_WIN;
 		}
 	}
 

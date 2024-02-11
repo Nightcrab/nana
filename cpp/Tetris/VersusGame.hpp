@@ -8,6 +8,13 @@
 
 class Tetris;
 
+enum Outcomes {
+	P1_WIN,
+	P2_WIN,
+	DRAW,
+	NONE
+};
+
 class VersusGame
 {
 public:
