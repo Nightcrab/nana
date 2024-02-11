@@ -23,6 +23,7 @@ public:
 
 	void play_moves();
 	std::vector<Move> get_moves(int id) const;
+	std::vector<Move> get_N_moves(int id, int N) const;
 
 	int get_winner() const;
 

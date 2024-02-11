@@ -1,7 +1,10 @@
 #include "VersusGame.hpp"
 #include "Move.hpp"
+#include "Eval.hpp"
 
 #include <iostream>
+#include <ranges>
+#include <set>
 
 void VersusGame::play_moves()
 {
@@ -16,7 +19,7 @@ void VersusGame::play_moves()
 	}
 
 	if (p1_move.second && p2_move.second) {
-		p1_move.second = false; 
+		p1_move.second = false;
 		p2_move.second = false;
 	}
 
@@ -132,6 +135,58 @@ std::vector<Move> VersusGame::get_moves(int id) const
 	}
 
 	return moves;
+}
+
+std::vector<Move> VersusGame::get_N_moves(int id, int N) const
+{
+	const Game& player = id == 0 ? p1_game : p2_game;
+	std::vector<Piece> valid_pieces = player.movegen(player.current_piece.type);
+	PieceType holdType = player.hold.has_value() ? player.hold->type : player.queue.front();
+
+	std::vector<Piece> hold_pieces = player.movegen(holdType);
+	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
+	for (auto& piece : hold_pieces)
+	{
+		valid_pieces.emplace_back(piece);
+	}
+
+	std::optional<Piece> best_piece;
+	std::vector<std::optional<Piece>> moves;
+
+	for (auto& piece : valid_pieces)
+	{
+		Board temp_board = player.board;
+		temp_board.set(piece);
+		moves.emplace_back(piece);
+	}
+
+	// try the null move
+	{
+		moves.emplace_back(std::nullopt);
+	}
+
+	std::vector<Move> out;
+	out.reserve(N);
+
+	// make sure not to sample the same move twice
+	pptRNG rng;
+
+	std::set<int> sampled_indices;
+
+	for (int i = 0; i < N; i++)
+	{
+		int index = rng.GetRand(moves.size());
+		while (sampled_indices.find(index) != sampled_indices.end())
+		{
+			index = rng.GetRand(moves.size());
+		}
+
+		sampled_indices.insert(index);
+
+		out.emplace_back(moves[index]);
+	}
+
+	return out;
 }
 
 int VersusGame::get_winner() const
