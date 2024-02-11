@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <iostream>
+
 using lut_int = uint64_t;
 struct entry {
 	size_t index;
@@ -134,22 +136,29 @@ double Eval::eval(const Board& board)
 			return a.index < b.index;
 		}
 	};
-	std::vector<fentry> f_h; f_h.reserve(90);
-	std::vector<fentry> f_v; f_v.reserve(144);
+	std::vector<fentry> freq_h; freq_h.reserve(90);
+	std::vector<fentry> freq_v; freq_v.reserve(144);
 
-	for (size_t x = 1; x < BOARD_WIDTH - 4; ++x)
-		for (size_t y = 2; y < 20; ++y)
+	for (size_t x = 1; x < BOARD_WIDTH - 4; x += 1)
+		for (size_t y = 2; y < 20; y += 1)
 		{
 			size_t left = get_3x3(board, x - 3, y);
 			size_t middle = get_3x3(board, x, y);
 			size_t right = get_3x3(board, x + 3, y);
 
-			bool exists = std::binary_search(f_h.begin(), f_h.end(), hashh(left, middle, right, y), Comp{});
+			size_t effective_y = y;
+
+			// account for lack of data at the top
+			if (y > 15) {
+				effective_y -= 10;
+			}
+
+			bool exists = std::binary_search(freq_h.begin(), freq_h.end(), hashh(left, middle, right, effective_y), Comp{});
 			if(!exists)
-				f_h.emplace_back(hashh(left, middle, right, y), 1.0);
+				freq_h.emplace_back(hashh(left, middle, right, effective_y), 1.0);
 			else
 			{
-				auto it = std::equal_range(f_h.begin(), f_h.end(), hashh(left, middle, right, y), Comp{});
+				auto it = std::equal_range(freq_h.begin(), freq_h.end(), hashh(left, middle, right, effective_y), Comp{});
 				
 				for (auto i = it.first; i != it.second; ++i)
 				{
@@ -159,18 +168,25 @@ double Eval::eval(const Board& board)
 			}
 		}
 
-	for (size_t x = 0; x < BOARD_WIDTH - 2; ++x)
-		for (size_t y = 2; y < 20; ++y)
+	for (size_t x = 0; x < BOARD_WIDTH - 2; x += 1)
+		for (size_t y = 2; y < 20; y += 1)
 		{
 			size_t bottom = get_3x3(board, x, y);
 			size_t top = get_3x3(board, x, y + 3);
 
-			bool exists = std::binary_search(f_v.begin(), f_v.end(), hashv(bottom, top, y), Comp{});
+			size_t effective_y = y;
+
+			// account for lack of data at the top
+			if (y > 15) {
+				effective_y -= 10;
+			}
+
+			bool exists = std::binary_search(freq_v.begin(), freq_v.end(), hashv(bottom, top, effective_y), Comp{});
 			if (!exists)
-				f_v.emplace_back(hashv(bottom, top, y), 1.0);
+				freq_v.emplace_back(hashv(bottom, top, effective_y), 1.0);
 			else
 			{
-				auto it = std::equal_range(f_v.begin(), f_v.end(), hashv(bottom, top, y), Comp{});
+				auto it = std::equal_range(freq_v.begin(), freq_v.end(), hashv(bottom, top, effective_y), Comp{});
 				
 				for (auto i = it.first; i != it.second; ++i)
 				{
@@ -181,7 +197,7 @@ double Eval::eval(const Board& board)
 		}
 
 
-	for (auto& [key, f_k] : f_h)
+	for (auto& [key, f_k] : freq_h)
 	{
 
 		double frequency = LUT_h_map.find(key) != LUT_h_map.end() ? LUT_h_map[key] : 0.0;
@@ -191,7 +207,7 @@ double Eval::eval(const Board& board)
 		score += f_k * log(LUT_K) - logfactorial(f_k);
 	}
 
-	for (auto& [key, f_k] : f_v)
+	for (auto& [key, f_k] : freq_v)
 	{
 		double frequency = LUT_v_map.find(key) != LUT_v_map.end() ? LUT_v_map[key] : 0.0;
 		// clip at 3 to prevent negatives

@@ -20,7 +20,9 @@ class VersusGame
 public:
 	Game p1_game;
 	Game p2_game;
-	
+
+	int turn = 0;
+	bool game_over = false;
 
 	int p1_meter = 0;
 	int p2_meter = 0;

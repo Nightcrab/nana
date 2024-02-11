@@ -8,20 +8,32 @@
 
 void VersusGame::play_moves()
 {
+	// game over conditions
 
-	// game over condition
+	if (game_over) {
+		return;
+	}
+
 	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
+		std::cout << "game lasted: " << turn << std::endl;
+		game_over = true;
 		return;
 	}
 
 	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
+		std::cout << "game lasted: " << turn << std::endl;
+		game_over = true;
 		return;
 	}
+
+
 
 	if (p1_move.second && p2_move.second) {
 		p1_move.second = false;
 		p2_move.second = false;
 	}
+
+	turn += 1;
 
 	int p1_cleared_lines = 0;
 	// player 1 move
