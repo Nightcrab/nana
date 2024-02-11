@@ -15,13 +15,13 @@ void VersusGame::play_moves()
 	}
 
 	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
-		std::cout << "game lasted: " << turn << std::endl;
+		//std::cout << "game lasted: " << turn << std::endl;
 		game_over = true;
 		return;
 	}
 
 	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
-		std::cout << "game lasted: " << turn << std::endl;
+		//std::cout << "game lasted: " << turn << std::endl;
 		game_over = true;
 		return;
 	}
@@ -68,6 +68,14 @@ void VersusGame::play_moves()
 			}
 		}
 
+		if (spin == spinType::normal && p1_cleared_lines > 0) {
+			std::cout << "p1 did T-spin " << p1_cleared_lines << std::endl;
+		}
+
+		if (pc) {
+			std::cout << "p1 did perfect clear" << std::endl;
+		}
+
 		p2_meter += p1_game.damage_sent(p1_cleared_lines, spin, pc);
 	}
 	int p2_cleared_lines = 0;
@@ -101,6 +109,14 @@ void VersusGame::play_moves()
 				pc = false;
 				break;
 			}
+		}
+
+		if (spin == spinType::normal && p2_cleared_lines > 0) {
+			std::cout << "p2 did T-spin " << p2_cleared_lines << std::endl;
+		}
+
+		if (pc) {
+			std::cout << "p2 did perfect clear" << std::endl;
 		}
 
 		p1_meter += p2_game.damage_sent(p2_cleared_lines, spin, pc);

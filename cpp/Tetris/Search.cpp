@@ -107,8 +107,10 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 	std::vector<std::map<Move, std::pair<int, double>>> indices(threads);
 
+	std::cout.setstate(std::ios_base::failbit);
 	// this is a bandit model, so there exists a determinstic optimal policy. 
 	std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), run_this);
+	std::cout.clear();
 
 
 	for (auto const& state : indices) {
@@ -143,7 +145,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 		}
 	}
 
-	std::cout << "number of moves tried " << action_rewards.size() << std::endl;
+	//std::cout << "number of moves tried " << action_rewards.size() << std::endl;
 
 	return best_move;
 

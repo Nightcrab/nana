@@ -74,7 +74,11 @@ static double logfactorial(double n) {
 	return sum;
 }
 
-double Eval::eval(const Board& board)
+double Eval::eval(const Board& board) {
+	return eval(board, false);
+}
+
+double Eval::eval(const Board& board, bool fast)
 {
 	if(needs_init)
 	{
@@ -141,7 +145,7 @@ double Eval::eval(const Board& board)
 
 	// note: can trade 2x speed for 30% quality drop by striding horizontal x by 2 and vertical y by 2
 
-	for (size_t x = 1; x < BOARD_WIDTH - 4; x += 2)
+	for (size_t x = 1; x < BOARD_WIDTH - 4; x += 1)
 		for (size_t y = 2; y < 20; y += 1)
 		{
 			size_t left = get_3x3(board, x - 3, y);
@@ -160,13 +164,8 @@ double Eval::eval(const Board& board)
 				freq_h.emplace_back(hashh(left, middle, right, effective_y), 1.0);
 			else
 			{
-				auto it = std::equal_range(freq_h.begin(), freq_h.end(), hashh(left, middle, right, effective_y), Comp{});
-				
-				for (auto i = it.first; i != it.second; ++i)
-				{
-					i->data += 1.0;
-					break;
-				}
+				auto it = std::lower_bound(freq_h.begin(), freq_h.end(), hashh(left, middle, right, effective_y), Comp{});
+				it->data += 1.0;
 			}
 		}
 
@@ -189,13 +188,8 @@ double Eval::eval(const Board& board)
 				freq_v.emplace_back(hashv(bottom, top, effective_y), 1.0);
 			else
 			{
-				auto it = std::equal_range(freq_v.begin(), freq_v.end(), hashv(bottom, top, effective_y), Comp{});
-				
-				for (auto i = it.first; i != it.second; ++i)
-				{
-					i->data += 1.0;
-					break;
-				}
+				auto it = std::lower_bound(freq_v.begin(), freq_v.end(), hashv(bottom, top, effective_y), Comp{});
+				it->data += 1.0;
 			}
 		}
 
