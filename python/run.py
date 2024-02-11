@@ -849,6 +849,7 @@ class VersusGame:
             self.damage[1] = 0
 
 
+
     def get_moves(self, id):
         if id == 0:
             return [Move(), *[Move(p) for p in self.games[0].movegen()]]
