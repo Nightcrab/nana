@@ -27,20 +27,17 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 
 		while (depth < N) {
 
-			std::vector<Move> p1_moves = game.get_moves(id);
-			std::vector<Move> p2_moves = game.get_moves(o_id);
-
 			Move p1_move;
 			Move p2_move;
 
 			// randomly select moves
-
 			p1_move = sim_game.p1_game.get_best_piece();
 			p2_move = sim_game.p2_game.get_best_piece();
 
 			if (id == 1) {
 				std::swap(p1_move, p2_move);
 			}
+
 
 			if (depth == 0) {
 				// p1 is us
@@ -64,6 +61,10 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 
 		// update rewards table
 
+		//avg.first++;
+		//avg.second += id == 0 ? Eval::eval(sim_game.p1_game.board) : Eval::eval(sim_game.p2_game.board);
+		//continue;
+
 		if (outcome == id) {
 			avg.first++;
 			avg.second += 1;
@@ -82,7 +83,6 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 
 			double diff = e1 / (e1 + e2);
 
-			std::cout << diff << std::endl;
 
 			avg.second += diff;
 		}
@@ -110,12 +110,15 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 		int n = val.first;
 		double r = val.second;
 
+
 		if (n < 0) {
 			// sample amount too low
 			continue;
 		}
 
 		double v = r / n;
+		std::cout << "score: " << v << std::endl;
+		std::cout << "N: " << n << std::endl;
 		
 		if (v >= best_score) {
 			best_move = key;
@@ -123,7 +126,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 		}
 	}
 
-	std::cout << best_score << std::endl;
+	std::cout << "best score: " << best_score << std::endl;
 
 	return best_move;
 
