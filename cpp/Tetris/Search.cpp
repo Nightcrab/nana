@@ -2,8 +2,14 @@
 
 #include "Search.hpp"
 #include "Move.hpp"
+#include "Eval.hpp"
 #include <map>
 #include <optional>
+#include <iostream>
+
+double sigmoid(double x) {
+	return 1 / (1 + exp(-x));
+}
 
 Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) {
 	std::map<Move, std::pair<int, double>> action_rewards;
@@ -24,14 +30,17 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			std::vector<Move> p1_moves = game.get_moves(id);
 			std::vector<Move> p2_moves = game.get_moves(o_id);
 
-			std::mt19937 gen;
-			gen.seed(std::random_device()());
-			std::uniform_int_distribution<int> dis1(0, p1_moves.size());
-			std::uniform_int_distribution<int> dis2(0, p1_moves.size());
+			Move p1_move;
+			Move p2_move;
 
 			// randomly select moves
-			Move p1_move = p1_moves[dis1(gen)];
-			Move p2_move = p1_moves[dis2(gen)];
+
+			p1_move = sim_game.p1_game.get_best_piece();
+			p2_move = sim_game.p2_game.get_best_piece();
+
+			if (id == 1) {
+				std::swap(p1_move, p2_move);
+			}
 
 			if (depth == 0) {
 				// p1 is us
@@ -60,10 +69,22 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			avg.second += 1;
 		}
 		
+		// game didn't end
 		if (outcome == -1) {
-			// todo: substitute with eval
 			avg.first++;
-			avg.second += 0.5;
+
+			double e1 = Eval::eval(sim_game.p1_game.board);
+			double e2 = Eval::eval(sim_game.p2_game.board);
+
+			if (id != 0) {
+				std::swap(e1, e2);
+			}
+
+			double diff = e1 / (e1 + e2);
+
+			std::cout << diff << std::endl;
+
+			avg.second += diff;
 		}
 
 		if (outcome == 2) {
@@ -89,17 +110,20 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 		int n = val.first;
 		double r = val.second;
 
-		if (n < 3) {
+		if (n < 0) {
 			// sample amount too low
 			continue;
 		}
 
 		double v = r / n;
 		
-		if (v > best_score) {
+		if (v >= best_score) {
 			best_move = key;
+			best_score = v;
 		}
 	}
+
+	std::cout << best_score << std::endl;
 
 	return best_move;
 

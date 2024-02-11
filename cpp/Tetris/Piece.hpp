@@ -25,4 +25,6 @@ public:
 	RotationDirection rotation;
 	PieceType type;
 	spinType spin;
+
+	
 };

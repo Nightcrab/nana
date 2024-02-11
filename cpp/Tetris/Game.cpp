@@ -140,8 +140,6 @@ void Game::add_garbage(int lines, int loc) {
 // https://github.com/emmachase/tetrio-combo
 int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
 
-	std::cout << "b2b count of: " << b2b << std::endl;
-
 	auto maintainsB2B = false;
 	if (linesCleared) {
 		combo++;
