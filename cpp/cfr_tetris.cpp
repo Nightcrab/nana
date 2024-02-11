@@ -82,11 +82,62 @@ private:
 	{
 		// fill the screen with black
 		Clear(olc::BLUE);
+		// for manually playing as player 1
+		bool hard_drop = GetKey(olc::Key::W).bPressed;
+		bool move_left = GetKey(olc::Key::A).bPressed;
+		bool sonic_drop = GetKey(olc::Key::S).bPressed;
+		bool move_right = GetKey(olc::Key::D).bPressed;
+		bool rotate_right = GetKey(olc::Key::RIGHT).bPressed;
+		bool rotate_left = GetKey(olc::Key::LEFT).bPressed;
+		bool hold = GetKey(olc::Key::UP).bPressed;
 
-		bool P = GetKey(olc::Key::P).bPressed;
+		if(move_left)
+			game.p1_game.shift(game.p1_game.current_piece, -1);
+
+		if(move_right)
+			game.p1_game.shift(game.p1_game.current_piece, 1);
+
+		if(rotate_right)
+			game.p1_game.rotate(game.p1_game.current_piece, TurnDirection::Right);
+
+		if(rotate_left)
+			game.p1_game.rotate(game.p1_game.current_piece, TurnDirection::Left);
+
+		if (hold)
+		{
+			if (game.p1_game.hold)
+			{
+				std::swap(game.p1_game.hold.value(), game.p1_game.current_piece);
+			}
+			else
+			{
+				game.p1_game.hold = game.p1_game.current_piece;
+				// shift queue
+				game.p1_game.current_piece = game.p1_game.queue.front();
+
+				std::ranges::shift_left(game.p1_game.queue, 1);
+
+				game.p1_game.queue.back() = game.p1_game.rng.getPiece();
+			}
+		}
+
+		if (sonic_drop)
+		{
+			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
+			game.p1_move = game.p1_game.current_piece;
+		}
+
+		if (hard_drop)
+		{
+			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
+			game.p1_move = game.p1_game.current_piece;
+
+			game.p2_move = game.p2_game.get_best_piece();
+			game.play_moves();
+		}
 
 
-		if (P)
+		if (GetKey(olc::Key::P).bPressed)
 		{
 			// t = time.time()
 			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -107,7 +158,7 @@ private:
 
 		renderPiece(game.p2_game, SCREEN_WIDTH - 25 * 10);
 		renderBoard(game.p2_game, SCREEN_WIDTH - 25 * 10);
-		renderHold(game.p2_game, 100);
+		renderHold(game.p2_game, 40);
 		renderMeter(game.p2_meter, SCREEN_WIDTH - 25 * 10 - 25);
 
 		return true;

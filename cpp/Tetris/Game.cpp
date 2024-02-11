@@ -70,7 +70,7 @@ void Game::rotate(Piece& piece, TurnDirection dir) const {
 					{ { {-1,-1}, {-1, 1}, { 1, 1}, { 1,-1} } }, // West
 					} };
 
-				bool filled[4] = { false, false, false, false };
+				bool filled[4] = { true,true,true,true };
 
 				for (int u = 0; u < 4; u++) {
 					Coord c = corners[piece.rotation][u];

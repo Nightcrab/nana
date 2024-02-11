@@ -33,6 +33,7 @@ void VersusGame::play_moves()
 			}
 
 		p1_game.current_piece = p1_move.value();
+		spinType spin = p1_game.current_piece.spin;
 
 		p1_game.place_piece();
 		p1_cleared_lines = p1_game.board.clearLines();
@@ -45,14 +46,28 @@ void VersusGame::play_moves()
 			}
 		}
 
-		p2_meter += p1_game.damage_sent(p1_cleared_lines, spinType::null, pc);
-		std::cout << "p2_meter: " << p2_meter << std::endl;
-		std::cout << "p1_cleared_lines: " << p1_cleared_lines << std::endl;
+		p2_meter += p1_game.damage_sent(p1_cleared_lines, spin, pc);
 	}
 	int p2_cleared_lines = 0;
 	// player 2 move
 	if (p2_move.has_value()) {
+		if (p2_move.value().type != p2_game.current_piece.type)
+			if (p2_game.hold) {
+				std::swap(p2_game.hold.value(), p2_game.current_piece);
+			}
+			else {
+				p2_game.hold = p2_game.current_piece;
+				// shift queue
+				p2_game.current_piece = p2_game.queue.front();
+
+				std::ranges::shift_left(p2_game.queue, 1);
+
+				p2_game.queue.back() = p2_game.rng.getPiece();
+			}
+
+
 		p2_game.current_piece = p2_move.value();
+		spinType spin = p2_game.current_piece.spin;
 
 		p2_game.place_piece();
 		p2_cleared_lines = p2_game.board.clearLines();
@@ -65,9 +80,7 @@ void VersusGame::play_moves()
 			}
 		}
 
-		p1_meter += p2_game.damage_sent(p2_cleared_lines, spinType::null, pc);
-		std::cout << "p1_meter: " << p1_meter << std::endl;
-		std::cout << "p2_cleared_lines: " << p2_cleared_lines << std::endl;
+		p1_meter += p2_game.damage_sent(p2_cleared_lines, spin, pc);
 	}
 	pptRNG rng;
 

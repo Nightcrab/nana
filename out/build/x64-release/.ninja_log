@@ -1,9 +1,0 @@
-# ninja log v5
-6	185	7292660268988144	cpp/CMakeFiles/cfr_tetris.dir/Tetris/Board.cpp.obj	90c6b37406f0fde2
-11	191	7292660269053206	cpp/CMakeFiles/cfr_tetris.dir/Tetris/Piece.cpp.obj	d5650a53236142fc
-14	688	7292660274019165	cpp/CMakeFiles/cfr_tetris.dir/Tetris/rng.cpp.obj	47f5d60ac38f58e4
-17	822	7292660275352904	cpp/CMakeFiles/cfr_tetris.dir/Tetris/VersusGame.cpp.obj	b06bf7b27e8b8ea6
-9	1001	7292660277122065	cpp/CMakeFiles/cfr_tetris.dir/Tetris/Game.cpp.obj	56d8e32104adba66
-21	1132	7292660278436477	cpp/CMakeFiles/cfr_tetris.dir/Tetris/Eval.cpp.obj	4ac151cd9663ffbb
-3	2776	7292660294830787	cpp/CMakeFiles/cfr_tetris.dir/cfr_tetris.cpp.obj	f2db9b5ebf5af7b8
-2776	2864	7292660295652518	cpp/cfr_tetris.exe	5125146b39cbff05
