@@ -17,8 +17,8 @@ public:
 	int p1_meter = 0;
 	int p2_meter = 0;
 
-	std::optional<Piece> p1_move;
-	std::optional<Piece> p2_move;
+	std::pair<Piece, bool> p1_move = std::make_pair(Piece(PieceType::Empty), false);
+	std::pair<Piece, bool> p2_move = std::make_pair(Piece(PieceType::Empty), false);
 
 	void play_moves();
 	std::vector<std::optional<Piece>> get_moves(int id);

@@ -124,13 +124,13 @@ private:
 		if (sonic_drop)
 		{
 			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
-			game.p1_move = game.p1_game.current_piece;
+			game.p1_move = { game.p1_game.current_piece, false };
 		}
 
 		if (hard_drop)
 		{
 			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
-			game.p1_move = game.p1_game.current_piece;
+			game.p1_move = { game.p1_game.current_piece , false};
 
 			game.p2_move = game.p2_game.get_best_piece();
 			game.play_moves();

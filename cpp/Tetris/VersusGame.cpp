@@ -14,11 +14,15 @@ void VersusGame::play_moves()
 		return;
 	}
 
+	if (p1_move.second && p2_move.second) {
+		p1_move.second = false; 
+		p2_move.second = false;
+	}
 
 	int p1_cleared_lines = 0;
 	// player 1 move
-	if (p1_move.has_value()) {
-		if (p1_move.value().type != p1_game.current_piece.type)
+	if (!p1_move.second) {
+		if (p1_move.first.type != p1_game.current_piece.type)
 			if (p1_game.hold) {
 				std::swap(p1_game.hold.value(), p1_game.current_piece);
 			}
@@ -32,7 +36,7 @@ void VersusGame::play_moves()
 				p1_game.queue.back() = p1_game.rng.getPiece();
 			}
 
-		p1_game.current_piece = p1_move.value();
+		p1_game.current_piece = p1_move.first;
 		spinType spin = p1_game.current_piece.spin;
 
 		p1_game.place_piece();
@@ -50,8 +54,8 @@ void VersusGame::play_moves()
 	}
 	int p2_cleared_lines = 0;
 	// player 2 move
-	if (p2_move.has_value()) {
-		if (p2_move.value().type != p2_game.current_piece.type)
+	if (!p2_move.second) {
+		if (p2_move.first.type != p2_game.current_piece.type)
 			if (p2_game.hold) {
 				std::swap(p2_game.hold.value(), p2_game.current_piece);
 			}
@@ -66,7 +70,7 @@ void VersusGame::play_moves()
 			}
 
 
-		p2_game.current_piece = p2_move.value();
+		p2_game.current_piece = p2_move.first;
 		spinType spin = p2_game.current_piece.spin;
 
 		p2_game.place_piece();
@@ -89,13 +93,13 @@ void VersusGame::play_moves()
 	p1_meter -= min_meter;
 	p2_meter -= min_meter;
 
-	if (p1_move.has_value() && p1_cleared_lines == 0)
+	if (!p1_move.second && p1_cleared_lines == 0)
 	{
 		p1_game.add_garbage(p1_meter, rng.GetRand(BOARD_WIDTH));
 		p1_meter = 0;
 	}
 
-	if (p2_move.has_value() && p2_cleared_lines == 0)
+	if (!p2_move.second && p2_cleared_lines == 0)
 	{
 		p2_game.add_garbage(p2_meter, rng.GetRand(BOARD_WIDTH));
 		p2_meter = 0;
