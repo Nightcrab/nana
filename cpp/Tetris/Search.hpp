@@ -6,5 +6,5 @@
 
 
 namespace Search {
-	Move monte_carlo_best_move(const VersusGame& game, int samples, int id);
+	Move monte_carlo_best_move(const VersusGame& game, int samples, int N, int id);
 };

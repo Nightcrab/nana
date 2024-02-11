@@ -1,27 +1,25 @@
-#pragma once
-
 #include "Search.hpp"
 #include "Move.hpp"
 #include "Eval.hpp"
 #include <map>
 #include <optional>
 #include <iostream>
+#include <algorithm>
+#include <execution>
 
 double sigmoid(double x) {
 	return 1 / (1 + exp(-x));
 }
 
-Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) {
+Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int N, int id) {
 	std::map<Move, std::pair<int, double>> action_rewards;
 
-	int o_id = (id + 1) % 2;
-
-	for (int i = 0; i < samples; i++) {
+	auto run_this = [game, id, N](std::map<Move, std::pair<int, double>> &state) {
+		int o_id = id == 0 ? 1 : 0;
 		VersusGame sim_game = game;
-		int N = 5;
 		int depth = 0;
 
-		int outcome = -1;
+		Outcomes outcome = NONE;
 
 		Move root_move;
 
@@ -31,8 +29,8 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			Move p2_move;
 
 			// randomly select moves
-			p1_move = sim_game.p1_game.get_best_piece();
-			p2_move = sim_game.p2_game.get_best_piece();
+			p1_move = sim_game.get_N_moves(id,1)[0];
+			p2_move = sim_game.get_N_moves(o_id, 1)[0];
 
 			if (id == 1) {
 				std::swap(p1_move, p2_move);
@@ -57,7 +55,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			depth++;
 		}
 
-		auto& avg = action_rewards[root_move];
+		auto& avg = state[root_move];
 
 		// update rewards table
 
@@ -69,7 +67,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			avg.first++;
 			avg.second += 1;
 		}
-		
+
 		// game didn't end
 		if (outcome == NONE) {
 			avg.first++;
@@ -97,9 +95,23 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 			// reward of loss is 0
 			avg.first++;
 		}
-	}
+	};
+
+
+	std::vector<std::map<Move, std::pair<int, double>>> indices(samples);
 
 	// this is a bandit model, so there exists a determinstic optimal policy. 
+	std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), run_this);
+
+
+	for (auto const& state : indices) {
+		for (auto const& [key, val] : state) {
+			auto& avg = action_rewards[key];
+			avg.first += val.first;
+			avg.second += val.second;
+		}
+	}
+
 
 	Move best_move;
 
@@ -117,8 +129,6 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 		}
 
 		double v = r / n;
-		std::cout << "score: " << v << std::endl;
-		std::cout << "N: " << n << std::endl;
 		
 		if (v >= best_score) {
 			best_move = key;
@@ -126,7 +136,6 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int samples, int id) 
 		}
 	}
 
-	std::cout << "best score: " << best_score << std::endl;
 
 	return best_move;
 

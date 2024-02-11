@@ -162,7 +162,7 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 
 	// try the null move
 	{
-		moves.emplace_back(std::nullopt);
+		//moves.emplace_back(std::nullopt);
 	}
 
 	std::vector<Move> out;
@@ -190,10 +190,10 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 }
 
 
-int VersusGame::get_winner() const
+Outcomes VersusGame::get_winner() const
 {
 
-	int out = Outcomes::NONE;
+	Outcomes out = Outcomes::NONE;
 
 	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
 		out = Outcomes::P2_WIN;

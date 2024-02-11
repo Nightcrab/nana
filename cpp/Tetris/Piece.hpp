@@ -9,6 +9,7 @@ public:
 		rotation = RotationDirection::North;
 		position = { 4, 18 };
 		minos = piece_definitions[static_cast<size_t>(type)];
+		spin = spinType::null;
 	}
 
 	Piece() = delete;

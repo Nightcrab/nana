@@ -257,6 +257,7 @@ int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
 	}
 
 	const auto combinedGarbage = finalGarbage + (pc ? GarbageValues::ALL_CLEAR : 0);
+
 	return combinedGarbage;
 }
 

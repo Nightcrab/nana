@@ -32,7 +32,7 @@ public:
 	std::vector<Move> get_moves(int id) const;
 	std::vector<Move> get_N_moves(int id, int N) const;
 
-	int get_winner() const;
+	Outcomes get_winner() const;
 
 	friend class Tetris;
 };
