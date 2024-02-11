@@ -83,12 +83,12 @@ private:
 		// fill the screen with black
 		Clear(olc::BLUE);
 		// for manually playing as player 1
-		bool hard_drop = GetKey(olc::Key::W).bPressed;
-		bool move_left = GetKey(olc::Key::A).bPressed;
-		bool sonic_drop = GetKey(olc::Key::S).bPressed;
-		bool move_right = GetKey(olc::Key::D).bPressed;
-		bool rotate_right = GetKey(olc::Key::RIGHT).bPressed;
-		bool rotate_left = GetKey(olc::Key::LEFT).bPressed;
+		bool hard_drop = GetKey(olc::Key::V).bPressed;
+		bool move_left = GetKey(olc::Key::LEFT).bPressed;
+		bool sonic_drop = GetKey(olc::Key::DOWN).bPressed;
+		bool move_right = GetKey(olc::Key::RIGHT).bPressed;
+		bool rotate_right = GetKey(olc::Key::D).bPressed;
+		bool rotate_left = GetKey(olc::Key::S).bPressed;
 		bool hold = GetKey(olc::Key::UP).bPressed;
 
 		if(move_left)
@@ -148,6 +148,12 @@ private:
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
 			std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[us]" << std::endl;
+		}
+
+
+		if (GetKey(olc::Key::R).bPressed)
+		{
+			game = VersusGame();
 		}
 
 		renderPiece(game.p1_game, 0);

@@ -21,7 +21,9 @@ public:
 	std::optional<Piece> p2_move;
 
 	void play_moves();
-	std::vector<std::optional<Piece>> get_moves(int id);
+	std::vector<std::optional<Piece>> get_moves(int id) const;
+
+	int get_winner() const;
 
 	friend class Tetris;
 };

@@ -103,7 +103,7 @@ void VersusGame::play_moves()
 
 }
 
-std::vector<std::optional<Piece>> VersusGame::get_moves(int id)
+std::vector<std::optional<Piece>> VersusGame::get_moves(int id) const
 {
 	std::vector<std::optional<Piece>> moves = { std::nullopt };
 
@@ -125,4 +125,24 @@ std::vector<std::optional<Piece>> VersusGame::get_moves(int id)
 	}
 
 	return moves;
+}
+
+int VersusGame::get_winner() const
+{
+
+	int out = -1;
+	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
+		out = 0;
+	}
+
+	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
+		if (out == 0) {
+			out = 2;
+		}
+		else {
+			out = 1; // draw
+		}
+	}
+
+	return out;
 }
