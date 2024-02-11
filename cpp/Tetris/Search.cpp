@@ -34,7 +34,8 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 				// randomly select moves
 				our_move = sim_game.get_bestish_move(id);
-				opp_move = sim_game.get_best_move(o_id);
+
+				opp_move = sim_game.get_bestish_move(o_id);
 
 				if (depth == 0) {
 					// p1 is us
@@ -59,10 +60,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 			// update rewards table
 
-			//avg.first++;
-			//avg.second += id == 0 ? Eval::eval(sim_game.p1_game.board) : Eval::eval(sim_game.p2_game.board);
-			//continue;
-
+			// we win
 			if ((outcome == P1_WIN && id == 0) || (outcome == P2_WIN && id == 1)) {
 				avg.first++;
 				avg.second += 1;
@@ -72,20 +70,16 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 			if (outcome == NONE) {
 				avg.first++;
 
-				double e1 = Eval::eval(sim_game.p1_game.board);
-				double e2 = Eval::eval(sim_game.p2_game.board);
-
-				if (id != 0) {
-					std::swap(e1, e2);
-				}
+				double e1 = Eval::eval(sim_game.get_game(id).board);
+				double e2 = Eval::eval(sim_game.get_game(o_id).board);
 
 				double app = sim_game.get_app(id);
 
-				double b2b = std::min(sim_game.get_b2b(id), 2.0) / 2.0;
+				double b2b = std::min(sim_game.get_b2b(id), 2.0) / 8.0;
 
 				double diff = e1 / (e1 + e2);
 
-				avg.second += diff * 0.3 + app * 0.675 + b2b * 0.025;
+				avg.second += diff * 0.2 + app * 0.775 + b2b * 0.025;
 			}
 
 			if (outcome == DRAW) {

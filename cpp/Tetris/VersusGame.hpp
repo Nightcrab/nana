@@ -38,6 +38,10 @@ public:
 		return id == 0 ? p1_game.b2b : p2_game.b2b;
 	}
 
+	Game get_game(int id) {
+		return id == 0 ? p1_game : p2_game;
+	}
+
 	std::pair<Piece, bool> p1_move = std::make_pair(Piece(PieceType::Empty), false);
 	std::pair<Piece, bool> p2_move = std::make_pair(Piece(PieceType::Empty), false);
 
