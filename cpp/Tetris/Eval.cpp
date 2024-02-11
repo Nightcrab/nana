@@ -139,7 +139,9 @@ double Eval::eval(const Board& board)
 	std::vector<fentry> freq_h; freq_h.reserve(90);
 	std::vector<fentry> freq_v; freq_v.reserve(144);
 
-	for (size_t x = 1; x < BOARD_WIDTH - 4; x += 1)
+	// note: can trade 2x speed for 30% quality drop by striding horizontal x by 2 and vertical y by 2
+
+	for (size_t x = 1; x < BOARD_WIDTH - 4; x += 2)
 		for (size_t y = 2; y < 20; y += 1)
 		{
 			size_t left = get_3x3(board, x - 3, y);
@@ -149,7 +151,7 @@ double Eval::eval(const Board& board)
 			size_t effective_y = y;
 
 			// account for lack of data at the top
-			if (y > 15) {
+			if (y > 10) {
 				effective_y -= 10;
 			}
 
@@ -168,8 +170,9 @@ double Eval::eval(const Board& board)
 			}
 		}
 
+
 	for (size_t x = 0; x < BOARD_WIDTH - 2; x += 1)
-		for (size_t y = 2; y < 20; y += 1)
+		for (size_t y = 2; y < 20; y += 2)
 		{
 			size_t bottom = get_3x3(board, x, y);
 			size_t top = get_3x3(board, x, y + 3);
@@ -177,7 +180,7 @@ double Eval::eval(const Board& board)
 			size_t effective_y = y;
 
 			// account for lack of data at the top
-			if (y > 15) {
+			if (y > 10) {
 				effective_y -= 10;
 			}
 
