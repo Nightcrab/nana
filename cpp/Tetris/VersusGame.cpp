@@ -27,6 +27,7 @@ void VersusGame::play_moves()
 	// player 1 move
 	if (!p1_move.second) {
 		if (p1_move.first.type != p1_game.current_piece.type)
+		{
 			if (p1_game.hold) {
 				std::swap(p1_game.hold.value(), p1_game.current_piece);
 			}
@@ -39,6 +40,7 @@ void VersusGame::play_moves()
 
 				p1_game.queue.back() = p1_game.rng.getPiece();
 			}
+		}
 
 		p1_game.current_piece = p1_move.first;
 		spinType spin = p1_game.current_piece.spin;
@@ -59,7 +61,7 @@ void VersusGame::play_moves()
 	int p2_cleared_lines = 0;
 	// player 2 move
 	if (!p2_move.second) {
-		if (p2_move.first.type != p2_game.current_piece.type)
+		if (p2_move.first.type != p2_game.current_piece.type) {
 			if (p2_game.hold) {
 				std::swap(p2_game.hold.value(), p2_game.current_piece);
 			}
@@ -72,6 +74,7 @@ void VersusGame::play_moves()
 
 				p2_game.queue.back() = p2_game.rng.getPiece();
 			}
+		}
 
 
 		p2_game.current_piece = p2_move.first;
@@ -150,7 +153,6 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 		valid_pieces.emplace_back(piece);
 	}
 
-	std::optional<Piece> best_piece;
 	std::vector<std::optional<Piece>> moves;
 
 	for (auto& piece : valid_pieces)
@@ -209,4 +211,13 @@ Outcomes VersusGame::get_winner() const
 	}
 
 	return out;
+}
+
+
+Move VersusGame::get_bestish_move(int id) const
+{
+	if (id == 0) {
+		return p1_game.get_bestish_piece();
+	}
+	return p2_game.get_bestish_piece();
 }

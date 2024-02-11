@@ -34,5 +34,7 @@ public:
 
 	Outcomes get_winner() const;
 
+	Move get_bestish_move(int id) const;
+
 	friend class Tetris;
 };

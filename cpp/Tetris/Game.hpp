@@ -84,6 +84,8 @@ public:
 	std::vector<Piece> movegen(PieceType piece_type) const;
 
 	std::pair<Piece, bool> get_best_piece() const;
+	std::pair<Piece, bool> get_bestish_piece() const;
+
 
 	pptRNG rng;
 	Board board;

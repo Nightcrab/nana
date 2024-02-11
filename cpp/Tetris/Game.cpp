@@ -465,3 +465,119 @@ std::pair<Piece, bool> Game::get_best_piece() const {
 	// if null_move is true, we attempt null move
 	return std::make_pair(*best_piece, null_move);
 }
+
+std::pair<Piece, bool> Game::get_bestish_piece() const {
+	std::vector<Piece> valid_pieces = movegen(current_piece.type);
+	PieceType holdType = hold.has_value() ? hold->type : queue.front();
+
+	std::vector<Piece> hold_pieces = movegen(holdType);
+	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
+	for (auto& piece : hold_pieces)
+	{
+		valid_pieces.emplace_back(piece);
+	}
+
+	std::vector<std::pair<double, std::optional<Piece>>> moves;
+
+	double total_score = 0;
+	double max_score = 0;
+
+	for (auto& piece : valid_pieces)
+	{
+		Board temp_board = board;
+		temp_board.set(piece);
+		double score = Eval::eval(temp_board);
+
+		total_score += score;
+		max_score = std::max(max_score, score);
+		moves.emplace_back(score, piece);
+	}
+
+	// try the null move
+	const double null_score = Eval::eval(board);
+	{
+		total_score += null_score;
+		max_score = std::max(max_score, null_score);
+		moves.emplace_back(null_score, std::nullopt);
+	}
+	// sort the moves by score
+	std::sort(moves.begin(), moves.end(), [](auto& a, auto& b) { return a.first > b.first; });
+
+
+	// pick a random piece based on the score as a probability between 0 and 1
+	std::mt19937 gen;
+	gen.seed(std::random_device()());
+	std::uniform_real_distribution<double> dis(0, 1);
+	double r = dis(gen);
+	auto softmax = [](double x, double total_score) { return exp(x) / total_score; };
+
+	double Eexn = 0;
+
+	for (int i = 0; i < moves.size(); i++)
+	{
+		//Eexn += exp(moves[i].first) / moves.size();
+	}
+
+	auto softmax2 = [Eexn](double x) { return exp(x) + Eexn; };
+	auto return_best_piece = [](std::vector<std::pair<double, std::optional<Piece>>>& moves,
+		double Eexn, double r
+		) {
+			//r = (r - 1) * (r - 1);
+			double max_score = 0;
+			for (auto& [score, piece] : moves)
+			{
+				max_score = std::max(max_score, score);
+			}
+
+			for (auto& [score, piece] : moves)
+			{
+				score -= max_score;
+			}
+			double total_score = 0;
+			for (auto& [score, piece] : moves)
+			{
+				total_score += exp(score / 10) + Eexn;
+			}
+			double sum = 0;
+
+
+			for (auto& [score, piece] : moves)
+			{
+				sum += (exp(score / 10)) / total_score;
+				if (r < sum)
+				{
+					return piece;
+				}
+			}
+
+			// no return
+			std::unreachable();
+		};
+
+	bool null_move = false;
+
+	auto best_piece = return_best_piece(moves, Eexn, r);
+
+	if (!best_piece.has_value())
+		null_move = true;
+
+	if (null_move)
+	{
+		r = dis(gen);
+
+		auto it = std::find(moves.begin(), moves.end(), std::make_pair(null_score - max_score, std::nullopt));
+		if (it != moves.end())
+		{
+			// take out the nullopt
+			moves.erase(it);
+		}
+
+		// recompute
+		//Eexn = (Eexn * (moves.size() + 1) - exp(null_score - max_score)) / moves.size();
+
+		best_piece = return_best_piece(moves, Eexn, r);
+	}
+
+	// if null_move is true, we attempt null move
+	return std::make_pair(*best_piece, null_move);
+}

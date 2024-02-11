@@ -34,7 +34,10 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 
 				// randomly select moves
 				p1_move = sim_game.get_N_moves(id, 1)[0];
-				p2_move = sim_game.get_N_moves(o_id, 1)[0];
+				//p2_move = sim_game.get_N_moves(o_id, 1)[0];
+
+				p1_move = sim_game.get_bestish_move(id);
+				p2_move = sim_game.get_bestish_move(o_id);
 
 				if (id == 1) {
 					std::swap(p1_move, p2_move);
@@ -102,7 +105,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 		}
 	};
 
-	std::vector<std::map<Move, std::pair<int, double>>> indices(samples);
+	std::vector<std::map<Move, std::pair<int, double>>> indices(threads);
 
 	// this is a bandit model, so there exists a determinstic optimal policy. 
 	std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), run_this);
@@ -127,7 +130,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 		double r = val.second;
 
 
-		if (n < 0) {
+		if (n < 3) {
 			// sample amount too low
 			continue;
 		}
@@ -140,6 +143,7 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 		}
 	}
 
+	std::cout << "number of moves tried " << action_rewards.size() << std::endl;
 
 	return best_move;
 
