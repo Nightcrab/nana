@@ -1,7 +1,7 @@
 #include "Board.hpp"
 #include <bit>
 int Board::get(size_t x, size_t y) const {
-	return board[x] & (1 << y);
+	return (board[x] & (1 << y)) != 0;
 }
 
 int Board::get_column(size_t x) const

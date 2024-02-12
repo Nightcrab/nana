@@ -85,7 +85,7 @@ double Eval::eval(const Board& board, bool fast)
 		init();
 		needs_init = false;
 	}
-	auto get_3x3 = [](Board board, int x, int y) {
+	auto get_3x3s = [](Board board, int x, int y) {
 		uint16_t bits = 0;
 
 		for (int wx = 0; wx < 3; ++wx)
@@ -100,19 +100,35 @@ double Eval::eval(const Board& board, bool fast)
 					bits |= 1 << (wy + wx * 3);
 			}
 		return bits;
-		};
-	auto get_3x3s = [](Board board, size_t x, size_t y) {
+	};
+
+	auto get_3x3 = [](Board board, size_t x, size_t y) {
 		uint16_t bits = 0;
 
-		for (size_t wx = 0; wx < 3; ++wx){
+		for (size_t wx = 0; wx < 3; ++wx) {
 				uint32_t filled = 0;
 				if ((x + wx) < 0 || (x + wx) >= BOARD_WIDTH)
 					filled = 0b111;
 				else
-					filled = (board.get_column(static_cast<unsigned long long>(x) + wx) & ((size_t)0b111 << y + 2)) >> y;
+					filled = board.get_column(x + wx);
+					filled &= 0b111 << (y - 2);
+					filled >>= (y - 2);
 
-				bits |= filled << ((3 - wx) * 3);
-			}
+					if (filled == 0b001) {
+						filled = 0b100;
+					}
+					else if (filled == 0b011) {
+						filled = 0b110;
+					}
+					else if (filled == 0b100) {
+						filled = 0b001;
+					}
+					else if (filled == 0b110) {
+						filled = 0b011;
+					}
+
+				bits |= filled << (wx * 3);
+		}
 		return bits;
 	};
 

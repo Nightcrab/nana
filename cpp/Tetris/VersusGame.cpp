@@ -15,13 +15,13 @@ void VersusGame::play_moves()
 	}
 
 	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
-		//std::cout << "game lasted: " << turn << std::endl;
+		std::cout << "game lasted: " << turn << std::endl;
 		game_over = true;
 		return;
 	}
 
 	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
-		//std::cout << "game lasted: " << turn << std::endl;
+		std::cout << "game lasted: " << turn << std::endl;
 		game_over = true;
 		return;
 	}
