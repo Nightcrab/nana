@@ -80,10 +80,10 @@ constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_o
 } };
 
 constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_offsets_O = { {
-   {0, 0},
-   {0, -1},
-   {-1, -1},
-   {-1, 0},
+   {{{0, 0}}},
+   {{{0, -1}}},
+   {{{-1, -1}}},
+    {{{-1, 0}}},
 } };
 
 constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_offsets_I = { {

@@ -3,6 +3,7 @@
 #include "Piece.hpp"
 #include "rng.hpp"
 #include "TetrisConstants.hpp"
+#include "Move.hpp"
 
 #include <vector>
 #include <optional>
@@ -85,7 +86,8 @@ public:
 
 	std::pair<Piece, bool> get_best_piece() const;
 	std::pair<Piece, bool> get_bestish_piece() const;
-
+	std::vector<Move> get_sorted_moves() const;
+	
 
 	pptRNG rng;
 	Board board;
