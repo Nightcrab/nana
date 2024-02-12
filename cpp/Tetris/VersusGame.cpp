@@ -278,3 +278,11 @@ Move VersusGame::get_best_move(int id) const
 	return p2_game.get_best_piece();
 }
 
+std::vector<Move> VersusGame::get_sorted_moves(int id) const
+{
+	if (id == 0) {
+		return p1_game.get_sorted_moves();
+	}
+	return p2_game.get_sorted_moves();
+}
+

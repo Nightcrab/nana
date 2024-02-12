@@ -581,3 +581,44 @@ std::pair<Piece, bool> Game::get_bestish_piece() const {
 	// if null_move is true, we attempt null move
 	return std::make_pair(*best_piece, null_move);
 }
+
+std::vector<Move> Game::get_sorted_moves()const {
+	std::vector<Piece> valid_pieces = movegen(current_piece.type);
+	PieceType holdType = hold.has_value() ? hold->type : queue.front();
+
+	std::vector<Piece> hold_pieces = movegen(holdType);
+	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
+	for (auto& piece : hold_pieces)
+	{
+		valid_pieces.emplace_back(piece);
+	}
+
+	std::vector<std::pair<double, Move>> moves;
+
+	// null move eval
+	for (auto& piece : valid_pieces)
+	{
+		Board temp_board = board;
+		temp_board.set(piece);
+		double score = Eval::eval(temp_board);
+
+		moves.emplace_back(score, piece);
+	}
+
+	// sort the moves by score
+	std::sort(moves.begin(), moves.end(), [](auto& a, auto& b) { return a.first > b.first; });
+
+	std::vector<Move> out;
+	out.reserve(moves.size() * 2);
+
+	for (auto& [score, piece] : moves)
+	{
+		piece.null_move = false;
+		out.emplace_back(piece);
+
+		piece.null_move = true;
+		out.emplace_back(piece);
+	}
+
+	return out;
+}

@@ -6,19 +6,16 @@
 
 class Move {
 public:
-	Move() {
-		this->piece = Piece(PieceType::Empty);
+	Move() :piece(Piece(PieceType::Empty)){
 		this->null_move = true;
 	}
 
-	Move(Piece piece, bool null_move) {
-		this->piece = piece;
+	Move(const Piece &piece, bool null_move) : piece(piece) {
 		this->null_move = false;
 	}
 
-	Move(std::optional<Piece> piece) {
+	Move(const std::optional<Piece> &piece) :piece(Piece(PieceType::Empty)) {
 		if (!piece) {
-			this->piece = Piece(PieceType::Empty);
 			this->null_move = true;
 		}
 		else {
@@ -27,12 +24,11 @@ public:
 		}
 	}
 
-	Move(std::pair<Piece, bool>&& move_pair) {
-		this->piece = move_pair.first;
+	Move(std::pair<Piece, bool>&& move_pair): piece(move_pair.first) {
 		this->null_move = move_pair.second;
 	}
 
-	Piece piece = Piece(PieceType::Empty);
+	Piece piece;
 	bool null_move;
 
 	Piece first();

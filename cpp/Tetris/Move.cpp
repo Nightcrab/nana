@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Move.hpp"
 #include "Piece.hpp"
 

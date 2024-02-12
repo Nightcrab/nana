@@ -11,35 +11,35 @@ double sigmoid(double x) {
 	return 1 / (1 + exp(-x));
 }
 
-Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samples, int N, int id) {
-	std::map<Move, std::pair<int, double>> action_rewards;
+Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samples, int max_depth, int id) {
+
+	using action_map_t = std::map<Move, std::pair<int, double>>;
+	using state_t = std::pair<action_map_t, Move>;
+	action_map_t action_rewards;
 
 	int samples_per_thread = samples / threads;
 
-	auto run_this = [game, id, N, samples_per_thread](std::map<Move, std::pair<int, double>>& state) {
+	auto run_this = [game, id, max_depth, samples_per_thread](state_t& state) {
+		
 		for (int i = 0; i < samples_per_thread; i++) {
 
 			int o_id = id == 0 ? 1 : 0;
 			VersusGame sim_game = game;
-			int depth = 0;
+			int cur_depth = 0;
 
 			Outcomes outcome = NONE;
 
-			Move root_move;
+			Move root_move = state.second;
 
-			while (depth < N) {
-
-				Move our_move;
-				Move opp_move;
+			while (cur_depth < max_depth) {
 
 				// randomly select moves
-				our_move = sim_game.get_bestish_move(id);
+				Move our_move = sim_game.get_bestish_move(id);
+				Move opp_move = sim_game.get_bestish_move(o_id);
 
-				opp_move = sim_game.get_bestish_move(o_id);
-
-				if (depth == 0) {
+				if (cur_depth == 0) {
 					// p1 is us
-					root_move = our_move;
+					our_move = root_move;
 				}
 
 				sim_game.set_move(id, our_move);
@@ -53,10 +53,10 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 					break;
 				}
 
-				depth++;
+				cur_depth++;
 			}
 
-			auto& avg = state[root_move];
+			auto& avg = state.first[root_move];
 
 			// update rewards table
 
@@ -94,20 +94,36 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 			}
 		}
 	};
+	
+	std::vector<state_t> indices(threads);
+	const Game &player = game.get_game(id);
+	std::vector<Move> moves = player.get_sorted_moves();
 
-	std::vector<std::map<Move, std::pair<int, double>>> indices(threads);
+	for (int i = 0; i < indices.size(); ++i)
+	{
+		if (!(i < moves.size()))
+		{
+			indices.resize(i);
+			break;
+		}
+		indices[i].second = moves[i];
+
+	}
 
 	// gag console during simulations
 	std::cout.setstate(std::ios_base::failbit);
+
+
 
 	std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), run_this);
 
 	std::cout.clear();
 
 
-	for (auto const& state : indices) {
+	for (auto const& [state, move] : indices) {
 		for (auto const& [key, val] : state) {
 			auto& avg = action_rewards[key];
+
 			avg.first += val.first;
 			avg.second += val.second;
 		}

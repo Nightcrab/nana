@@ -30,15 +30,15 @@ public:
 	double p1_atk = 0;
 	double p2_atk = 0;
 
-	double get_app(int id) {
+	double get_app(int id) const {
 		return id == 0 ? p1_atk / turn : p2_atk / turn;
 	}
 
-	double get_b2b(int id) {
+	double get_b2b(int id) const {
 		return id == 0 ? p1_game.b2b : p2_game.b2b;
 	}
 
-	Game get_game(int id) {
+	const Game& get_game(int id) const {
 		return id == 0 ? p1_game : p2_game;
 	}
 
@@ -57,6 +57,7 @@ public:
 
 	Move get_bestish_move(int id) const; 
 	Move get_best_move(int id) const;
+	std::vector<Move> get_sorted_moves(int id) const;
 
 	friend class Tetris;
 };
