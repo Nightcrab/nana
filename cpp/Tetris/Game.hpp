@@ -1,7 +1,6 @@
 #pragma once
 #include "Board.hpp"
 #include "Piece.hpp"
-#include "rng.hpp"
 #include "TetrisConstants.hpp"
 #include "Move.hpp"
 
@@ -44,16 +43,13 @@ constexpr int QUEUE_SIZE = 5;
 class Game {
 public:
 
-	Game()
-		:rng(), current_piece(rng.getPiece())
-	{
+	Game() :current_piece(PieceType::Empty) {
 		for (auto& p : queue) {
-			p = rng.getPiece();
+			p = PieceType::Empty;
 		}
 	}
 	Game& operator=(const Game& other) {
 		if (this != &other) {
-			rng = other.rng;
 			board = other.board;
 			current_piece = other.current_piece;
 			hold = other.hold;
@@ -76,7 +72,7 @@ public:
 
 	void sonic_drop(const Board board, Piece& piece) const;
 
-	void add_garbage(int lines, int loc);
+	std::array<Game, 10> add_garbage(int lines) const;
 
 	int damage_sent(int linesCleared, spinType spinType, bool pc);
 
@@ -84,16 +80,16 @@ public:
 
 	std::vector<Piece> movegen(PieceType piece_type) const;
 
+	std::vector<Piece> get_possible_piece_placements() const;
+
 	std::pair<Piece, bool> get_best_piece() const;
 	std::pair<Piece, bool> get_bestish_piece() const;
 	std::vector<Move> get_sorted_moves() const;
-	
 
-	pptRNG rng;
+
 	Board board;
 	Piece current_piece;
 	std::optional<Piece> hold;
-	std::array<PieceType, QUEUE_SIZE> queue;
 	int garbage_meter = 0;
 	int b2b = 0;
 	int combo = 0;
@@ -103,7 +99,8 @@ public:
 	int currentbtbchainpower = 0;
 
 	const struct options {
-		bool b2bchaining = true;
 		int garbagemultiplier = 1;
+		bool b2bchaining = true;
 	} options;
+	std::array<PieceType, QUEUE_SIZE> queue;
 };

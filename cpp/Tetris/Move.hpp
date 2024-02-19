@@ -11,7 +11,7 @@ public:
 	}
 
 	Move(const Piece &piece, bool null_move) : piece(piece) {
-		this->null_move = false;
+		this->null_move = null_move;
 	}
 
 	Move(const std::optional<Piece> &piece) :piece(Piece(PieceType::Empty)) {

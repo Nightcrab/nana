@@ -3,6 +3,11 @@
 #include <array>
 #include <cstdint>
 
+typedef uint_fast8_t u8;   ///<   8-bit unsigned integer.
+typedef uint_fast16_t u16; ///<  16-bit unsigned integer.
+typedef uint_fast32_t u32; ///<  32-bit unsigned integer.
+typedef uint_fast64_t u64; ///<  64-bit unsigned integer.
+
 enum class spinType {
     null,
     mini,

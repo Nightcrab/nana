@@ -19,7 +19,7 @@ public:
 	Board(const Board& other) = default;
 
 	Board(Board&& other) noexcept = default;
-	Board & operator=(const Board& other) = default;
+	Board& operator=(const Board& other) = default;
 
 	int get(size_t x, size_t y) const;
 	int get_column(size_t x) const;

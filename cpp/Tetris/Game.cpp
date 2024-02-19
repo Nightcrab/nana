@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <algorithm>
+#include <random>
 #include <map>
 #include <tuple>
 
@@ -13,7 +15,7 @@ void Game::place_piece() {
 
 	std::ranges::shift_left(queue, 1);
 
-	queue.back() = rng.getPiece();
+	queue.back() = PieceType::Empty;
 }
 
 bool Game::collides(const Board& board, const Piece& piece) const {
@@ -125,15 +127,24 @@ void Game::sonic_drop(const Board board, Piece& piece) const
 	piece.position.y++;
 }
 
-void Game::add_garbage(int lines, int loc) {
-	for (int i = 0; i < BOARD_WIDTH; ++i) {
-		auto& column = board.board[i];
-		column <<= lines;
+std::array<Game, 10> Game::add_garbage(int lines) const {
+	std::array<Game, 10> out;
 
-		if (loc != i) {
-			column |= (1 << lines) - 1;
+	for (int loc = 0; loc < 10; ++loc)
+	{
+		Game temp = *this;
+		for (int i = 0; i < BOARD_WIDTH; ++i) {
+			auto& column = temp.board.board[i];
+			column <<= lines;
+
+			if (loc != i) {
+				column |= (1 << lines) - 1;
+			}
 		}
+
+		out[loc] = temp;
 	}
+	return out;
 }
 
 // ported from
@@ -349,16 +360,31 @@ std::vector<Piece> Game::movegen(PieceType piece_type) const {
 	return valid_moves;
 }
 
-std::pair<Piece, bool> Game::get_best_piece() const {
-	std::vector<Piece> valid_pieces = movegen(current_piece.type);
-	PieceType holdType = hold.has_value() ? hold->type : queue.front();
+// warning! if there is a piece in the hold and the current piece is empty, we dont use the hold
+std::vector<Piece> Game::get_possible_piece_placements() const
+{
+	// we exausted the queue
+	if(current_piece.type == PieceType::Empty)
+		return {};
 
-	std::vector<Piece> hold_pieces = movegen(holdType);
-	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
-	for (auto& piece : hold_pieces)
+	std::vector<Piece> valid_pieces = movegen(current_piece.type);
+
+	PieceType holdType = hold.has_value() ? hold->type : queue.front();
+	if (holdType != PieceType::Empty)
 	{
-		valid_pieces.emplace_back(piece);
+		std::vector<Piece> hold_pieces = movegen(holdType);
+		valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
+		for (auto& piece : hold_pieces)
+		{
+			valid_pieces.emplace_back(piece);
+		}
 	}
+
+	return valid_pieces;
+}
+
+std::pair<Piece, bool> Game::get_best_piece() const {
+	std::vector<Piece> valid_pieces = get_possible_piece_placements();
 
 	std::optional<Piece> best_piece;
 	std::vector<std::pair<double, std::optional<Piece>>> moves;
@@ -467,15 +493,7 @@ std::pair<Piece, bool> Game::get_best_piece() const {
 }
 
 std::pair<Piece, bool> Game::get_bestish_piece() const {
-	std::vector<Piece> valid_pieces = movegen(current_piece.type);
-	PieceType holdType = hold.has_value() ? hold->type : queue.front();
-
-	std::vector<Piece> hold_pieces = movegen(holdType);
-	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
-	for (auto& piece : hold_pieces)
-	{
-		valid_pieces.emplace_back(piece);
-	}
+	std::vector<Piece> valid_pieces = get_possible_piece_placements();
 
 	std::vector<std::pair<double, std::optional<Piece>>> moves;
 
@@ -583,15 +601,7 @@ std::pair<Piece, bool> Game::get_bestish_piece() const {
 }
 
 std::vector<Move> Game::get_sorted_moves()const {
-	std::vector<Piece> valid_pieces = movegen(current_piece.type);
-	PieceType holdType = hold.has_value() ? hold->type : queue.front();
-
-	std::vector<Piece> hold_pieces = movegen(holdType);
-	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
-	for (auto& piece : hold_pieces)
-	{
-		valid_pieces.emplace_back(piece);
-	}
+	std::vector<Piece> valid_pieces = get_possible_piece_placements();
 
 	std::vector<std::pair<double, Move>> moves;
 

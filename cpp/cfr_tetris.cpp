@@ -8,6 +8,7 @@
 #include "Tetris/rng.hpp"
 #include "Tetris/Eval.hpp"
 #include "Tetris/Search.hpp"
+#include "Tetris/rng.hpp"
 
 #define OLC_PGE_APPLICATION
 #include "OLC/olcPixelGameEngine.h"
@@ -26,6 +27,8 @@ public:
 	}
 private:
 	VersusGame game;
+	pptRNG player_1_rng;
+	pptRNG player_2_rng;
 
 	void renderBoard(Game& game, int x_offset)
 	{
@@ -77,6 +80,19 @@ private:
 
 	bool OnUserCreate() override
 	{
+		// give both players a bag
+		game.p1_game.current_piece = player_1_rng.getPiece();
+		for (auto& piece_type : game.p1_game.queue)
+		{
+			piece_type = player_1_rng.getPiece();
+		}
+
+		game.p2_game.current_piece = player_2_rng.getPiece();
+		for (auto& piece_type : game.p2_game.queue)
+		{
+			piece_type = player_2_rng.getPiece();
+		}
+
 		auto board = Board();
 		Eval::eval(board);
 		return true;
@@ -120,7 +136,7 @@ private:
 
 				std::ranges::shift_left(game.p1_game.queue, 1);
 
-				game.p1_game.queue.back() = game.p1_game.rng.getPiece();
+				game.p1_game.queue.back() = player_1_rng.getPiece();
 			}
 		}
 
@@ -148,6 +164,11 @@ private:
 			game.play_moves();
 		}
 
+		if (GetKey(olc::Key::L).bPressed)
+		{
+			game.p1_move = game.something(1, 0).as_pair();
+			game.p2_move = game.get_best_move(1).as_pair();
+		}
 
 		if (GetKey(olc::Key::P).bHeld)
 		{

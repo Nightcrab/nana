@@ -21,15 +21,20 @@ public:
 	Game p1_game;
 	Game p2_game;
 
-	int turn = 0;
-	bool game_over = false;
 
-	int p1_meter = 0;
-	int p2_meter = 0;
+	std::pair<Piece, bool> p1_move = std::make_pair(Piece(PieceType::Empty), false);
+	std::pair<Piece, bool> p2_move = std::make_pair(Piece(PieceType::Empty), false);
 
 	double p1_atk = 0;
 	double p2_atk = 0;
+	
+	int p1_meter = 0;
+	int p2_meter = 0;
 
+	int turn = 0;
+	bool game_over = false;
+
+	// get attack per piece
 	double get_app(int id) const {
 		return id == 0 ? p1_atk / turn : p2_atk / turn;
 	}
@@ -42,12 +47,10 @@ public:
 		return id == 0 ? p1_game : p2_game;
 	}
 
-	std::pair<Piece, bool> p1_move = std::make_pair(Piece(PieceType::Empty), false);
-	std::pair<Piece, bool> p2_move = std::make_pair(Piece(PieceType::Empty), false);
 
 	void set_move(int id, Move move);
 
-	void play_moves();
+	std::vector<VersusGame> play_moves()const;
 
 	std::vector<Move> get_moves(int id) const;
 	std::vector<Move> get_N_moves(int id, int N) const;
@@ -58,6 +61,6 @@ public:
 	Move get_bestish_move(int id) const; 
 	Move get_best_move(int id) const;
 	std::vector<Move> get_sorted_moves(int id) const;
-
+	Move something(int N, int id) const;
 	friend class Tetris;
 };
