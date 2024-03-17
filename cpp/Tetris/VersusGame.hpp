@@ -22,8 +22,8 @@ public:
 	Game p2_game;
 
 
-	std::pair<Piece, bool> p1_move = std::make_pair(Piece(PieceType::Empty), false);
-	std::pair<Piece, bool> p2_move = std::make_pair(Piece(PieceType::Empty), false);
+	Move p1_move = Move(Piece(PieceType::Empty), false);
+	Move p2_move = Move(Piece(PieceType::Empty), false);
 
 	double p1_atk = 0;
 	double p2_atk = 0;

@@ -2,12 +2,12 @@
 #include "Piece.hpp"
 
 
-Piece Move::first() {
+Piece &Move::first() {
 	return this->piece;
 }
 
 
-bool Move::second() {
+bool &Move::second() {
 	return this->null_move;
 }
 
@@ -20,7 +20,3 @@ uint32_t Move::hash() const {
 	return (this->piece).hash();
 }
 
-
-std::pair<Piece, bool> Move::as_pair(){
-	return std::make_pair(piece, null_move);
-}

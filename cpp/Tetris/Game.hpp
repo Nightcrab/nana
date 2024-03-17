@@ -82,8 +82,8 @@ public:
 
 	std::vector<Piece> get_possible_piece_placements() const;
 
-	std::pair<Piece, bool> get_best_piece() const;
-	std::pair<Piece, bool> get_bestish_piece() const;
+	Move get_best_piece() const;
+	Move get_bestish_piece() const;
 	std::vector<Move> get_sorted_moves() const;
 
 

@@ -30,17 +30,17 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 
 
 
-	if (copy.p1_move.second && copy.p2_move.second) {
-		copy.p1_move.second = false;
-		copy.p2_move.second = false;
+	if (copy.p1_move.second() && copy.p2_move.second()) {
+		copy.p1_move.second() = false;
+		copy.p2_move.second() = false;
 	}
 
 	copy.turn += 1;
 
 	int p1_cleared_lines = 0;
 	// player 1 move
-	if (!copy.p1_move.second) {
-		if (copy.p1_move.first.type != copy.p1_game.current_piece.type)
+	if (!copy.p1_move.second()) {
+		if (copy.p1_move.first().type != copy.p1_game.current_piece.type)
 		{
 			if (copy.p1_game.hold) {
 				std::swap(copy.p1_game.hold.value(), copy.p1_game.current_piece);
@@ -56,14 +56,14 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 			}
 		}
 
-		copy.p1_game.current_piece = copy.p1_move.first;
+		copy.p1_game.current_piece = copy.p1_move.first();
 		spinType spin = copy.p1_game.current_piece.spin;
 
 		copy.p1_game.place_piece();
 		p1_cleared_lines = copy.p1_game.board.clearLines();
 
 		bool pc = true;
-		for (int i = 0; i < BOARD_WIDTH; i++) {
+		for (int i = 0; i < Board::width; i++) {
 			if (copy.p1_game.board.get_column(i) != 0) {
 				pc = false;
 				break;
@@ -86,8 +86,8 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 	}
 	int p2_cleared_lines = 0;
 	// player 2 move
-	if (!copy.p2_move.second) {
-		if (copy.p2_move.first.type != copy.p2_game.current_piece.type) {
+	if (!copy.p2_move.second()) {
+		if (copy.p2_move.first().type != copy.p2_game.current_piece.type) {
 			if (copy.p2_game.hold) {
 				std::swap(copy.p2_game.hold.value(), copy.p2_game.current_piece);
 			}
@@ -103,14 +103,14 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 		}
 
 
-		copy.p2_game.current_piece = copy.p2_move.first;
+		copy.p2_game.current_piece = copy.p2_move.first();
 		spinType spin = copy.p2_game.current_piece.spin;
 
 		copy.p2_game.place_piece();
 		p2_cleared_lines = copy.p2_game.board.clearLines();
 
 		bool pc = true;
-		for (int i = 0; i < BOARD_WIDTH; i++) {
+		for (int i = 0; i < Board::width; i++) {
 			if (copy.p2_game.board.get_column(i) != 0) {
 				pc = false;
 				break;
@@ -141,7 +141,7 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 
 
 	// if possible for both players to have damage, update here
-	if (!copy.p1_move.second && p1_cleared_lines == 0)
+	if (!copy.p1_move.second() && p1_cleared_lines == 0)
 	{
 		if (copy.p1_meter > 0)
 		{
@@ -157,7 +157,7 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 		}
 	}
 
-	if (!copy.p2_move.second && p2_cleared_lines == 0)
+	if (!copy.p2_move.second() && p2_cleared_lines == 0)
 	{
 		if (copy.p2_meter > 0)
 		{
@@ -286,10 +286,10 @@ Outcomes VersusGame::get_winner() const
 void VersusGame::set_move(int id, Move move)
 {
 	if (id == 0) {
-		p1_move = move.as_pair();
+		p1_move = move;
 	}
 	else {
-		p2_move = move.as_pair();
+		p2_move = move;
 	}
 }
 

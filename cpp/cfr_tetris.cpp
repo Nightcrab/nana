@@ -32,7 +32,7 @@ private:
 
 	void renderBoard(Game& game, int x_offset)
 	{
-		for (int i = 0; i < BOARD_WIDTH; i++)
+		for (int i = 0; i < Board::width; i++)
 		{
 			for (int j = 0; j < 32; j++)
 			{
@@ -151,7 +151,7 @@ private:
 			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
 			game.p1_move = { game.p1_game.current_piece , false};
 
-			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1).as_pair();
+			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1);
 			game.play_moves();
 		}
 
@@ -160,23 +160,23 @@ private:
 			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
 			game.p1_move = { game.p1_game.current_piece , true};
 
-			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1).as_pair();
+			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1);
 			game.play_moves();
 		}
 
 		if (GetKey(olc::Key::L).bPressed)
 		{
-			game.p1_move = game.something(1, 0).as_pair();
-			game.p2_move = game.get_best_move(1).as_pair();
+			game.p1_move = game.something(1, 0);
+			game.p2_move = game.get_best_move(1);
 		}
 
 		if (GetKey(olc::Key::P).bHeld)
 		{
 			// t = time.time()
 			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1).as_pair();
+			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1);
 			game.p1_move = game.p1_game.get_best_piece();
-			//game.p1_move = Search::monte_carlo_best_move(game, 12, 120, 7, 0).as_pair();
+			//game.p1_move = Search::monte_carlo_best_move(game, 12, 120, 7, 0);
 			//game.p2_move = game.p2_game.get_best_piece();
 
 			game.play_moves();

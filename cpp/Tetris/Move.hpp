@@ -24,17 +24,12 @@ public:
 		}
 	}
 
-	Move(std::pair<Piece, bool>&& move_pair): piece(move_pair.first) {
-		this->null_move = move_pair.second;
-	}
-
 	Piece piece;
 	bool null_move;
 
-	Piece first();
-	bool second();
+	Piece &first();
+	bool &second();
 
-	std::pair<Piece, bool> as_pair();
 
 	uint32_t hash() const;
 

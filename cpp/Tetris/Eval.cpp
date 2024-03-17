@@ -91,7 +91,7 @@ double Eval::eval(const Board& board, bool fast)
 		for (int wx = 0; wx < 3; ++wx)
 			for (int wy = 0; wy < 3; ++wy) {
 				bool filled = false;
-				if ((x + wx) < 0 || (x + wx) >= BOARD_WIDTH)
+				if ((x + wx) < 0 || (x + wx) >= Board::width)
 					filled = true;
 				else
 					filled = board.get(x + wx, y - wy);
@@ -107,7 +107,7 @@ double Eval::eval(const Board& board, bool fast)
 
 		for (size_t wx = 0; wx < 3; ++wx) {
 				uint32_t filled = 0;
-				if ((x + wx) < 0 || (x + wx) >= BOARD_WIDTH)
+				if ((x + wx) < 0 || (x + wx) >= Board::width)
 					filled = 0b111;
 				else
 					filled = board.get_column(x + wx);
@@ -161,7 +161,7 @@ double Eval::eval(const Board& board, bool fast)
 
 	// note: can trade 2x speed for 30% quality drop by striding horizontal x by 2 and vertical y by 2
 
-	for (size_t x = 1; x < BOARD_WIDTH - 4; x += 1)
+	for (size_t x = 1; x < Board::width - 4; x += 1)
 		for (size_t y = 2; y < 20; y += 1)
 		{
 			size_t left = get_3x3(board, x - 3, y);
@@ -186,7 +186,7 @@ double Eval::eval(const Board& board, bool fast)
 		}
 
 
-	for (size_t x = 0; x < BOARD_WIDTH - 2; x += 1)
+	for (size_t x = 0; x < Board::width - 2; x += 1)
 		for (size_t y = 2; y < 20; y += 2)
 		{
 			size_t bottom = get_3x3(board, x, y);

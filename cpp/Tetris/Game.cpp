@@ -7,6 +7,7 @@
 #include <random>
 #include <map>
 #include <tuple>
+#include <bit>
 
 void Game::place_piece() {
 	board.set(current_piece);
@@ -22,11 +23,11 @@ bool Game::collides(const Board& board, const Piece& piece) const {
 	for (auto& mino : piece.minos)
 	{
 		int x_pos = mino.x + piece.position.x;
-		if (x_pos < 0 || x_pos >= BOARD_WIDTH)
+		if (x_pos < 0 || x_pos >= Board::width)
 			return true;
 
 		int y_pos = mino.y + piece.position.y;
-		if (y_pos < 0 || y_pos >= BOARD_HEIGHT)
+		if (y_pos < 0 || y_pos >= Board::height)
 			return true;
 		if (board.get(x_pos, y_pos))
 			return true;
@@ -79,7 +80,7 @@ void Game::rotate(Piece& piece, TurnDirection dir) const {
 					Coord c = corners[piece.rotation][u];
 					c.x += piece.position.x;
 					c.y += piece.position.y;
-					if (c.x >= 0 && c.x < BOARD_WIDTH)
+					if (c.x >= 0 && c.x < Board::width)
 						filled[u] = board.get(c.x, c.y);
 				}
 
@@ -133,7 +134,7 @@ std::array<Game, 10> Game::add_garbage(int lines) const {
 	for (int loc = 0; loc < 10; ++loc)
 	{
 		Game temp = *this;
-		for (int i = 0; i < BOARD_WIDTH; ++i) {
+		for (int i = 0; i < Board::width; ++i) {
 			auto& column = temp.board.board[i];
 			column <<= lines;
 
@@ -383,7 +384,7 @@ std::vector<Piece> Game::get_possible_piece_placements() const
 	return valid_pieces;
 }
 
-std::pair<Piece, bool> Game::get_best_piece() const {
+Move Game::get_best_piece() const {
 	std::vector<Piece> valid_pieces = get_possible_piece_placements();
 
 	std::optional<Piece> best_piece;
@@ -489,10 +490,10 @@ std::pair<Piece, bool> Game::get_best_piece() const {
 	}
 
 	// if null_move is true, we attempt null move
-	return std::make_pair(*best_piece, null_move);
+	return Move(*best_piece, null_move);
 }
 
-std::pair<Piece, bool> Game::get_bestish_piece() const {
+Move Game::get_bestish_piece() const {
 	std::vector<Piece> valid_pieces = get_possible_piece_placements();
 
 	std::vector<std::pair<double, std::optional<Piece>>> moves;
@@ -597,7 +598,7 @@ std::pair<Piece, bool> Game::get_bestish_piece() const {
 	}
 
 	// if null_move is true, we attempt null move
-	return std::make_pair(*best_piece, null_move);
+	return Move(*best_piece, null_move);
 }
 
 std::vector<Move> Game::get_sorted_moves()const {

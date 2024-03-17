@@ -3,7 +3,6 @@
 #
 
 set(TETRIS_SOURCES
-	"Tetris/Board.cpp"
 	"Tetris/Board.hpp"
 	"Tetris/Game.cpp"
 	"Tetris/Game.hpp"
