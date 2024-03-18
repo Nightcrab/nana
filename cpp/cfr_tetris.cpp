@@ -149,9 +149,11 @@ private:
 		if (hard_drop)
 		{
 			game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
+			game.p2_game.sonic_drop(game.p2_game.board, game.p2_game.current_piece);
 			game.p1_move = { game.p1_game.current_piece , false};
+			game.p2_move = { game.p2_game.current_piece , false };
 
-			game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1);
+			//game.p2_move = Search::monte_carlo_best_move(game, 12, 120, 7, 1);
 			game.play_moves();
 		}
 
@@ -166,7 +168,7 @@ private:
 
 		if (GetKey(olc::Key::L).bPressed)
 		{
-			game.p1_move = game.something(1, 0);
+			game.p1_move = game.best_two_player_move(1, 0);
 			game.p2_move = game.get_best_move(1);
 		}
 

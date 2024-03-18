@@ -6,65 +6,63 @@
 #include <algorithm>
 #include <set>
 
-std::vector<VersusGame>  VersusGame::play_moves() const
+void VersusGame::play_moves()
 {
-	VersusGame copy;
-
 	// game over conditions
 
-	if (copy.game_over) {
-		return { copy };
+	if (game_over) {
+		return;
 	}
 
-	if (copy.p1_game.collides(copy.p1_game.board, copy.p1_game.current_piece)) {
+	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
 		//std::cout << "game lasted: " << turn << std::endl;
-		copy.game_over = true;
-		return { copy };
+		game_over = true;
+		return;
 	}
 
-	if (copy.p2_game.collides(copy.p2_game.board, copy.p2_game.current_piece)) {
+	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
 		//std::cout << "game lasted: " << turn << std::endl;
-		copy.game_over = true;
-		return  { copy };
+		game_over = true;
+		return ;
 	}
 
 
 
-	if (copy.p1_move.second() && copy.p2_move.second()) {
-		copy.p1_move.second() = false;
-		copy.p2_move.second() = false;
+	if (p1_move.second() && p2_move.second()) {
+		p1_move.second() = false;
+		p2_move.second() = false;
 	}
 
-	copy.turn += 1;
+	turn += 1;
 
 	int p1_cleared_lines = 0;
 	// player 1 move
-	if (!copy.p1_move.second()) {
-		if (copy.p1_move.first().type != copy.p1_game.current_piece.type)
+	if (!p1_move.second()) {
+		if (p1_move.first().type != p1_game.current_piece.type)
 		{
-			if (copy.p1_game.hold) {
-				std::swap(copy.p1_game.hold.value(), copy.p1_game.current_piece);
+			if (p1_game.hold) {
+				std::swap(p1_game.hold.value(), p1_game.current_piece);
 			}
 			else {
-				copy.p1_game.hold = copy.p1_game.current_piece;
+				p1_game.hold = p1_game.current_piece;
 				// shift queue
-				copy.p1_game.current_piece = copy.p1_game.queue.front();
+				p1_game.current_piece = p1_game.queue.front();
 
-				std::ranges::shift_left(copy.p1_game.queue, 1);
+				std::ranges::shift_left(p1_game.queue, 1);
 
-				copy.p1_game.queue.back() = PieceType::Empty;
+				p1_game.queue.back() = PieceType::Empty;
 			}
 		}
 
-		copy.p1_game.current_piece = copy.p1_move.first();
-		spinType spin = copy.p1_game.current_piece.spin;
+		p1_game.current_piece = p1_move.first();
+		spinType spin = p1_game.current_piece.spin;
 
-		copy.p1_game.place_piece();
-		p1_cleared_lines = copy.p1_game.board.clearLines();
+		p1_game.place_piece();
+		p1_cleared_lines = p1_game.board.clearLines();
 
 		bool pc = true;
 		for (int i = 0; i < Board::width; i++) {
-			if (copy.p1_game.board.get_column(i) != 0) {
+			if (p1_game.board.get_column(i) != 0) {
 				pc = false;
 				break;
 			}
@@ -78,40 +76,40 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 			//std::cout << "p1 did perfect clear" << std::endl;
 		}
 
-		int dmg = copy.p1_game.damage_sent(p1_cleared_lines, spin, pc);
+		int dmg = p1_game.damage_sent(p1_cleared_lines, spin, pc);
 
-		copy.p1_atk += dmg;
+		p1_atk += dmg;
 
-		copy.p2_meter += dmg;
+		p2_meter += dmg;
 	}
 	int p2_cleared_lines = 0;
 	// player 2 move
-	if (!copy.p2_move.second()) {
-		if (copy.p2_move.first().type != copy.p2_game.current_piece.type) {
-			if (copy.p2_game.hold) {
-				std::swap(copy.p2_game.hold.value(), copy.p2_game.current_piece);
+	if (!p2_move.second()) {
+		if (p2_move.first().type != p2_game.current_piece.type) {
+			if (p2_game.hold) {
+				std::swap(p2_game.hold.value(), p2_game.current_piece);
 			}
 			else {
-				copy.p2_game.hold = copy.p2_game.current_piece;
+				p2_game.hold = p2_game.current_piece;
 				// shift queue
-				copy.p2_game.current_piece = copy.p2_game.queue.front();
+				p2_game.current_piece = p2_game.queue.front();
 
-				std::ranges::shift_left(copy.p2_game.queue, 1);
+				std::ranges::shift_left(p2_game.queue, 1);
 
-				copy.p2_game.queue.back() = PieceType::Empty;
+				p2_game.queue.back() = PieceType::Empty;
 			}
 		}
 
 
-		copy.p2_game.current_piece = copy.p2_move.first();
-		spinType spin = copy.p2_game.current_piece.spin;
+		p2_game.current_piece = p2_move.first();
+		spinType spin = p2_game.current_piece.spin;
 
-		copy.p2_game.place_piece();
-		p2_cleared_lines = copy.p2_game.board.clearLines();
+		p2_game.place_piece();
+		p2_cleared_lines = p2_game.board.clearLines();
 
 		bool pc = true;
 		for (int i = 0; i < Board::width; i++) {
-			if (copy.p2_game.board.get_column(i) != 0) {
+			if (p2_game.board.get_column(i) != 0) {
 				pc = false;
 				break;
 			}
@@ -125,60 +123,47 @@ std::vector<VersusGame>  VersusGame::play_moves() const
 			//std::cout << "p2 did perfect clear" << std::endl;
 		}
 
-		int dmg = copy.p2_game.damage_sent(p2_cleared_lines, spin, pc);
+		int dmg = p2_game.damage_sent(p2_cleared_lines, spin, pc);
 
-		copy.p2_atk += dmg;
+		p2_atk += dmg;
 
-		copy.p1_meter += dmg;
+		p1_meter += dmg;
 	}
 
-	int min_meter = std::min(copy.p1_meter, copy.p2_meter);
+	int min_meter = std::min(p1_meter, p2_meter);
 
-	copy.p1_meter -= min_meter;
-	copy.p2_meter -= min_meter;
+	p1_meter -= min_meter;
+	p2_meter -= min_meter;
 
 	std::vector<VersusGame> out = {};
 
 
 	// if possible for both players to have damage, update here
-	if (!copy.p1_move.second() && p1_cleared_lines == 0)
+	if (!p1_move.second() && p1_cleared_lines == 0)
 	{
-		if (copy.p1_meter > 0)
+		if (p1_meter > 0)
 		{
-			out.reserve(10);
-			auto games = copy.p1_game.add_garbage(copy.p1_meter);
-			copy.p1_meter = 0;
-
-			for (auto& game : games)
-			{
-				copy.p1_game = game;
-				out.emplace_back(copy);
-			}
+			p1_game.add_garbage(p1_meter, c_move.p1_garbage_column);
+			p1_meter = 0;
 		}
 	}
 
-	if (!copy.p2_move.second() && p2_cleared_lines == 0)
+	if (!p2_move.second() && p2_cleared_lines == 0)
 	{
-		if (copy.p2_meter > 0)
+		if (p2_meter > 0)
 		{
-			out.reserve(10);
-			auto games = copy.p2_game.add_garbage(copy.p2_meter);
-			copy.p2_meter = 0;
-
-			for (auto& game : games)
-			{
-				copy.p2_game = game;
-				out.emplace_back(copy);
-			}
+			p2_game.add_garbage(p2_meter, c_move.p1_garbage_column);
+			p2_meter = 0;
 		}
 	}
+}
 
+VersusGame VersusGame::play_moves_not_inplace() {
+	VersusGame copy = VersusGame(*this);
 
-	if (out.size() == 0)
-	{
-		out.emplace_back(copy);
-	}
-	return out;
+	copy.play_moves();
+
+	return copy;
 }
 
 std::vector<Move> VersusGame::get_moves(int id) const
@@ -320,8 +305,9 @@ std::vector<Move> VersusGame::get_sorted_moves(int id) const
 	return p2_game.get_sorted_moves();
 }
 
-Move VersusGame::something(int N, int id) const
+Move VersusGame::best_two_player_move(int N, int id) const
 {
+	// exhaustive search. N is max depth
 	int other_id = id == 0 ? 1 : 0;
 
 	const Game& player = id == 0 ? p1_game : p2_game;
@@ -343,7 +329,11 @@ Move VersusGame::something(int N, int id) const
 			VersusGame temp = *this;
 			temp.set_move(other_id, moves2[j]);
 			temp.set_move(id, moves[i]);
-			auto played_games = temp.play_moves();
+			std::vector<VersusGame> played_games; 
+			for (int i = 0; i < Board::width; i++) {
+				temp.c_move = ChanceMove(i, i);
+				temp.play_moves_not_inplace();
+			}
 			for (const auto& played_game : played_games)
 			{
 				games[i].emplace_back(played_game);
@@ -372,7 +362,11 @@ Move VersusGame::something(int N, int id) const
 						VersusGame temp = game;
 						temp.set_move(id, our_move);
 						temp.set_move(other_id, opponent_move);
-						auto played_games = temp.play_moves();
+						std::vector<VersusGame> played_games;
+						for (int i = 0; i < Board::width; i++) {
+							temp.c_move = ChanceMove(i, i);
+							temp.play_moves_not_inplace();
+						}
 						for (const auto& played_game : played_games)
 						{
 							next_games[i].emplace_back(played_game);

@@ -2,6 +2,7 @@
 #include "Game.hpp"
 #include "Piece.hpp"
 #include "Move.hpp"
+#include "ChanceMove.hpp"
 
 #include <optional>
 #include <vector>
@@ -21,7 +22,7 @@ public:
 	Game p1_game;
 	Game p2_game;
 
-
+	ChanceMove c_move = ChanceMove();
 	Move p1_move = Move(Piece(PieceType::Empty), false);
 	Move p2_move = Move(Piece(PieceType::Empty), false);
 
@@ -50,7 +51,9 @@ public:
 
 	void set_move(int id, Move move);
 
-	std::vector<VersusGame> play_moves()const;
+	void play_moves();
+
+	VersusGame play_moves_not_inplace(void);
 
 	std::vector<Move> get_moves(int id) const;
 	std::vector<Move> get_N_moves(int id, int N) const;
@@ -61,6 +64,6 @@ public:
 	Move get_bestish_move(int id) const; 
 	Move get_best_move(int id) const;
 	std::vector<Move> get_sorted_moves(int id) const;
-	Move something(int N, int id) const;
+	Move best_two_player_move(int N, int id) const;
 	friend class Tetris;
 };

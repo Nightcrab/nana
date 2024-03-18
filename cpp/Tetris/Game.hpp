@@ -72,7 +72,7 @@ public:
 
 	void sonic_drop(const Board board, Piece& piece) const;
 
-	std::array<Game, 10> add_garbage(int lines) const;
+	void add_garbage(int lines, int location);
 
 	int damage_sent(int linesCleared, spinType spinType, bool pc);
 

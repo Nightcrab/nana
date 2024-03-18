@@ -128,24 +128,16 @@ void Game::sonic_drop(const Board board, Piece& piece) const
 	piece.position.y++;
 }
 
-std::array<Game, 10> Game::add_garbage(int lines) const {
-	std::array<Game, 10> out;
+void Game::add_garbage(int lines, int location) {
+	for (int i = 0; i < Board::width; ++i) {
+		auto& column = board.board[i];
 
-	for (int loc = 0; loc < 10; ++loc)
-	{
-		Game temp = *this;
-		for (int i = 0; i < Board::width; ++i) {
-			auto& column = temp.board.board[i];
-			column <<= lines;
+		column <<= lines;
 
-			if (loc != i) {
-				column |= (1 << lines) - 1;
-			}
+		if (location != i) {
+			column |= (1 << lines) - 1;
 		}
-
-		out[loc] = temp;
 	}
-	return out;
 }
 
 // ported from
