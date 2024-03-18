@@ -1,3 +1,6 @@
+#include "rng.hpp"
+#include "Board.hpp"
+
 class ChanceMove {
 public:
 	ChanceMove() {
@@ -12,4 +15,16 @@ public:
 	int p1_garbage_column;
 	int p2_garbage_column;
 
+	Piece p1_next_piece = Piece(PieceType::Empty);
+	Piece p2_next_piece = Piece(PieceType::Empty);
+
+	pptRNG rng1;
+	pptRNG rng2;
+
+	void new_move() {
+		p1_next_piece = rng1.getPiece();
+		p2_next_piece = rng2.getPiece();
+		p1_garbage_column = rng1.GetRand(Board::width);
+		p2_garbage_column = rng2.GetRand(Board::width);
+	};
 };

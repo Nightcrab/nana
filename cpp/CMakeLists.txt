@@ -18,10 +18,12 @@ set(TETRIS_SOURCES
 	"Tetris/Search.hpp"
 	"Tetris/Move.cpp"
 	"Tetris/Move.hpp"
+	"Tetris/EmulationGame.cpp"
+	"Tetris/EmulationGame.hpp"
 )
 
 # Add source to this project's executable.
-add_executable (cfr_tetris "cfr_tetris.cpp" "cfr_tetris.h" ${TETRIS_SOURCES}  )
+add_executable (cfr_tetris "cfr_tetris.cpp" "cfr_tetris.h" ${TETRIS_SOURCES})
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 23)
