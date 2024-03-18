@@ -1,15 +1,21 @@
 #include "rng.hpp"
 #include "Board.hpp"
 
-class ChanceMove {
+class Chance {
 public:
-	ChanceMove() {
+	Chance() {
 		p1_garbage_column = 0;
 		p2_garbage_column = 0;
 	}
-	ChanceMove(int column1, int column2) {
+	Chance(int column1, int column2) {
 		p1_garbage_column = column1;
 		p2_garbage_column = column2;
+	}
+	Chance(int column1, int column2, Chance& c_move) {
+		p1_garbage_column = column1;
+		p2_garbage_column = column2;
+		rng1 = c_move.rng1;
+		rng2 = c_move.rng2;
 	}
 
 	int p1_garbage_column;

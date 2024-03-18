@@ -335,7 +335,7 @@ Move VersusGame::best_two_player_move(int N, int id) const
 			temp.set_move(id, moves[i]);
 			std::vector<VersusGame> played_games; 
 			for (int i = 0; i < Board::width; i++) {
-				temp.c_move = ChanceMove(i, i);
+				temp.c_move = Chance(i, i);
 				temp.play_moves_not_inplace();
 			}
 			for (const auto& played_game : played_games)
@@ -368,7 +368,7 @@ Move VersusGame::best_two_player_move(int N, int id) const
 						temp.set_move(other_id, opponent_move);
 						std::vector<VersusGame> played_games;
 						for (int i = 0; i < Board::width; i++) {
-							temp.c_move = ChanceMove(i, i);
+							temp.c_move = Chance(i, i);
 							temp.play_moves_not_inplace();
 						}
 						for (const auto& played_game : played_games)

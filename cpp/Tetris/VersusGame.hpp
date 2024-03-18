@@ -22,7 +22,7 @@ public:
 	Game p1_game;
 	Game p2_game;
 
-	ChanceMove c_move = ChanceMove();
+	Chance c_move = Chance();
 	Move p1_move = Move(Piece(PieceType::Empty), false);
 	Move p2_move = Move(Piece(PieceType::Empty), false);
 

@@ -17,7 +17,7 @@ public:
 	int combo_length = 0;
 
 	Move move;
-	ChanceMove chance_move;
+	Chance chance_move;
 
 	void set_move(Move move);
 
