@@ -156,6 +156,10 @@ void VersusGame::play_moves()
 			p2_meter = 0;
 		}
 	}
+
+	p1_game.queue.back() = c_move.p1_next_piece.type;
+	p2_game.queue.back() = c_move.p2_next_piece.type;
+	c_move.new_move();
 }
 
 VersusGame VersusGame::play_moves_not_inplace() {

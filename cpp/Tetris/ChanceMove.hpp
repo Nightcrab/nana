@@ -15,11 +15,11 @@ public:
 	int p1_garbage_column;
 	int p2_garbage_column;
 
-	Piece p1_next_piece = Piece(PieceType::Empty);
-	Piece p2_next_piece = Piece(PieceType::Empty);
-
 	pptRNG rng1;
 	pptRNG rng2;
+
+	Piece p1_next_piece = rng1.getPiece();
+	Piece p2_next_piece = rng2.getPiece();
 
 	void new_move() {
 		p1_next_piece = rng1.getPiece();

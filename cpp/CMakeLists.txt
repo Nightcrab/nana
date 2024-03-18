@@ -20,6 +20,7 @@ set(TETRIS_SOURCES
 	"Tetris/Move.hpp"
 	"Tetris/EmulationGame.cpp"
 	"Tetris/EmulationGame.hpp"
+	"Tetris/ChanceMove.hpp"
 )
 
 # Add source to this project's executable.

@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "ChanceMove.hpp"
 
 // analogous to an APM survival mode
 // simulates a versus game with a highly simplified opponent model
@@ -23,4 +24,4 @@ public:
 	void chance_move();
 
 	void play_moves();
-}
+};
