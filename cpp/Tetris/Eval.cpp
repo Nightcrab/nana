@@ -74,11 +74,7 @@ static double logfactorial(double n) {
 	return sum;
 }
 
-double Eval::eval(const Board& board) {
-	return eval(board, false);
-}
-
-double Eval::eval(const Board& board, bool fast)
+double Eval::eval_LUT(const Board& board)
 {
 	if(needs_init)
 	{
@@ -227,6 +223,73 @@ double Eval::eval(const Board& board, bool fast)
 		double LUT_K = std::max((double)frequency, 3.0);
 		score += f_k * log(LUT_K) - logfactorial(f_k);
 	}
+
+	return score;
+}
+
+
+static bool is_top_quarter(const Board& board) {
+	// do NOT touch anything this vectorizes
+	constexpr uint32_t top_quarter_collider = (1 << 15) - 1;
+
+	bool ret = false;
+
+	for (size_t x = 0; x < Board::width; x++) {
+		if (board.get_column(x) & top_quarter_collider)
+			ret = true;
+	}
+	return ret;
+}
+
+static bool is_top_half(const Board& board) {
+	// do NOT touch anything this vectorizes
+	constexpr uint32_t top_half_collider = (1 << 10) - 1;
+
+	bool ret = false;
+
+	for (size_t x = 0; x < Board::width; x++) {
+		if (board.get_column(x) & top_half_collider)
+			ret = true;
+	}
+	return ret;
+}
+
+
+static int n_cavities(const Board& board) {
+	int count = 0;
+
+	Board shifted_board = board;
+
+	for (int i = 0; i < Board::width; ++i)
+	{
+		auto& col = shifted_board.board[i];
+		col >>= 1;
+		col = ~col;
+		col &= board.board[i];
+	}
+
+	for (int i = 0; i < Board::width; ++i) {
+		count += std::popcount(shifted_board.board[i]);
+	}
+
+	return count;
+}
+
+double Eval::eval_CC(const Board& board) {
+
+	constexpr auto top_half = -150.0;
+	constexpr auto top_quarter = -511.0;
+	constexpr auto cavity_cells = -173.0;
+
+	double score = 0.0;
+
+	if (is_top_half(board))
+		score += top_half;
+
+	if (is_top_quarter(board))
+		score += top_quarter;
+
+	score += n_cavities(board) * cavity_cells;
 
 	return score;
 }

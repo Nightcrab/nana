@@ -389,7 +389,7 @@ Move Game::get_best_piece() const {
 	{
 		Board temp_board = board;
 		temp_board.set(piece);
-		double score = Eval::eval(temp_board);
+		double score = Eval::eval_LUT(temp_board);
 
 		total_score += score;
 		max_score = std::max(max_score, score);
@@ -397,7 +397,7 @@ Move Game::get_best_piece() const {
 	}
 
 	// try the null move
-	const double null_score = Eval::eval(board);
+	const double null_score = Eval::eval_LUT(board);
 	{
 		total_score += null_score;
 		max_score = std::max(max_score, null_score);
@@ -497,7 +497,7 @@ Move Game::get_bestish_piece() const {
 	{
 		Board temp_board = board;
 		temp_board.set(piece);
-		double score = Eval::eval(temp_board);
+		double score = Eval::eval_LUT(temp_board);
 
 		total_score += score;
 		max_score = std::max(max_score, score);
@@ -505,7 +505,7 @@ Move Game::get_bestish_piece() const {
 	}
 
 	// try the null move
-	const double null_score = Eval::eval(board);
+	const double null_score = Eval::eval_LUT(board);
 	{
 		total_score += null_score;
 		max_score = std::max(max_score, null_score);
@@ -603,7 +603,7 @@ std::vector<Move> Game::get_sorted_moves()const {
 	{
 		Board temp_board = board;
 		temp_board.set(piece);
-		double score = Eval::eval(temp_board);
+		double score = Eval::eval_LUT(temp_board);
 
 		moves.emplace_back(score, piece);
 	}

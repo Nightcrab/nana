@@ -3,8 +3,7 @@
 #include "Board.hpp"
 
 
-
 namespace Eval {
-	double eval(const Board& board);
-	double eval(const Board& board, bool fast);
+	double eval_LUT(const Board& board);
+	double eval_CC(const Board& board);
 };

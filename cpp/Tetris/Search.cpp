@@ -70,8 +70,8 @@ Move Search::monte_carlo_best_move(const VersusGame& game, int threads, int samp
 			if (outcome == NONE) {
 				avg.first++;
 
-				double e1 = Eval::eval(sim_game.get_game(id).board);
-				double e2 = Eval::eval(sim_game.get_game(o_id).board);
+				double e1 = Eval::eval_LUT(sim_game.get_game(id).board);
+				double e2 = Eval::eval_LUT(sim_game.get_game(o_id).board);
 
 				double app = sim_game.get_app(id);
 

@@ -94,7 +94,7 @@ private:
 		}
 
 		auto board = Board();
-		Eval::eval(board);
+		Eval::eval_LUT(board);
 		return true;
 	}
 	bool OnUserUpdate(float fElapsedTime) override

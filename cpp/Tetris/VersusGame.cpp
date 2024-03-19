@@ -405,8 +405,8 @@ Move VersusGame::best_two_player_move(int N, int id) const
 			else {
 				Board board = id == 0 ? game.p1_game.board : game.p2_game.board;
 				Board other_board = id == 0 ? game.p2_game.board : game.p1_game.board;
-				double our_eval = Eval::eval(board);
-				double their_eval = Eval::eval(other_board);
+				double our_eval = Eval::eval_LUT(board);
+				double their_eval = Eval::eval_LUT(other_board);
 
 				score += (our_eval - their_eval) / (our_eval + their_eval);
 			}
