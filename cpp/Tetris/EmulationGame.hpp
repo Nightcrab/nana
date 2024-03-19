@@ -7,6 +7,8 @@ class EmulationGame {
 public:
 	Game game;
 
+	int garbage_meter;
+
 	// can be set if the opponent already has some B2B
 	float multiplier = 1.0;
 
@@ -17,7 +19,7 @@ public:
 	int combo_length = 0;
 
 	Move move;
-	Chance chance_move;
+	Chance chance;
 
 	void set_move(Move move);
 

@@ -21,6 +21,8 @@ public:
 	int p1_garbage_column;
 	int p2_garbage_column;
 
+	int garbage_amount;
+
 	pptRNG rng1;
 	pptRNG rng2;
 
@@ -32,5 +34,6 @@ public:
 		p2_next_piece = rng2.getPiece();
 		p1_garbage_column = rng1.GetRand(Board::width);
 		p2_garbage_column = rng2.GetRand(Board::width);
+		garbage_amount = rng1.GetRand(4);
 	};
 };
