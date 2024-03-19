@@ -6,7 +6,8 @@
 class UCT {
 public:
 	int workers = 4;
-	std::unordered_map<int, UCTNode> hash_table;
+
+	std::vector<std::unordered_map<int, UCTNode>> hash_tables;
 
 	bool nodeExists(int workerID, int nodeID);
 
