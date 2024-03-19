@@ -22,6 +22,15 @@ class UCTNode {
 public:
 	float R;
 	int N;
+	int ID;
 
-	std::vector<UCTNode> children;
+	std::vector<UCTEdge> moves;
+};
+
+
+class UCTEdge {
+	float R;
+	int N;
+
+	std::vector<UCTNode> outcomes;
 };
