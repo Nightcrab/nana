@@ -60,10 +60,5 @@ public:
 
 	Outcomes get_winner() const;
 
-
-	Move get_bestish_move(int id) const; 
-	Move get_best_move(int id) const;
-	std::vector<Move> get_sorted_moves(int id) const;
-	Move best_two_player_move(int N, int id) const;
 	friend class Tetris;
 };

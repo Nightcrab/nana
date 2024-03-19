@@ -82,11 +82,6 @@ public:
 
 	std::vector<Piece> get_possible_piece_placements() const;
 
-	Move get_best_piece() const;
-	Move get_bestish_piece() const;
-	std::vector<Move> get_sorted_moves() const;
-
-
 	Board board;
 	Piece current_piece;
 	std::optional<Piece> hold;
