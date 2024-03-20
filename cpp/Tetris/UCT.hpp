@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <unordered_map>
 #include "rng.hpp"
+#include "EmulationGame.hpp"
+#include "Move.hpp"
 
 class UCT;
 
@@ -16,9 +18,17 @@ public:
 	std::vector<UCTNode> children;
 
 	UCTNode nodeSelect();
-	UCTNode edgeSelect(RNG rng);
 };
 
+// state + action
+class UCTEdge : UCTNode {
+	Move action;
+	UCTNode edgeSelect(RNG rng);
+	
+	void rollout();
+};
+
+// one of these shared by all threads
 class UCT {
 public:
 	int workers = 4;
@@ -33,7 +43,6 @@ public:
 	UCTNode getNode(int workerID, int nodeID) {
 		return nodes[nodeID % workers].at(nodeID);
 	};
-
 
 	void updateNode(int workerID, int edgeID, float R) {
 		int ownerID = edgeID % workers;
@@ -59,3 +68,11 @@ public:
 	};
 };
 
+namespace Search{
+
+	std::atomic_bool searching = false;
+
+	void startSearch(EmulationGame state);
+
+	void endSearch();
+}
