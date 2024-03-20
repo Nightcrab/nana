@@ -23,8 +23,8 @@ public:
 
 	int garbage_amount;
 
-	pptRNG rng1;
-	pptRNG rng2;
+	RNG rng1;
+	RNG rng2;
 
 	Piece p1_next_piece = rng1.getPiece();
 	Piece p2_next_piece = rng2.getPiece();
@@ -32,8 +32,8 @@ public:
 	void new_move() {
 		p1_next_piece = rng1.getPiece();
 		p2_next_piece = rng2.getPiece();
-		p1_garbage_column = rng1.GetRand(Board::width);
-		p2_garbage_column = rng2.GetRand(Board::width);
-		garbage_amount = rng1.GetRand(4);
+		p1_garbage_column = rng1.getRand(Board::width);
+		p2_garbage_column = rng2.getRand(Board::width);
+		garbage_amount = rng1.getRand(4);
 	};
 };

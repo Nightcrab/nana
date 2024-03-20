@@ -8,9 +8,9 @@
 
 
 
-class pptRNG {
+class RNG {
 public:
-    pptRNG() {
+    RNG() {
         PPTRNG = std::random_device()();
         makebag();
     }
@@ -19,7 +19,7 @@ public:
     uint8_t bagiterator;
 
     PieceType getPiece();
-    u32 GetRand(u32 upperBound);
+    u32 getRand(u32 upperBound);
 
     void makebag();
 

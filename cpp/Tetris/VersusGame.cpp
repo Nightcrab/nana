@@ -230,16 +230,16 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 	out.reserve(N);
 
 	// make sure not to sample the same move twice
-	pptRNG rng;
+	RNG rng;
 
 	std::set<int> sampled_indices;
 
 	for (int i = 0; i < N; i++)
 	{
-		int index = rng.GetRand(moves.size());
+		int index = rng.getRand(moves.size());
 		while (sampled_indices.find(index) != sampled_indices.end())
 		{
-			index = rng.GetRand(moves.size());
+			index = rng.getRand(moves.size());
 		}
 
 		sampled_indices.insert(index);

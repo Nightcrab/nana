@@ -1,14 +1,14 @@
 #include "rng.hpp"
 
 
-PieceType pptRNG::getPiece() {
+PieceType RNG::getPiece() {
 	if (bagiterator == 7) {
 		makebag();
 	}
 	return bag[bagiterator++];
 }
 
-u32 pptRNG::GetRand(u32 upperBound)
+u32 RNG::getRand(u32 upperBound)
 {
 
 	PPTRNG = PPTRNG * 0x5d588b65 + 0x269ec3;
@@ -19,7 +19,7 @@ u32 pptRNG::GetRand(u32 upperBound)
 	return uVar1;
 }
 
-void pptRNG::makebag()
+void RNG::makebag()
 {
 	bagiterator = 0;
 	u32 buffer = 0;
@@ -35,7 +35,7 @@ void pptRNG::makebag()
 	};
 
 	for (int_fast8_t i = 6; i >= 0; i--) {
-		buffer = GetRand(i + 1);
+		buffer = getRand(i + 1);
 		bag[i] = pieces[buffer];
 		std::swap(pieces[buffer], pieces[i]);
 	}

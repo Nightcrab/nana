@@ -26,8 +26,8 @@ public:
 	}
 private:
 	VersusGame game;
-	pptRNG player_1_rng;
-	pptRNG player_2_rng;
+	RNG player_1_rng;
+	RNG player_2_rng;
 
 	void renderBoard(Game& game, int x_offset)
 	{

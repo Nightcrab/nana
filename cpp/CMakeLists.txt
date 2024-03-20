@@ -20,7 +20,9 @@ set(TETRIS_SOURCES
 	"Tetris/EmulationGame.cpp"
 	"Tetris/EmulationGame.hpp"
 	"Tetris/ChanceMove.hpp"
- "Tetris/UCT.cpp")
+	"Tetris/UCT.cpp"
+	"Tetris/UCT.hpp"
+)
 
 # Add source to this project's executable.
 add_executable (cfr_tetris "cfr_tetris.cpp" "cfr_tetris.h" ${TETRIS_SOURCES})
