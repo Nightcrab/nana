@@ -8,24 +8,22 @@
 
 class UCT;
 
+class Action {
+public:
+	Move move;
+	int R;
+	int N;
+};
+
 // state
 class UCTNode {
 public:
-	float R;
-	int N;
 	int ID;
+	int N;
 
-	std::vector<UCTNode> children;
+	std::vector<Action> actions;
 
-	UCTNode nodeSelect();
-};
-
-// state + action
-class UCTEdge : UCTNode {
-	Move action;
-	UCTNode edgeSelect(RNG rng);
-	
-	void rollout();
+	Action select();
 };
 
 // one of these shared by all threads
@@ -36,13 +34,11 @@ public:
 	std::vector<std::unordered_map<int, UCTNode>> nodes;
 	std::vector<RNG> rng;
 
-	bool nodeExists(int workerID, int nodeID);
+	bool nodeExists(int nodeID);
 
-	UCTNode getNode(int workerID, int nodeID);
+	UCTNode getNode(int nodeID);
 
-	void updateNode(int workerID, int edgeID, float R);
-
-	void insertNode(int workerID, int nodeID, UCTNode node);
+	void insertNode(int nodeID, UCTNode node);
 };
 
 namespace Search{
