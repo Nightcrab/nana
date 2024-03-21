@@ -19,7 +19,7 @@ set(TETRIS_SOURCES
 	"Tetris/Move.hpp"
 	"Tetris/EmulationGame.cpp"
 	"Tetris/EmulationGame.hpp"
-	"Tetris/ChanceMove.hpp"
+	"Tetris/Chance.hpp"
 	"Tetris/UCT.cpp"
 	"Tetris/UCT.hpp"
 	"Tetris/Search.cpp"
