@@ -1,5 +1,6 @@
+#pragma once
 #include "Game.hpp"
-#include "ChanceMove.hpp"
+#include "Chance.hpp"
 
 // analogous to an APM survival mode
 // simulates a versus game with a highly simplified opponent model

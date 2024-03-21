@@ -22,6 +22,8 @@ set(TETRIS_SOURCES
 	"Tetris/ChanceMove.hpp"
 	"Tetris/UCT.cpp"
 	"Tetris/UCT.hpp"
+	"Tetris/Search.cpp"
+	"Tetris/Search.hpp"
 )
 
 # Add source to this project's executable.

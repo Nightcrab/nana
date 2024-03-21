@@ -2,7 +2,7 @@
 #include "Game.hpp"
 #include "Piece.hpp"
 #include "Move.hpp"
-#include "ChanceMove.hpp"
+#include "Chance.hpp"
 
 #include <optional>
 #include <vector>

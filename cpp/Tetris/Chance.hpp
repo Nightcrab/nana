@@ -1,3 +1,4 @@
+#pragma once
 #include "rng.hpp"
 #include "Board.hpp"
 

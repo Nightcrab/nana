@@ -29,6 +29,10 @@ public:
 // one of these shared by all threads
 class UCT {
 public:
+	UCT(int workers) {
+		this->workers = workers;
+	}
+
 	int workers = 4;
 
 	std::vector<std::unordered_map<int, UCTNode>> nodes;
@@ -40,12 +44,3 @@ public:
 
 	void insertNode(int nodeID, UCTNode node);
 };
-
-namespace Search{
-
-	std::atomic_bool searching = false;
-
-	void startSearch(EmulationGame state);
-
-	void endSearch();
-}
