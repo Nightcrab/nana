@@ -36,6 +36,10 @@ void Search::search(int threadIdx) {
 		if (!searching) {
 			return;
 		}
+
+		// Thread waits here until something is in the queue
+		// Master thread is required to spawn SELECT jobs from the root
+		// otherwise we risk deadlock
 		Job job = queues[threadIdx]->dequeue();
 		if (job.type == SELECT) {
 			EmulationGame state = job.state;
@@ -48,6 +52,7 @@ void Search::search(int threadIdx) {
 
 				// Virtual Loss by setting N := N+1
 				node.N += 1;
+
 				// todo: pass actions by reference so we don't have to do this
 				node.actions[action.id].N += 1;
 
@@ -76,9 +81,9 @@ void Search::search(int threadIdx) {
 					actions.push_back(Action(Move(raw_action, false)));
 				}
 
+				// Virtual Loss by setting node_N := 1
 				UCTNode node = UCTNode(actions, hash, 1);
 
-				// Virtual Loss by setting node_N := 1
 				uct.insertNode(hash, node);
 
 				float reward = rollout(state);
