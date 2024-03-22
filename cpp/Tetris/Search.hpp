@@ -5,22 +5,27 @@
 #include "EmulationGame.hpp"
 #include "Move.hpp"
 #include "UCT.hpp"
+#include "MPSC.hpp"
 
 
 namespace Search {
 
 	std::atomic_bool searching = false;
 
+	int core_count = 4;
+
 	UCT search_tree = UCT(4);
 
 	EmulationGame root_state;
+
+	zib::wait_mpsc_queue<Job>* queues[256];
 
 	void startSearch(EmulationGame state, int core_count);
 
 	void endSearch();
 
-	void search();
+	void search(int threadIdx);
 
 	// See the best move found so far.
 	Move bestMove();
-}
+};
