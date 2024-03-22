@@ -11,9 +11,12 @@ void Search::startSearch(EmulationGame state, int core_count) {
 	// Create new search tree
 	uct = UCT(core_count);
 
+	// Create root node
+	uct.insertNode(UCTNode(state));
+
 	// Initialise worker queues
 	for (int i = 0; i < core_count; i++) {
-		queues[i] = new zib::wait_mpsc_queue<Job>(core_count);
+		queues[i] = new zib::wait_mpsc_queue<Job>(core_count + 1);
 	}
 
 	// Thread indices
@@ -23,6 +26,16 @@ void Search::startSearch(EmulationGame state, int core_count) {
 
 	// Spawn worker threads
 	std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), search);
+
+	int rootOwnerIdx = uct.getOwner(state.hash());
+
+	// Spawn 3*N jobs
+	for (int i = 0; i < 3 * core_count; i++) {
+
+		Job select_job = Job(root_state, SELECT);
+
+		queues[rootOwnerIdx]->enqueue(select_job, core_count);
+	}
 };
 
 
@@ -68,23 +81,11 @@ void Search::search(int threadIdx) {
 				Job select_job = Job(0.0, state, SELECT, job.path);
 
 				queues[ownerIdx]->enqueue(select_job, threadIdx);
-			}
-			else {
-				// We handle movegen to create the new node
-				std::vector<Piece> raw_actions = state.game.get_possible_piece_placements();
+			} else {
+				// Virtual Loss handled automatically by constructor
+				UCTNode node = UCTNode(job.state);
 
-				std::vector<Action> actions;
-				actions.reserve(raw_actions.size());
-
-				for (auto& raw_action : raw_actions) {
-					actions.push_back(Action(Move(raw_action, true)));
-					actions.push_back(Action(Move(raw_action, false)));
-				}
-
-				// Virtual Loss by setting node_N := 1
-				UCTNode node = UCTNode(actions, hash, 1);
-
-				uct.insertNode(hash, node);
+				uct.insertNode(node);
 
 				float reward = rollout(state);
 
@@ -100,6 +101,17 @@ void Search::search(int threadIdx) {
 			}
 		}
 		else if (job.type == BACKPROP) {
+
+			if (job.path.empty()) {
+
+				// start a new search iteration
+				Job select_job = Job(root_state, SELECT, job.path);
+
+				queues[threadIdx]->enqueue(select_job, threadIdx);
+
+				continue;
+			}
+
 			UCTNode node = uct.getNode(job.state.hash());
 
 			float reward = job.R;

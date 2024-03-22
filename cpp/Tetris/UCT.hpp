@@ -25,6 +25,7 @@ public:
 // state
 class UCTNode {
 public:
+	UCTNode(EmulationGame state);
 	UCTNode(std::vector<Action> actions, int ID, int N) {
 		for (int i = 0; i < actions.size(); i++) {
 			actions[i].id = i;
@@ -66,6 +67,18 @@ public:
 		this->type = SELECT;
 		this->path = std::stack<HashActionPair>();
 	};
+	Job(EmulationGame state, JobType type) {
+		this->R = 0.0;
+		this->state = state;
+		this->type = type;
+		this->path = std::stack<HashActionPair>();
+	};
+	Job(EmulationGame state, JobType type, std::stack<HashActionPair> path) {
+		this->R = 0.0;
+		this->state = state;
+		this->type = type;
+		this->path = path;
+	};
 	Job(float R, EmulationGame state, JobType type, std::stack<HashActionPair> path) {
 		this->R = R;
 		this->state = state;
@@ -98,7 +111,7 @@ public:
 
 	UCTNode getNode(int nodeID);
 
-	void insertNode(int nodeID, UCTNode node);
+	void insertNode(UCTNode node);
 
 	int getOwner(int hash);
 };

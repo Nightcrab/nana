@@ -2,6 +2,24 @@
 #include "MPSC.hpp"
 
 
+UCTNode::UCTNode(EmulationGame state) {
+	std::vector<Piece> raw_actions = state.game.get_possible_piece_placements();
+
+	std::vector<Action> actions;
+	actions.reserve(raw_actions.size());
+
+	for (auto& raw_action : raw_actions) {
+		actions.push_back(Action(Move(raw_action, true)));
+		actions.push_back(Action(Move(raw_action, false)));
+	}
+
+	this->actions = actions;
+
+	this->ID = state.hash();
+
+	this->N = 1;
+};
+
 Action UCTNode::select() {
 	Action& best_action = actions[0];
 	float highest_priority = -1.0;
@@ -27,11 +45,8 @@ UCTNode UCT::getNode(int nodeID) {
 	return nodes[nodeID % workers].at(nodeID);
 };
 
-
-void UCT::insertNode(int nodeID, UCTNode node) {
-	int ownerID = nodeID % workers;
-
-	nodes[nodeID % workers].insert({ nodeID, node });
+void UCT::insertNode(UCTNode node) {
+	nodes[node.ID % workers].insert({ node.ID, node });
 };
 
 int UCT::getOwner(int hash) {
