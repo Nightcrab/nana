@@ -27,4 +27,6 @@ public:
 	void chance_move();
 
 	void play_moves();
+
+	int hash();
 };

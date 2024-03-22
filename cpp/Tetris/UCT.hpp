@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <stack>
 #include <algorithm>
 #include <unordered_map>
 #include "rng.hpp"
@@ -18,17 +19,36 @@ public:
 	Move move;
 	float R;
 	int N;
+	int id;
 };
 
 // state
 class UCTNode {
 public:
+	UCTNode(std::vector<Action> actions, int ID, int N) {
+		for (int i = 0; i < actions.size(); i++) {
+			actions[i].id = i;
+		}
+		this->actions = actions;
+		this->ID = ID;
+		this->N = N;
+	}
 	int ID;
 	int N;
 
 	std::vector<Action> actions;
 
 	Action select();
+};
+
+class HashActionPair {
+public:
+	HashActionPair(int hash, Action action) {
+		this->hash = hash;
+		this->action = action;
+	}
+	int hash;
+	Action action;
 };
 
 
@@ -40,8 +60,23 @@ enum JobType {
 
 class Job {
 public:
+	Job() {
+		this->R = 0.0;
+		this->state = EmulationGame();
+		this->type = SELECT;
+		this->path = std::stack<HashActionPair>();
+	};
+	Job(float R, EmulationGame state, JobType type, std::stack<HashActionPair> path) {
+		this->R = R;
+		this->state = state;
+		this->type = type;
+		// for going backwards
+		this->path = path;
+	};
 	float R;
+	EmulationGame state;
 	JobType type;
+	std::stack<HashActionPair> path;
 };
 
 
@@ -64,4 +99,6 @@ public:
 	UCTNode getNode(int nodeID);
 
 	void insertNode(int nodeID, UCTNode node);
+
+	int getOwner(int hash);
 };

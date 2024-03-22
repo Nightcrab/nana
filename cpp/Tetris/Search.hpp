@@ -14,7 +14,7 @@ namespace Search {
 
 	int core_count = 4;
 
-	UCT search_tree = UCT(4);
+	UCT uct = UCT(4);
 
 	EmulationGame root_state;
 
@@ -25,6 +25,8 @@ namespace Search {
 	void endSearch();
 
 	void search(int threadIdx);
+
+	float rollout(EmulationGame state);
 
 	// See the best move found so far.
 	Move bestMove();

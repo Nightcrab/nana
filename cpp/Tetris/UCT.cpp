@@ -34,3 +34,6 @@ void UCT::insertNode(int nodeID, UCTNode node) {
 	nodes[nodeID % workers].insert({ nodeID, node });
 };
 
+int UCT::getOwner(int hash) {
+	return hash % workers;
+}

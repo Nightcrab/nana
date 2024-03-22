@@ -11,3 +11,7 @@ void EmulationGame::chance_move() {
 void EmulationGame::play_moves() {
 	// garbage meter and cancelling calculation and whatnot
 };
+
+int EmulationGame::hash() {
+	return 0;
+}
