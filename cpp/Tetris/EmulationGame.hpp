@@ -28,5 +28,7 @@ public:
 
 	void play_moves();
 
+	std::vector<Move> legal_moves();
+
 	int hash();
 };

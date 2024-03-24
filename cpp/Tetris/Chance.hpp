@@ -24,6 +24,8 @@ public:
 
 	int garbage_amount;
 
+	RNG rng;
+
 	RNG rng1;
 	RNG rng2;
 

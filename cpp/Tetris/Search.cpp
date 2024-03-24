@@ -1,7 +1,9 @@
 #include "Search.hpp"
+#include "Distribution.hpp"
+#include "Eval.hpp"
 #include <numeric>
 #include <execution>
-#include "Distribution.hpp"
+#include <ranges>
 
 
 void Search::startSearch(EmulationGame state, int core_count) {
@@ -88,7 +90,7 @@ void Search::search(int threadIdx) {
 
 				uct.insertNode(node);
 
-				float reward = rollout(state);
+				float reward = rollout(state, threadIdx);
 
 				int parent_hash = job.path.top().hash;
 
@@ -134,7 +136,7 @@ void Search::search(int threadIdx) {
 }
 
 
-float Search::rollout(EmulationGame state) {
+float Search::rollout(EmulationGame state, int threadIdx) {
 
 	// Rollout using a square-of-rank policy distribution.
 
@@ -142,9 +144,41 @@ float Search::rollout(EmulationGame state) {
 
 	for (int i = 0; i < monte_carlo_depth; i++) {
 
+		// todo: create a UCTNode and take legal moves from that
+		std::vector<Move> moves = state.legal_moves();
+
+		std::vector<Stochastic<Move>> policy;
+
+		policy.reserve(moves.size());
+
+		for (auto& move : moves) {
+			// raw scores
+			policy.push_back(Stochastic<Move>(move, Eval::eval_CC(state.game, move)));
+		}
+
+		std::ranges::sort(policy, [](const Stochastic<Move>& a, const Stochastic<Move>& b)
+		{
+			return a.probability > b.probability;
+		});
+
+		// square of rank
+
+		for (int i = policy.size() - 1; i >= 0; i--) {
+			policy[i].probability = i * i;
+		}
+
+		Distribution::normalise(policy);
+
+		Move sample = Distribution::sample(policy, uct.rng[threadIdx]);
+
+		state.set_move(sample);
+		state.chance_move();
+		state.play_moves();
+
+		reward += Eval::eval_CC(state.game.board);
 	}
 
-	return 0.0;
+	return reward;
 }
 
 

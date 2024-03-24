@@ -6,21 +6,38 @@
 template <typename T>
 class Stochastic {
 public:
-	float probability = 0;
+	Stochastic(T value, float probability) {
+		this->value = value;
+		this->probability = probability;
+	}
+
 	T value;
+	float probability = 0;
 };
 
 namespace Distribution {
+
 	std::vector<float> normalise(std::vector<float> vec) {
 		float sum = 0;
-		std::vector<float> out;
-		out.reserve(vec.size());
 		for (auto el : vec) {
 			sum += el;
 		}
 
+		for (auto& el : vec) {
+			el = el / sum;
+		}
+		return vec;
+	}
+
+	template <typename T>
+	std::vector<Stochastic<T>> normalise(std::vector<Stochastic<T>> vec) {
+		float sum = 0;
 		for (auto el : vec) {
-			out.push_back(el / sum);
+			sum += el.probability;
+		}
+
+		for (auto& el : vec) {
+			el.probability = el.probability / sum;
 		}
 		return out;
 	}
