@@ -1,4 +1,6 @@
 #include "Eval.hpp"
+#include "Game.hpp"
+#include "Move.hpp"
 #include "Board.hpp"
 
 #include <fstream>
@@ -292,4 +294,9 @@ double Eval::eval_CC(const Board& board) {
 	score += n_cavities(board) * cavity_cells;
 
 	return score;
+}
+
+double Eval::eval_CC(Game game, Move move) {
+	game.place_piece(move.piece);
+	return eval_CC(game.board);
 }

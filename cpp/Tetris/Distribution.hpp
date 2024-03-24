@@ -4,7 +4,7 @@
 #include "RNG.hpp"
 
 template <typename T>
-class RandomEvent {
+class Stochastic {
 public:
 	float probability = 0;
 	T value;
@@ -26,8 +26,8 @@ namespace Distribution {
 	}
 
 	template <typename T>
-	T sample(std::vector<RandomEvent<T>> pdf, RNG rng) {
-		std::ranges::sort(pdf, [](const RandomEvent<T>& a, const RandomEvent<T>& b)
+	T sample(std::vector<Stochastic<T>> pdf, RNG rng) {
+		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b)
 		{
 			return a.probability > b.probability;
 		});

@@ -38,26 +38,9 @@ void VersusGame::play_moves()
 	int p1_cleared_lines = 0;
 	// player 1 move
 	if (!p1_move.second()) {
-		if (p1_move.first().type != p1_game.current_piece.type)
-		{
-			if (p1_game.hold) {
-				std::swap(p1_game.hold.value(), p1_game.current_piece);
-			}
-			else {
-				p1_game.hold = p1_game.current_piece;
-				// shift queue
-				p1_game.current_piece = p1_game.queue.front();
-
-				std::ranges::shift_left(p1_game.queue, 1);
-
-				p1_game.queue.back() = PieceType::Empty;
-			}
-		}
-
-		p1_game.current_piece = p1_move.first();
 		spinType spin = p1_game.current_piece.spin;
 
-		p1_game.place_piece();
+		p1_game.place_piece(p1_move.first());
 		p1_cleared_lines = p1_game.board.clearLines();
 
 		bool pc = true;
@@ -85,26 +68,9 @@ void VersusGame::play_moves()
 	int p2_cleared_lines = 0;
 	// player 2 move
 	if (!p2_move.second()) {
-		if (p2_move.first().type != p2_game.current_piece.type) {
-			if (p2_game.hold) {
-				std::swap(p2_game.hold.value(), p2_game.current_piece);
-			}
-			else {
-				p2_game.hold = p2_game.current_piece;
-				// shift queue
-				p2_game.current_piece = p2_game.queue.front();
-
-				std::ranges::shift_left(p2_game.queue, 1);
-
-				p2_game.queue.back() = PieceType::Empty;
-			}
-		}
-
-
-		p2_game.current_piece = p2_move.first();
 		spinType spin = p2_game.current_piece.spin;
 
-		p2_game.place_piece();
+		p2_game.place_piece(p2_move.first());
 		p2_cleared_lines = p2_game.board.clearLines();
 
 		bool pc = true;
