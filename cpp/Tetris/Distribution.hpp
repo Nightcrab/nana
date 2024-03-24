@@ -39,7 +39,7 @@ namespace Distribution {
 		for (auto& el : vec) {
 			el.probability = el.probability / sum;
 		}
-		return out;
+		return vec;
 	}
 
 	template <typename T>
