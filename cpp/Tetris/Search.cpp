@@ -1,6 +1,7 @@
 #include "Search.hpp"
 #include <numeric>
 #include <execution>
+#include "Distribution.hpp"
 
 
 void Search::startSearch(EmulationGame state, int core_count) {
@@ -134,6 +135,15 @@ void Search::search(int threadIdx) {
 
 
 float Search::rollout(EmulationGame state) {
+
+	// Rollout using a square-of-rank policy distribution.
+
+	float reward = 0;
+
+	for (int i = 0; i < monte_carlo_depth; i++) {
+
+	}
+
 	return 0.0;
 }
 

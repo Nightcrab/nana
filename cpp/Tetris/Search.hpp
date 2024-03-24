@@ -14,6 +14,8 @@ namespace Search {
 
 	int core_count = 4;
 
+	int monte_carlo_depth = 2;
+
 	UCT uct = UCT(4);
 
 	EmulationGame root_state;
