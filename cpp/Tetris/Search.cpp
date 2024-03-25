@@ -163,8 +163,11 @@ float Search::rollout(EmulationGame state, int threadIdx) {
 
 		// square of rank
 
+		int r = 1;
+
 		for (int i = policy.size() - 1; i >= 0; i--) {
-			policy[i].probability = i * i;
+			policy[i].probability = r * r;
+			r++;
 		}
 
 		Distribution::normalise(policy);
