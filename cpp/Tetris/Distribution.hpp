@@ -56,5 +56,6 @@ namespace Distribution {
 				return event.value;
 			}
 		}
+        // warning! control reaches end of non-void function
 	}
 }
