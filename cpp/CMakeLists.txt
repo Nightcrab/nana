@@ -27,11 +27,27 @@ set(TETRIS_SOURCES
 	"Tetris/Distribution.hpp"
 )
 
+
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    find_package(OpenGL REQUIRED)
+    find_package(PNG REQUIRED)
+    if(CMAKE_CXX_FLAGS_RELEASE)
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=x86-64-v3")
+    endif()
+endif()
+
 # Add source to this project's executable.
 add_executable (cfr_tetris "cfr_tetris.cpp" "cfr_tetris.h" ${TETRIS_SOURCES})
 
+if(UNIX AND NOT APPLE)
+    target_include_directories(cfr_tetris PRIVATE ${X11_INCLUDE_DIR} ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR})
+
+    target_link_libraries(cfr_tetris ${X11_LIBRARIES} ${OPENGL_LIBRARIES} ${PNG_LIBRARY})
+endif()
+
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 23)
+  set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 20)
 endif()
 
 # TODO: Add tests and install targets if needed.
