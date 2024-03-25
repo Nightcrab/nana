@@ -1,7 +1,8 @@
 #pragma once
-#include <vector>
 #include <ranges>
-#include "RNG.hpp"
+#include <vector>
+
+#include "rng.hpp"
 
 template <typename T>
 class Stochastic {

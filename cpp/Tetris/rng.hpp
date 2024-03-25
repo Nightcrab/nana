@@ -1,15 +1,14 @@
 #pragma once
 
-#include <array>
 #include <algorithm>
-#include <utility>
+#include <array>
 #include <random>
+#include <utility>
+
 #include "TetrisConstants.hpp"
 
-
-
 class RNG {
-public:
+   public:
     RNG() {
         PPTRNG = std::random_device()();
         makebag();
@@ -22,5 +21,4 @@ public:
     u32 getRand(u32 upperBound);
 
     void makebag();
-
 };

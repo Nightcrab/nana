@@ -6,7 +6,6 @@
 #include <map>
 #include <random>
 #include <tuple>
-#include <bit>
 
 void Game::place_piece() {
     board.set(current_piece);
@@ -19,24 +18,23 @@ void Game::place_piece() {
 }
 
 void Game::place_piece(Piece& piece) {
-	if (piece.type != current_piece.type) {
-		if (hold) {
-			std::swap(hold.value(), current_piece);
-		}
-		else {
-			hold = current_piece;
-			// shift queue
-			current_piece = queue.front();
+    if (piece.type != current_piece.type) {
+        if (hold) {
+            std::swap(hold.value(), current_piece);
+        } else {
+            hold = current_piece;
+            // shift queue
+            current_piece = queue.front();
 
-			std::ranges::shift_left(queue, 1);
+            std::ranges::shift_left(queue, 1);
 
-			queue.back() = PieceType::Empty;
-		}
-	}
+            queue.back() = PieceType::Empty;
+        }
+    }
 
-	current_piece = piece;
+    current_piece = piece;
 
-	place_piece();
+    place_piece();
 }
 
 bool Game::collides(const Board& board, const Piece& piece) const {
@@ -266,8 +264,8 @@ void Game::process_movement(Piece& piece, Movement movement) const {
         case Movement::SonicDrop:
             sonic_drop(board, piece);
             break;
-        //default:
-            //std::unreachable();
+            // default:
+            // std::unreachable();
     }
 }
 
