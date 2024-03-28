@@ -9,7 +9,15 @@ void EmulationGame::chance_move() {
 };
 
 void EmulationGame::play_moves(){
-    // garbage meter and cancelling calculation and whatnot
+    if (game_over) {
+        return;
+    }
+
+    if (game.collides(game.board, move.first())) {
+        //std::cout << "game lasted: " << turn << std::endl;
+        game_over = true;
+        return;
+    }
 };
 
 std::vector<Move> EmulationGame::legal_moves() {

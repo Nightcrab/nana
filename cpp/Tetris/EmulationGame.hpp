@@ -2,13 +2,15 @@
 #include "Chance.hpp"
 #include "Game.hpp"
 
+#include <stack>
+
 // analogous to an APM survival mode
 // simulates a versus game with a highly simplified opponent model
 class EmulationGame {
    public:
     Game game;
 
-    int garbage_meter;
+    std::stack<int> garbage_meter;
 
     // can be set if the opponent already has some B2B
     float multiplier = 1.0;
@@ -21,6 +23,8 @@ class EmulationGame {
 
     Move move;
     Chance chance;
+
+    bool game_over = false;
 
     void set_move(Move move);
 
