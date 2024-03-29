@@ -259,6 +259,53 @@ static int n_cavities(const Board& board) {
     return count;
 }
 
+static std::pair<int, int> height_features(const Board& board) {
+
+    // air is the complement of height
+
+    int max_air = -1;
+    int second_max_air = -1;
+
+    for (int i = 0; i < Board::width; ++i) {
+        auto& col = board.board[i];
+        int air = std::countl_zero(col);
+        if (air > max_air) {
+            second_max_air = max_air;
+            max_air = air;
+        }
+    }
+
+    if (second_max_air == -1) {
+        second_max_air = max_air;
+    }
+
+    // garbage height, and well depth
+
+    return { 32 - max_air - 1, max_air - second_max_air};
+}
+
+// Identify clean count to 4
+static bool ct4(const Board& board) {
+
+    int garbage_height = height_features(board).first;
+    int well_depth = height_features(board).second;
+
+    if (well_depth != 4) {
+        return false;
+    }
+
+    for (int i = 0; i < Board::width; ++i) {
+        if (!board.get(i, garbage_height)) {
+            // check we have exactly 4 rows filled above this hole
+            if (std::countl_zero(board.board[i]) != 28 - garbage_height) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 double Eval::eval_CC(const Board& board) {
     constexpr auto top_half = -150.0;
     constexpr auto top_quarter = -511.0;

@@ -25,7 +25,8 @@ class Board {
     int get(size_t x, size_t y) const {
         return (board[x] & (1 << y)) != 0;
     }
-    int get_column(size_t x) const {
+
+    uint32_t get_column(size_t x) const {
         return board[x];
     }
 
