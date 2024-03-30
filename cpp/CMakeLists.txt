@@ -5,21 +5,22 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/game)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/game/engine)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/bot)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/util)
 
 
 set(TETRIS_SOURCES
-	"Tetris/game/Board.hpp"
+	"Tetris/game/engine/Board.hpp"
     "Tetris/util/fasthash.h"
     "Tetris/util/fasthash.cpp"
-	"Tetris/game/Game.cpp"
-	"Tetris/game/Game.hpp"
-	"Tetris/game/Piece.cpp"
-	"Tetris/game/Piece.hpp"
+	"Tetris/game/engine/Game.cpp"
+	"Tetris/game/engine/Game.hpp"
+	"Tetris/game/engine/Piece.cpp"
+	"Tetris/game/engine/Piece.hpp"
 	"Tetris/util/rng.cpp"
 	"Tetris/util/rng.hpp"
-	"Tetris/game/TetrisConstants.hpp"
+	"Tetris/game/engine/TetrisConstants.hpp"
 	"Tetris/game/VersusGame.cpp"
 	"Tetris/game/VersusGame.hpp"
 	"Tetris/bot/Eval.cpp"
