@@ -2,7 +2,7 @@
 #include "Chance.hpp"
 #include "Game.hpp"
 
-#include <stack>
+#include <queue>
 
 // analogous to an APM survival mode
 // simulates a versus game with a highly simplified opponent model
@@ -10,7 +10,7 @@ class EmulationGame {
    public:
     Game game;
 
-    std::stack<int> garbage_meter;
+    std::queue<int> garbage_meter;
 
     // can be set if the opponent already has some B2B
     float multiplier = 1.0;
@@ -34,5 +34,5 @@ class EmulationGame {
 
     std::vector<Move> legal_moves();
 
-    int hash();
+    uint32_t hash();
 };

@@ -4,6 +4,8 @@
 
 set(TETRIS_SOURCES
 	"Tetris/Board.hpp"
+    "Tetris/fasthash.h"
+    "Tetris/fasthash.cpp"
 	"Tetris/Game.cpp"
 	"Tetris/Game.hpp"
 	"Tetris/Piece.cpp"
