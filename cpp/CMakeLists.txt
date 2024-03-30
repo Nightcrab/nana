@@ -2,33 +2,40 @@
 # project specific logic here.
 #
 
-set(TETRIS_SOURCES
-	"Tetris/Board.hpp"
-    "Tetris/fasthash.h"
-    "Tetris/fasthash.cpp"
-	"Tetris/Game.cpp"
-	"Tetris/Game.hpp"
-	"Tetris/Piece.cpp"
-	"Tetris/Piece.hpp"
-	"Tetris/rng.cpp"
-	"Tetris/rng.hpp"
-	"Tetris/TetrisConstants.hpp"
-	"Tetris/VersusGame.cpp"
-	"Tetris/VersusGame.hpp"
-	"Tetris/Eval.cpp"
-	"Tetris/Eval.hpp"
-	"Tetris/Move.cpp"
-	"Tetris/Move.hpp"
-	"Tetris/EmulationGame.cpp"
-	"Tetris/EmulationGame.hpp"
-	"Tetris/Chance.hpp"
-	"Tetris/UCT.cpp"
-	"Tetris/UCT.hpp"
-	"Tetris/Search.cpp"
-	"Tetris/Search.hpp"
-	"Tetris/Distribution.hpp"
-)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/game)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/bot)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/util)
 
+
+set(TETRIS_SOURCES
+	"Tetris/game/Board.hpp"
+    "Tetris/util/fasthash.h"
+    "Tetris/util/fasthash.cpp"
+	"Tetris/game/Game.cpp"
+	"Tetris/game/Game.hpp"
+	"Tetris/game/Piece.cpp"
+	"Tetris/game/Piece.hpp"
+	"Tetris/util/rng.cpp"
+	"Tetris/util/rng.hpp"
+	"Tetris/game/TetrisConstants.hpp"
+	"Tetris/game/VersusGame.cpp"
+	"Tetris/game/VersusGame.hpp"
+	"Tetris/bot/Eval.cpp"
+	"Tetris/bot/Eval.hpp"
+	"Tetris/game/Move.cpp"
+	"Tetris/game/Move.hpp"
+	"Tetris/game/EmulationGame.cpp"
+	"Tetris/game/EmulationGame.hpp"
+	"Tetris/game/Chance.hpp"
+	"Tetris/bot/UCT.cpp"
+	"Tetris/bot/UCT.hpp"
+	"Tetris/bot/Search.cpp"
+	"Tetris/bot/Search.hpp"
+	"Tetris/util/Distribution.hpp"
+	"Tetris/util/MPSC.hpp"
+)
 
 if(UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)

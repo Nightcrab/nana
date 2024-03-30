@@ -2,12 +2,12 @@
 //
 #include "cfr_tetris.h"
 
-#include "Tetris/Board.hpp"
-#include "Tetris/Eval.hpp"
-#include "Tetris/Game.hpp"
-#include "Tetris/Piece.hpp"
-#include "Tetris/VersusGame.hpp"
-#include "Tetris/rng.hpp"
+#include "Board.hpp"
+#include "Eval.hpp"
+#include "Game.hpp"
+#include "Piece.hpp"
+#include "VersusGame.hpp"
+#include "rng.hpp"
 
 #define OLC_PGE_APPLICATION
 #include "OLC/olcPixelGameEngine.h"
