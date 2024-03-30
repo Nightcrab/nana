@@ -125,10 +125,16 @@ void Game::shift(Piece& piece, int dir) const {
 }
 
 void Game::sonic_drop(const Board board, Piece& piece) const {
-    while (!collides(board, piece)) {
-        piece.position.y--;
+    int distance = 32;
+    for (auto& mino : piece.minos) {
+        int height = (mino.y + piece.position.y);
+
+        height -= 32 - std::countl_zero(board.board[mino.x + piece.position.x]);
+
+        distance = std::min(distance, height);
     }
-    piece.position.y++;
+
+    piece.position.y -= distance;
 }
 
 void Game::add_garbage(int lines, int location) {
