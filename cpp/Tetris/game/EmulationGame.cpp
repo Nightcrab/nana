@@ -48,7 +48,7 @@ void EmulationGame::play_moves(){
 
     // zero pass through
     if (chance.garbage_amount > 0) {
-        //garbage_meter.push(chance.garbage_amount);
+        garbage_meter.push(chance.garbage_amount);
     }
 
     int damage = game.damage_sent(cleared_lines, spin, pc);
