@@ -19,7 +19,7 @@ public:
 	Move move;
 	float R;
 	int N;
-	int id;
+	uint32_t id;
 };
 
 // state
@@ -34,7 +34,7 @@ public:
 		this->ID = ID;
 		this->N = N;
 	}
-	int ID;
+	uint32_t ID;
 	int N;
 
 	std::vector<Action> actions;
@@ -48,7 +48,7 @@ public:
 		this->hash = hash;
 		this->action = action;
 	}
-	int hash;
+	uint32_t hash;
 	Action action;
 };
 
@@ -107,11 +107,11 @@ public:
 	std::vector<std::unordered_map<int, UCTNode>> nodes;
 	std::vector<RNG> rng;
 
-	bool nodeExists(int nodeID);
+	bool nodeExists(uint32_t nodeID);
 
-	UCTNode getNode(int nodeID);
+	UCTNode getNode(uint32_t nodeID);
 
 	void insertNode(UCTNode node);
 
-	int getOwner(int hash);
+	uint32_t getOwner(uint32_t hash);
 };

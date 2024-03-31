@@ -8,6 +8,7 @@
 #include "Piece.hpp"
 #include "VersusGame.hpp"
 #include "EmulationGame.hpp"
+#include "Search.hpp"
 #include "rng.hpp"
 
 #define OLC_PGE_APPLICATION
@@ -224,6 +225,14 @@ private:
             game.play_moves();
         }
 
+        if (GetKey(olc::Key::P).bPressed) {
+            Search::startSearch(game, 1);
+        }
+
+        if (GetKey(olc::Key::Q).bPressed) {
+            Search::endSearch();
+        }
+        
         if (GetKey(olc::Key::R).bPressed) {
             game = EmulationGame();
 

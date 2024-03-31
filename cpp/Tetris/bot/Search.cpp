@@ -7,10 +7,24 @@
 #include "Distribution.hpp"
 #include "Eval.hpp"
 
+std::atomic_bool Search::searching = false;
+
+int Search::core_count = 4;
+
+int Search::monte_carlo_depth = 2;
+
+UCT Search::uct = UCT(4);
+
+EmulationGame Search::root_state;
+
+zib::wait_mpsc_queue<Job>* Search::queues[256];
+
 void Search::startSearch(EmulationGame state, int core_count) {
     searching = true;
 
     Search::core_count = core_count;
+
+    root_state = state;
 
     // Create new search tree
     uct = UCT(core_count);
@@ -28,9 +42,6 @@ void Search::startSearch(EmulationGame state, int core_count) {
 
     std::iota(indices.begin(), indices.end(), 0);
 
-    // Spawn worker threads
-    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), search);
-
     int rootOwnerIdx = uct.getOwner(state.hash());
 
     // Spawn 3*N jobs
@@ -39,6 +50,9 @@ void Search::startSearch(EmulationGame state, int core_count) {
 
         queues[rootOwnerIdx]->enqueue(select_job, core_count);
     }
+
+    // Spawn worker threads
+    std::for_each(std::execution::par, indices.begin(), indices.end(), search);
 };
 
 void Search::endSearch() {
@@ -58,7 +72,7 @@ void Search::search(int threadIdx) {
         if (job.type == SELECT) {
             EmulationGame state = job.state;
 
-            int hash = state.hash();
+            uint32_t hash = state.hash();
 
             if (uct.nodeExists(hash)) {
                 UCTNode node = uct.getNode(hash);
@@ -72,10 +86,12 @@ void Search::search(int threadIdx) {
 
                 state.set_move(action.move);
 
-                int new_hash = state.hash();
+                state.play_moves();
+
+                uint32_t new_hash = state.hash();
 
                 // Get the owner of the updated state based on the hash
-                int ownerIdx = uct.getOwner(new_hash);
+                uint32_t ownerIdx = uct.getOwner(new_hash);
 
                 job.path.push(HashActionPair(hash, action));
 
@@ -90,9 +106,9 @@ void Search::search(int threadIdx) {
 
                 float reward = rollout(state, threadIdx);
 
-                int parent_hash = job.path.top().hash;
+                uint32_t parent_hash = job.path.top().hash;
 
-                int parentIdx = uct.getOwner(parent_hash);
+                uint32_t parentIdx = uct.getOwner(parent_hash);
 
                 job.path.pop();
 
@@ -117,9 +133,9 @@ void Search::search(int threadIdx) {
             // Undo Virtual Loss by adding R
             node.actions[job.path.top().action.id].R += reward;
 
-            int parent_hash = job.path.top().hash;
+            uint32_t parent_hash = job.path.top().hash;
 
-            int parentIdx = uct.getOwner(parent_hash);
+            uint32_t parentIdx = uct.getOwner(parent_hash);
 
             job.path.pop();
 
@@ -166,7 +182,6 @@ float Search::rollout(EmulationGame state, int threadIdx) {
         Move sample = Distribution::sample(policy, uct.rng[threadIdx]);
 
         state.set_move(sample);
-        state.chance_move();
         state.play_moves();
 
         reward += Eval::eval_CC(state.game.board);

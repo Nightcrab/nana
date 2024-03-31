@@ -7,20 +7,21 @@
 #include "UCT.hpp"
 #include "MPSC.hpp"
 
-
+#ifndef __SEARCH_HPP
+#define __SEARCH_HPP
 namespace Search {
 
-	std::atomic_bool searching = false;
+	extern std::atomic_bool searching;
 
-	int core_count = 4;
+	extern int core_count;
 
-	int monte_carlo_depth = 2;
+	extern int monte_carlo_depth;
 
-	UCT uct = UCT(4);
+	extern UCT uct;
 
-	EmulationGame root_state;
+	extern EmulationGame root_state;
 
-	zib::wait_mpsc_queue<Job>* queues[256];
+	extern zib::wait_mpsc_queue<Job>* queues[256];
 
 	void startSearch(EmulationGame state, int core_count);
 
@@ -33,3 +34,4 @@ namespace Search {
 	// See the best move found so far.
 	Move bestMove();
 };
+#endif
