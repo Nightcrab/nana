@@ -10,7 +10,7 @@ class EmulationGame {
    public:
     Game game;
 
-    std::queue<int> garbage_meter;
+    std::vector<int> garbage_meter;
 
     // can be set if the opponent already has some B2B
     float multiplier = 1.0;

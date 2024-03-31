@@ -237,6 +237,7 @@ private:
         renderPiece(game.game, 0);
         renderBoard(game.game, 0);
         renderHold(game.game, 0);
+        renderMeter(std::accumulate(game.garbage_meter.begin(), game.garbage_meter.end(), 0), 25 * 10);
 
         return true;
     }
