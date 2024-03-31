@@ -21,6 +21,7 @@ void Game::do_hold() {
 
     if (hold) {
         std::swap(hold.value(), current_piece);
+        current_piece = Piece(current_piece.type);
     }
     else {
         hold = current_piece;

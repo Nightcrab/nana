@@ -179,12 +179,9 @@ private:
         game = EmulationGame();
 
         game.game.current_piece = game.chance.rng.getPiece();
-        std::cout << (int) game.game.current_piece.type << std::endl;
 
         for (auto& piece_type : game.game.queue) {
-
             piece_type = game.chance.rng.getPiece();
-            std::cout << (int) piece_type << std::endl;
         }
         return true;
     }
