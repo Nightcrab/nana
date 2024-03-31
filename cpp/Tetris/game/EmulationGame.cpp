@@ -28,7 +28,9 @@ void EmulationGame::play_moves(){
     // but we need to keep track of combo and b2b because cancelling
 
     spinType spin = move.piece.spin;
-    game.place_piece(move.piece);
+    if (!move.null_move) {
+        game.place_piece(move.piece);
+    }
     int cleared_lines = game.board.clearLines();
 
     bool pc = true;
@@ -38,27 +40,62 @@ void EmulationGame::play_moves(){
         }
     }
 
+    // you can't pc by doing nothing lol
+    if (move.null_move) {
+        pc = false;
+    }
+
+    // zero pass through
+    if (chance.garbage_amount > 0) {
+        garbage_meter.push(chance.garbage_amount);
+    }
+
     int damage = game.damage_sent(cleared_lines, spin, pc);
 
     // cancel damage but never send cause the opponent doesnt exist
-    if (garbage_meter.size() > 0) {
-        while (damage > 0 && garbage_meter.size() > 0) {
-            int &incoming = garbage_meter.front();
+    while (damage > 0 && garbage_meter.size() > 0) {
+        int &incoming = garbage_meter.front();
 
-            if (incoming >= damage) {
-                incoming -= damage;
-                damage = 0;
-            } else {
-                damage -= incoming;
-                incoming = 0;
-            }
+        if (incoming >= damage) {
+            incoming -= damage;
+            damage = 0;
+        } else {
+            damage -= incoming;
+            incoming = 0;
+        }
+
+        if (incoming == 0) {
+            garbage_meter.pop();
+        }
+
+    }
+
+    // combo block
+    if (cleared_lines == 0) {
+
+        int garbage_used = 0;
+
+        // place garbage
+        while (garbage_meter.size() > 0) {
+            int& incoming = garbage_meter.front();
+
+            int garbage = std::min(incoming, 8 - garbage_used);
+
+            game.add_garbage(garbage, chance.get_garbage_column());
+
+            incoming -= garbage;
 
             if (incoming == 0) {
                 garbage_meter.pop();
             }
 
+            if (garbage_used == 8) {
+                break;
+            }
         }
     }
+
+    chance_move();
 };
 
 std::vector<Move> EmulationGame::legal_moves() {

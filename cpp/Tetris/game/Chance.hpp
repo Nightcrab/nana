@@ -32,6 +32,12 @@ class Chance {
     Piece p1_next_piece = rng1.getPiece();
     Piece p2_next_piece = rng2.getPiece();
 
+    int get_garbage_column() {
+        int ret = p1_garbage_column;
+        p1_garbage_column = rng1.getRand(Board::width);
+        return ret;
+    }
+
     void new_move() {
         p1_next_piece = rng1.getPiece();
         p2_next_piece = rng2.getPiece();
