@@ -17,6 +17,21 @@ void Game::place_piece() {
     queue.back() = PieceType::Empty;
 }
 
+void Game::do_hold() {
+
+    if (hold) {
+        std::swap(hold.value(), current_piece);
+    }
+    else {
+        hold = current_piece;
+
+        // shift queue
+        current_piece = queue.front();
+
+        std::shift_left(queue.begin(), queue.end(), 1);
+    }
+}
+
 void Game::place_piece(Piece& piece) {
     if (piece.type != current_piece.type) {
         if (hold) {
@@ -127,11 +142,17 @@ void Game::shift(Piece& piece, int dir) const {
 void Game::sonic_drop(const Board board, Piece& piece) const {
     int distance = 32;
     for (auto& mino : piece.minos) {
-        int height = (mino.y + piece.position.y);
 
-        height -= 32 - std::countl_zero(board.board[mino.x + piece.position.x]);
+        int mino_height = mino.y + piece.position.y;
 
-        distance = std::min(distance, height);
+        uint32_t column = board.board[mino.x + piece.position.x];
+
+        if (column && mino_height != 0) {
+            int air = 32 - mino_height;
+            mino_height -= 32 - std::countl_zero((column << air) >> air);
+        }
+
+        distance = std::min(distance, mino_height);
     }
 
     piece.position.y -= distance;

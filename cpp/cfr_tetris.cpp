@@ -7,10 +7,12 @@
 #include "Game.hpp"
 #include "Piece.hpp"
 #include "VersusGame.hpp"
+#include "EmulationGame.hpp"
 #include "rng.hpp"
 
 #define OLC_PGE_APPLICATION
 #include "OLC/olcPixelGameEngine.h"
+#include <numeric>
 
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 25 * 32;
@@ -21,7 +23,7 @@ class Tetris : public olc::PixelGameEngine {
         sAppName = "Tetris";
     }
 
-   private:
+   protected:
     VersusGame game;
     RNG player_1_rng;
     RNG player_2_rng;
@@ -107,6 +109,7 @@ class Tetris : public olc::PixelGameEngine {
                 std::swap(game.p1_game.hold.value(), game.p1_game.current_piece);
             } else {
                 game.p1_game.hold = game.p1_game.current_piece;
+
                 // shift queue
                 game.p1_game.current_piece = game.p1_game.queue.front();
 
@@ -164,8 +167,92 @@ class Tetris : public olc::PixelGameEngine {
     }
 };
 
+class Firetris : public Tetris {
+public:
+    Firetris() {
+        sAppName = "Firetris";
+    }
+private:
+    EmulationGame game;
+
+    bool OnUserCreate() override {
+        game = EmulationGame();
+
+        game.game.current_piece = game.chance.rng.getPiece();
+        std::cout << (int) game.game.current_piece.type << std::endl;
+
+        for (auto& piece_type : game.game.queue) {
+
+            piece_type = game.chance.rng.getPiece();
+            std::cout << (int) piece_type << std::endl;
+        }
+        return true;
+    }
+    bool OnUserUpdate(float fElapsedTime) override {
+        // fill the screen with black
+        Clear(olc::BLUE);
+        // for manually playing as player 1
+        bool hard_drop = GetKey(olc::Key::V).bPressed;
+        bool move_left = GetKey(olc::Key::LEFT).bPressed;
+        bool sonic_drop = GetKey(olc::Key::DOWN).bPressed;
+        bool move_right = GetKey(olc::Key::RIGHT).bPressed;
+        bool rotate_right = GetKey(olc::Key::D).bPressed;
+        bool rotate_left = GetKey(olc::Key::S).bPressed;
+        bool hold = GetKey(olc::Key::UP).bPressed;
+
+        if (move_left)
+            game.game.process_movement(game.game.current_piece, Movement::Left);
+
+        if (move_right)
+            game.game.process_movement(game.game.current_piece, Movement::Right);
+
+        if (rotate_right)
+            game.game.process_movement(game.game.current_piece, Movement::RotateClockwise);
+
+        if (rotate_left)
+            game.game.process_movement(game.game.current_piece, Movement::RotateCounterClockwise);
+
+        if (hold) {
+            game.game.do_hold();
+        }
+
+        if (sonic_drop) {
+            game.game.process_movement(game.game.current_piece, Movement::SonicDrop);
+        }
+
+        if (hard_drop) {
+            game.game.process_movement(game.game.current_piece, Movement::SonicDrop);
+            game.set_move(Move(game.game.current_piece, false));
+
+            game.play_moves();
+        }
+
+        if (GetKey(olc::Key::R).bPressed) {
+            game = EmulationGame();
+
+            game.game.current_piece = game.chance.rng.getPiece();
+
+            for (auto& piece_type : game.game.queue) {
+                piece_type = game.chance.rng.getPiece();
+            }
+        }
+
+        renderPiece(game.game, 0);
+        renderBoard(game.game, 0);
+        renderHold(game.game, 0);
+
+        return true;
+    }
+};
+
 int main() {
+    /*
     Tetris gamer;
+    if (gamer.Construct(SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1))
+        gamer.Start();
+    */
+
+    Firetris gamer;
     if (gamer.Construct(SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1))
         gamer.Start();
 

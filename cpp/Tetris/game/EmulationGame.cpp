@@ -1,6 +1,7 @@
 #include "EmulationGame.hpp"
 
 #include "fasthash.h"
+#include <iostream>
 void EmulationGame::set_move(Move move) {
     this->move = move;
 };
@@ -47,7 +48,7 @@ void EmulationGame::play_moves(){
 
     // zero pass through
     if (chance.garbage_amount > 0) {
-        garbage_meter.push(chance.garbage_amount);
+        //garbage_meter.push(chance.garbage_amount);
     }
 
     int damage = game.damage_sent(cleared_lines, spin, pc);
@@ -94,6 +95,10 @@ void EmulationGame::play_moves(){
             }
         }
     }
+
+    game.queue.back() = chance.rng.getPiece();
+
+    std::cout << (int) game.queue.back() << std::endl;
 
     chance_move();
 };

@@ -7,6 +7,7 @@ class Chance {
     Chance() {
         p1_garbage_column = 0;
         p2_garbage_column = 0;
+        new_move();
     }
     Chance(int column1, int column2) {
         p1_garbage_column = column1;
@@ -29,8 +30,8 @@ class Chance {
     RNG rng1;
     RNG rng2;
 
-    Piece p1_next_piece = rng1.getPiece();
-    Piece p2_next_piece = rng2.getPiece();
+    PieceType p1_next_piece;
+    PieceType p2_next_piece;
 
     int get_garbage_column() {
         int ret = p1_garbage_column;

@@ -62,6 +62,8 @@ class Game {
 
     void place_piece(Piece& piece);
 
+    void do_hold();
+
     bool collides(const Board& board, const Piece& piece) const;
 
     void rotate(Piece& piece, TurnDirection dir) const;
