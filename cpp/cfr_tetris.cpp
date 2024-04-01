@@ -258,7 +258,7 @@ private:
             // square of rank
 
             for (int rank = 1; rank <= policy.size(); rank++) {
-                float prob = 1 / (rank * rank);
+                float prob = 1.0 / (rank * rank);
                 SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
                 cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
             }

@@ -7,11 +7,18 @@
 #include "UCT.hpp"
 #include "MPSC.hpp"
 
+enum SearchType {
+	CC,
+	NANA
+};
+
 #ifndef __SEARCH_HPP
 #define __SEARCH_HPP
 namespace Search {
 
 	extern std::atomic_bool searching;
+
+	extern SearchType search_style;
 
 	extern int core_count;
 

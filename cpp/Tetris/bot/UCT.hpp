@@ -20,10 +20,22 @@ public:
 		this->move = move;
 		this->N = 0;
 		this->R = 0;
+		this->prior = 1;
+		this->eval = 0.0;
+		this->id = id;
+	}
+	Action(Move move, uint32_t id, float eval) {
+		this->move = move;
+		this->N = 0;
+		this->R = 0;
+		this->prior = 1;
+		this->eval = eval;
 		this->id = id;
 	}
 	Move move;
 	float R;
+	float prior;
+	float eval;
 	int N;
 	uint32_t id;
 };
@@ -46,6 +58,7 @@ public:
 	std::vector<Action> actions;
 
 	Action& select();
+	Action& select_SOR(RNG rng);
 };
 
 class HashActionPair {
@@ -122,3 +135,4 @@ public:
 
 	uint32_t getOwner(uint32_t hash);
 };
+

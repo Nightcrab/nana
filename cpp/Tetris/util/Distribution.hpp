@@ -47,12 +47,25 @@ namespace Distribution {
 	}
 
 	template <typename T>
+	float max_value(std::vector<Stochastic<T>> vec) {
+		float mx = 0;
+		for (auto el : vec) {
+			mx = std::max(mx, el.value);
+		}
+		return mx;
+	}
+
+	template <typename T>
 	T sample(std::vector<Stochastic<T>> pdf, RNG rng) {
 		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b)
 			{
 				return a.probability > b.probability;
-			});
-		float r = (float)rng.getRand(1 << 16) / (float)(1 << 16);
+		});
+
+		// this is for some reason completely broken
+		int ri = rng.getRand(256);
+		float r = 1.0 * ri;
+		r /= 1.0 * 256;
 		for (auto& event : pdf) {
 			r -= event.probability;
 			if (r < 0) {
@@ -62,6 +75,14 @@ namespace Distribution {
 
 		return pdf[0].value;
 	}
+
+	template <typename T>
+	void sort_des(std::vector<Stochastic<T>> pdf) {
+		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b) {
+			return a.probability > b.probability;
+		});
+	}
+
 
 }
 #endif

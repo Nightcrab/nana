@@ -10,6 +10,8 @@
 
 std::atomic_bool Search::searching = false;
 
+SearchType Search::search_style = NANA;
+
 int Search::core_count = 4;
 
 int Search::monte_carlo_depth = 1;
@@ -113,7 +115,15 @@ void Search::search(int threadIdx) {
                 //std::cout << "Node Exists" << std::endl;
 
                 UCTNode& node = uct.getNode(hash);
-                Action& action = node.select();
+                Action& action = node.actions[0];
+                if (search_style == NANA) {
+
+                    action = node.select();
+                }
+                if (search_style == CC) {
+
+                    action = node.select_SOR(uct.rng[threadIdx]);
+                }
 
                 // Virtual Loss by setting N := N+1
                 node.N += 1;
@@ -184,7 +194,12 @@ void Search::search(int threadIdx) {
             float reward = job.R;
 
             // Undo Virtual Loss by adding R
-            node.actions[job.path.top().actionID].R += reward;
+            if (search_style == NANA) {
+                node.actions[job.path.top().actionID].R += reward;
+            }
+            if (search_style == CC) {
+                node.actions[job.path.top().actionID].R = std::max(reward, node.actions[job.path.top().actionID].R);
+            }
 
             uint32_t parent_hash = job.path.top().hash;
 
@@ -231,16 +246,21 @@ float Search::rollout(EmulationGame state, int threadIdx) {
         // square of rank
 
         for (int rank = 1; rank <= policy.size(); rank++) {
-            float prob = 1 / (rank * rank);
+            float prob = 1.0 / (rank * rank);
             SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
             cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
         }
 
         // rather than eval, the expectation of eval is more stable and basically free,
         // since we already computed eval for all possible boards
-        reward += Distribution::expectation(cc_dist);
+        if (search_style == NANA) {
+            reward += Distribution::expectation(cc_dist);
+        }
+        if (search_style == CC) {
+            reward = std::max(reward, Distribution::max_value(cc_dist));
+        }
 
-        Distribution::normalise(SoR_policy);
+        SoR_policy = Distribution::normalise(SoR_policy);
 
         Move sample = Distribution::sample(SoR_policy, uct.rng[threadIdx]);
 
