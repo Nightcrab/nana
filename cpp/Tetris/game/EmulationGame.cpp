@@ -111,8 +111,8 @@ std::vector<Move> EmulationGame::legal_moves() {
     std::vector<Move> moves;
 
     for (auto& raw_action : raw_actions) {
-        moves.push_back(Move(raw_action, true));
-        //moves.push_back(Move(raw_action, false));
+        //moves.push_back(Move(raw_action, true));
+        moves.push_back(Move(raw_action, false));
     }
 
     return moves;

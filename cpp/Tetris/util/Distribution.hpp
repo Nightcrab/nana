@@ -16,19 +16,13 @@ public:
 	float probability = 0;
 };
 
+#ifndef __DIST_HPP
+#define __DIST_HPP
 namespace Distribution {
 
-	std::vector<float> normalise(std::vector<float> vec) {
-		float sum = 0;
-		for (auto el : vec) {
-			sum += el;
-		}
+	std::vector<float> normalise(std::vector<float> vec);
 
-		for (auto& el : vec) {
-			el = el / sum;
-		}
-		return vec;
-	}
+	float sigmoid(float x);
 
 	template <typename T>
 	std::vector<Stochastic<T>> normalise(std::vector<Stochastic<T>> vec) {
@@ -44,12 +38,21 @@ namespace Distribution {
 	}
 
 	template <typename T>
+	float expectation(std::vector<Stochastic<T>> vec) {
+		float sum = 0;
+		for (auto el : vec) {
+			sum += el.probability * el.value;
+		}
+		return sum;
+	}
+
+	template <typename T>
 	T sample(std::vector<Stochastic<T>> pdf, RNG rng) {
 		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b)
-		{
-			return a.probability > b.probability;
-		});
-		float r = (float) rng.getRand(1 << 16) / (float) (1 << 16);
+			{
+				return a.probability > b.probability;
+			});
+		float r = (float)rng.getRand(1 << 16) / (float)(1 << 16);
 		for (auto& event : pdf) {
 			r -= event.probability;
 			if (r < 0) {
@@ -60,7 +63,5 @@ namespace Distribution {
 		return pdf[0].value;
 	}
 
-	float sigmoid(float x) {
-		return x / (1 + abs(x));
-	}
 }
+#endif

@@ -10,6 +10,7 @@
 #include "EmulationGame.hpp"
 #include "Search.hpp"
 #include "rng.hpp"
+#include "Distribution.hpp"
 
 #define OLC_PGE_APPLICATION
 #include "OLC/olcPixelGameEngine.h"
@@ -230,9 +231,46 @@ private:
                 Search::endSearch();
             }
             else {
-                Search::startSearch(game, 4);
+                Search::startSearch(game, 1);
             }
             
+        }
+
+        if (GetKey(olc::Key::O).bPressed) {
+            std::vector<Move> moves = game.legal_moves();
+
+            std::vector<Stochastic<Move>> policy;
+            std::vector<Stochastic<Move>> SoR_policy;
+            std::vector<Stochastic<float>> cc_dist;
+
+            policy.reserve(moves.size());
+
+            for (auto& move : moves) {
+                // raw scores
+                policy.push_back(Stochastic<Move>(move, Eval::eval_CC(game.game, move)));
+            }
+
+            // sort in descending order
+            std::ranges::sort(policy, [](const Stochastic<Move>& a, const Stochastic<Move>& b) {
+                return a.probability > b.probability;
+                });
+
+            // square of rank
+
+            for (int rank = 1; rank <= policy.size(); rank++) {
+                float prob = 1 / (rank * rank);
+                SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
+                cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
+            }
+
+            std::cout << "expectation of this state was: " << Distribution::expectation(cc_dist) << std::endl;
+
+            Distribution::normalise(SoR_policy);
+
+            Move sample = Distribution::sample(SoR_policy, game.chance.rng);
+
+            game.set_move(sample);
+            game.play_moves();
         }
 
         if (GetKey(olc::Key::Q).bPressed) {

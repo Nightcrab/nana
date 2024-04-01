@@ -36,7 +36,7 @@ set(TETRIS_SOURCES
 	"Tetris/bot/Search.hpp"
 	"Tetris/util/Distribution.hpp"
 	"Tetris/util/MPSC.hpp"
-)
+ "Tetris/util/Distribution.cpp")
 
 if(UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)

@@ -49,11 +49,10 @@ void Search::startSearch(EmulationGame state, int core_count) {
     int rootOwnerIdx = uct.getOwner(state.hash());
 
     // Spawn jobs
-    for (int i = 0; i < 1 * core_count; i++) {
+    for (int i = 0; i < 3 * core_count; i++) {
         Job select_job = Job(EmulationGame(root_state), SELECT);
 
         queues[rootOwnerIdx]->enqueue(select_job, core_count);
-        break;
     }
 
     // Spawn worker threads
@@ -204,11 +203,9 @@ float Search::rollout(EmulationGame state, int threadIdx) {
     // Rollout using a square-of-rank policy distribution.
 
     float reward = 0;
-
     for (int i = 0; i < monte_carlo_depth; i++) {
 
         if (state.game_over) {
-            //std::cout << "rollout result: " << 0.0 << std::endl;
             return 0.0;
         }
 
@@ -216,6 +213,8 @@ float Search::rollout(EmulationGame state, int threadIdx) {
         std::vector<Move> moves = state.legal_moves();
 
         std::vector<Stochastic<Move>> policy;
+        std::vector<Stochastic<Move>> SoR_policy;
+        std::vector<Stochastic<float>> cc_dist;
 
         policy.reserve(moves.size());
 
@@ -224,32 +223,30 @@ float Search::rollout(EmulationGame state, int threadIdx) {
             policy.push_back(Stochastic<Move>(move, Eval::eval_CC(state.game, move)));
         }
 
+        // sort in descending order
         std::ranges::sort(policy, [](const Stochastic<Move>& a, const Stochastic<Move>& b) {
             return a.probability > b.probability;
         });
 
         // square of rank
 
-        int r = 1;
-
-        for (int i = policy.size() - 1; i >= 0; i--) {
-            policy[i].probability = r * r;
-            r++;
+        for (int rank = 1; rank <= policy.size(); rank++) {
+            float prob = 1 / (rank * rank);
+            SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
+            cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
         }
 
-        Distribution::normalise(policy);
+        reward += Distribution::expectation(cc_dist);
 
-        Move sample = Distribution::sample(policy, uct.rng[threadIdx]);
+        Distribution::normalise(SoR_policy);
+
+        Move sample = Distribution::sample(SoR_policy, uct.rng[threadIdx]);
 
         state.set_move(sample);
         state.play_moves();
-
-        reward = Eval::eval_CC(state.game.board);
     }
 
     reward = (Distribution::sigmoid(reward) + 1)/2;
-
-    //std::cout << "rollout result: " << reward << std::endl;
 
     return reward;
 }
