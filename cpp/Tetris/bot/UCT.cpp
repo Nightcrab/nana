@@ -1,5 +1,6 @@
 #include "UCT.hpp"
 #include "MPSC.hpp"
+#include <iostream>
 
 
 UCTNode::UCTNode(EmulationGame state) {
@@ -8,9 +9,11 @@ UCTNode::UCTNode(EmulationGame state) {
 	std::vector<Action> actions;
 	actions.reserve(raw_actions.size() * 2);
 
+	int idx = 0;
+
 	for (auto& raw_action : raw_actions) {
-		actions.push_back(Action(Move(raw_action, true)));
-		actions.push_back(Action(Move(raw_action, false)));
+		actions.push_back(Action(Move(raw_action, false), idx));
+		idx++;
 	}
 
 	this->actions = actions;
@@ -20,12 +23,22 @@ UCTNode::UCTNode(EmulationGame state) {
 	this->N = 1;
 };
 
-Action UCTNode::select() {
+Action& UCTNode::select() {
 	Action& best_action = actions[0];
 	float highest_priority = -1.0;
 	constexpr float c = 1.41421356237;
 
+	//std::cout << "action count: " << actions.size() << std::endl;
+
+	//for (Action& edge : actions) {
+		//std::cout << edge.N << "," << edge.R << " ";
+	//}
+	//std::cout << std::endl;
+
 	for (Action& edge : actions) {
+		if (edge.N == 0) {
+			return edge;
+		}
 		float priority = edge.R / edge.N + c * sqrt(log(N) / edge.N);
 		if (priority > highest_priority) {
 			best_action = edge;
@@ -41,11 +54,12 @@ bool UCT::nodeExists(uint32_t nodeID) {
 };
 
 
-UCTNode UCT::getNode(uint32_t nodeID) {
+UCTNode& UCT::getNode(uint32_t nodeID) {
 	return nodes[nodeID % workers].at(nodeID);
 };
 
 void UCT::insertNode(UCTNode node) {
+	size++;
 	nodes[node.ID % workers].insert({ node.ID, node });
 };
 

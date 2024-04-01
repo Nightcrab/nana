@@ -96,7 +96,11 @@ void EmulationGame::play_moves(){
         }
     }
 
-    game.queue.back() = chance.rng.getPiece();
+    for (auto& piece : game.queue) {
+        if (piece == PieceType::Empty) {
+            piece = chance.rng.getPiece();
+        }
+    }
 
     chance_move();
 };
@@ -108,7 +112,7 @@ std::vector<Move> EmulationGame::legal_moves() {
 
     for (auto& raw_action : raw_actions) {
         moves.push_back(Move(raw_action, true));
-        moves.push_back(Move(raw_action, false));
+        //moves.push_back(Move(raw_action, false));
     }
 
     return moves;
@@ -119,5 +123,8 @@ uint32_t EmulationGame::hash() {
     hash = fasthash32(&move.piece, sizeof(Piece), hash);
     if (game.hold)
         hash = fasthash32(&*game.hold, sizeof(*game.hold), hash);
+    for (int garbage : garbage_meter) {
+        hash = fasthash32(&garbage, sizeof(garbage), hash);
+    }
     return hash;
 }

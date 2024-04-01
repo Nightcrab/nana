@@ -226,11 +226,20 @@ private:
         }
 
         if (GetKey(olc::Key::P).bPressed) {
-            Search::startSearch(game, 1);
+            if (Search::searching) {
+                Search::endSearch();
+            }
+            else {
+                Search::startSearch(game, 4);
+            }
+            
         }
 
         if (GetKey(olc::Key::Q).bPressed) {
             Search::endSearch();
+            game.set_move(Search::bestMove());
+
+            game.play_moves();
         }
         
         if (GetKey(olc::Key::R).bPressed) {

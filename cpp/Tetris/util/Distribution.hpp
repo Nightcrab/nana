@@ -59,4 +59,8 @@ namespace Distribution {
 
 		return pdf[0].value;
 	}
+
+	float sigmoid(float x) {
+		return x / (1 + abs(x));
+	}
 }

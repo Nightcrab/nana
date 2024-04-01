@@ -16,6 +16,12 @@ class UCT;
 
 class Action {
 public:
+	Action(Move move, uint32_t id) {
+		this->move = move;
+		this->N = 0;
+		this->R = 0;
+		this->id = id;
+	}
 	Move move;
 	float R;
 	int N;
@@ -39,17 +45,17 @@ public:
 
 	std::vector<Action> actions;
 
-	Action select();
+	Action& select();
 };
 
 class HashActionPair {
 public:
-	HashActionPair(int hash, Action action) {
+	HashActionPair(int hash, int actionID) {
 		this->hash = hash;
-		this->action = action;
+		this->actionID = actionID;
 	}
 	uint32_t hash;
-	Action action;
+	int actionID;
 };
 
 
@@ -103,13 +109,14 @@ public:
 	}
 
 	int workers = 4;
+	int size = 0;
 
 	std::vector<std::unordered_map<int, UCTNode>> nodes;
 	std::vector<RNG> rng;
 
 	bool nodeExists(uint32_t nodeID);
 
-	UCTNode getNode(uint32_t nodeID);
+	UCTNode& getNode(uint32_t nodeID);
 
 	void insertNode(UCTNode node);
 
