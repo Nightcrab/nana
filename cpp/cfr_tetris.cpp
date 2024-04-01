@@ -231,7 +231,7 @@ private:
                 Search::endSearch();
             }
             else {
-                Search::startSearch(game, 1);
+                Search::startSearch(game, 6);
             }
             
         }

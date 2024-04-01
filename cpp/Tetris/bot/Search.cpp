@@ -236,6 +236,8 @@ float Search::rollout(EmulationGame state, int threadIdx) {
             cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
         }
 
+        // rather than eval, the expectation of eval is more stable and basically free,
+        // since we already computed eval for all possible boards
         reward += Distribution::expectation(cc_dist);
 
         Distribution::normalise(SoR_policy);
@@ -254,10 +256,19 @@ float Search::rollout(EmulationGame state, int threadIdx) {
 Move Search::bestMove() {
 
     int biggest_N = 0;
+    int biggest_R = 0;
     Move best_move;
 
     for (Action& action : uct.getNode(root_state.hash()).actions) {
+        if (action.N == biggest_N) {
+            if (action.R > biggest_R) {
+                biggest_R = action.R;
+                biggest_N = action.N;
+                best_move = action.move;
+            }
+        }
         if (action.N > biggest_N) {
+            biggest_R = action.R;
             biggest_N = action.N;
             best_move = action.move;
         }
