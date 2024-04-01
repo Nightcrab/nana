@@ -21,7 +21,31 @@ UCTNode::UCTNode(EmulationGame state) {
 	this->ID = state.hash();
 
 	this->N = 1;
-};
+}; 
+
+float ln(float x) {
+	unsigned int bx = *(unsigned int*)(&x);
+	unsigned int ex = bx >> 23;
+	signed int t = (signed int)ex - (signed int)127;
+	unsigned int s = (t < 0) ? (-t) : t;
+	bx = 1065353216 | (bx & 8388607);
+	x = *(float*)(&bx);
+	return -1.49278 + (2.11263 + (-0.729104 + 0.10969 * x) * x) * x + 0.6931471806 * t;
+}
+
+float quick_sqrt(const float x)
+{
+	const float xhalf = 0.5f * x;
+
+	union // get bits for floating value
+	{
+		float x;
+		int i;
+	} u;
+	u.x = x;
+	u.i = 0x5f3759df - (u.i >> 1);  // gives initial guess y0
+	return x * u.x * (1.5f - xhalf * u.x * u.x);// Newton step, repeating increases accuracy 
+}
 
 Action& UCTNode::select() {
 	Action& best_action = actions[0];
@@ -39,7 +63,7 @@ Action& UCTNode::select() {
 		if (edge.N == 0) {
 			return edge;
 		}
-		float priority = edge.R / edge.N + c * sqrt(log(N) / edge.N);
+		float priority = edge.R / edge.N + c * quick_sqrt(ln(N) / edge.N);
 		if (priority > highest_priority) {
 			best_action = edge;
 			highest_priority = priority;

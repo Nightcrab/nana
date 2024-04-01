@@ -49,7 +49,7 @@ void Search::startSearch(EmulationGame state, int core_count) {
     int rootOwnerIdx = uct.getOwner(state.hash());
 
     // Spawn jobs
-    for (int i = 0; i < 3 * core_count; i++) {
+    for (int i = 0; i < 6 * core_count; i++) {
         Job select_job = Job(EmulationGame(root_state), SELECT);
 
         queues[rootOwnerIdx]->enqueue(select_job, core_count);
