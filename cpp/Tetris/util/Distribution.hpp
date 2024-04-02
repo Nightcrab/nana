@@ -56,14 +56,13 @@ namespace Distribution {
 	}
 
 	template <typename T>
-	T sample(std::vector<Stochastic<T>> pdf, RNG rng) {
+	T sample(std::vector<Stochastic<T>> pdf, RNG &rng) {
 		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b)
 			{
 				return a.probability > b.probability;
 		});
 
-		// this is for some reason completely broken
-		int ri = rng.getRand(256);
+		uint32_t ri = rng.getRand(256) % 256;
 		float r = 1.0 * ri;
 		r /= 1.0 * 256;
 		for (auto& event : pdf) {
@@ -77,7 +76,7 @@ namespace Distribution {
 	}
 
 	template <typename T>
-	void sort_des(std::vector<Stochastic<T>> pdf) {
+	void sort_des(std::vector<Stochastic<T>> &pdf) {
 		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b) {
 			return a.probability > b.probability;
 		});

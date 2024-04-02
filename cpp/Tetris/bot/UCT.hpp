@@ -58,7 +58,7 @@ public:
 	std::vector<Action> actions;
 
 	Action& select();
-	Action& select_SOR(RNG rng);
+	Action& select_SOR(RNG &rng);
 };
 
 class HashActionPair {
@@ -119,6 +119,10 @@ public:
 		this->workers = workers;
 		this->nodes = std::vector<std::unordered_map<int, UCTNode>>(workers);
 		this->rng = std::vector<RNG>(workers);
+		auto devrng = std::random_device();
+		for (auto& thread_rng : this->rng) {
+			thread_rng.PPTRNG = devrng();
+		}
 	}
 
 	int workers = 4;

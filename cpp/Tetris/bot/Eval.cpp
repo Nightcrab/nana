@@ -389,7 +389,7 @@ double Eval::eval_CC(const Board& board) {
     score += values.second * bumpiness_sq;
 
 
-    return score;
+    return score + 10000;
 }
 
 double Eval::eval_CC(Game game, Move move) {

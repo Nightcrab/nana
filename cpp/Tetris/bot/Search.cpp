@@ -10,7 +10,7 @@
 
 std::atomic_bool Search::searching = false;
 
-SearchType Search::search_style = NANA;
+SearchType Search::search_style = CC;
 
 int Search::core_count = 4;
 
@@ -115,26 +115,27 @@ void Search::search(int threadIdx) {
                 //std::cout << "Node Exists" << std::endl;
 
                 UCTNode& node = uct.getNode(hash);
-                Action& action = node.actions[0];
+                Action* action = &node.actions[0];
                 if (search_style == NANA) {
 
-                    action = node.select();
+                    action = &node.select();
                 }
                 if (search_style == CC) {
 
-                    action = node.select_SOR(uct.rng[threadIdx]);
+                    action = &node.select_SOR(uct.rng[threadIdx]);
                 }
 
                 // Virtual Loss by setting N := N+1
                 node.N += 1;
 
-                action.N += 1;
+                action->N += 1;
 
-                //std::cout << "selected action #" << action.id << std::endl;
+                //std::cout << "selected action #" << action->id << std::endl;
 
-                //std::cout << "action.N: " << action.N << std::endl;
+                //std::cout << "action.N: " << action->N << std::endl;
+                //std::cout << "action.R: " << action->R << std::endl;
 
-                state.set_move(action.move);
+                state.set_move(action->move);
 
                 state.play_moves();
 
@@ -145,7 +146,7 @@ void Search::search(int threadIdx) {
                 // Get the owner of the updated state based on the hash
                 uint32_t ownerIdx = uct.getOwner(new_hash);
 
-                job.path.push(HashActionPair(hash, action.id));
+                job.path.push(HashActionPair(hash, action->id));
 
                 Job select_job = Job(0.0, state, SELECT, job.path);
 
@@ -156,12 +157,20 @@ void Search::search(int threadIdx) {
 
                 uct.insertNode(node);
 
-                Action& action = node.select();
+                Action* action = &node.actions[0];
+                if (search_style == NANA) {
+
+                    action = &node.select();
+                }
+                if (search_style == CC) {
+
+                    action = &node.select_SOR(uct.rng[threadIdx]);
+                }
 
                 node.N += 1;
-                action.N += 1;
+                action->N += 1;
 
-                state.set_move(action.move);
+                state.set_move(action->move);
                 state.play_moves();
 
                 float reward = rollout(state, threadIdx);
@@ -172,7 +181,7 @@ void Search::search(int threadIdx) {
 
                 Job backprop_job = Job(reward, state, BACKPROP, job.path);
 
-                job.path.push(HashActionPair(hash, action.id));
+                job.path.push(HashActionPair(hash, action->id));
 
                 // send rollout reward to parent, who also owns the arm that got here
 
@@ -198,7 +207,8 @@ void Search::search(int threadIdx) {
                 node.actions[job.path.top().actionID].R += reward;
             }
             if (search_style == CC) {
-                node.actions[job.path.top().actionID].R = std::max(reward, node.actions[job.path.top().actionID].R);
+                float new_reward = std::max(reward, node.actions[job.path.top().actionID].R);
+                node.actions[job.path.top().actionID].R = new_reward;
             }
 
             uint32_t parent_hash = job.path.top().hash;
@@ -276,26 +286,35 @@ float Search::rollout(EmulationGame state, int threadIdx) {
 Move Search::bestMove() {
 
     int biggest_N = 0;
-    int biggest_R = 0;
+    float biggest_R = 0;
     Move best_move;
 
     for (Action& action : uct.getNode(root_state.hash()).actions) {
-        if (action.N == biggest_N) {
+        if (search_style == NANA) {
+            if (action.N == biggest_N) {
+                if (action.R > biggest_R) {
+                    biggest_R = action.R;
+                    biggest_N = action.N;
+                    best_move = action.move;
+                }
+            }
+            if (action.N > biggest_N) {
+                biggest_R = action.R;
+                biggest_N = action.N;
+                best_move = action.move;
+            }
+        }
+        if (search_style == CC) {
             if (action.R > biggest_R) {
                 biggest_R = action.R;
                 biggest_N = action.N;
                 best_move = action.move;
             }
         }
-        if (action.N > biggest_N) {
-            biggest_R = action.R;
-            biggest_N = action.N;
-            best_move = action.move;
-        }
 
     }
 
-    std::cout << "best move was visited " << biggest_N << " times" << std::endl;
+    std::cout << "best move was visited " << biggest_N << " times, with reward " << biggest_R << std::endl;
 
     return best_move;
 }

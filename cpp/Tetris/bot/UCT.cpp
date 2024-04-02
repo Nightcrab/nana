@@ -94,7 +94,7 @@ Action& UCTNode::select() {
 }
 
 
-Action& UCTNode::select_SOR(RNG rng) {
+Action& UCTNode::select_SOR(RNG &rng) {
 
 	std::vector<Stochastic<int>> policy;
 
@@ -115,7 +115,7 @@ Action& UCTNode::select_SOR(RNG rng) {
 
 	Action &action = actions[id];
 
-	std::cout << action.id << std::endl;
+	//std::cout << action.id << std::endl;
 
 	return action;
 }
