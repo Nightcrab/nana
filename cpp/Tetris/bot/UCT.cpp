@@ -68,7 +68,7 @@ UCTNode::UCTNode(EmulationGame state) {
 };
 
 Action& UCTNode::select() {
-	Action& best_action = actions[0];
+	Action* best_action = &actions[0];
 	float highest_priority = -1.0;
 	constexpr float c = 1.41421356237;
 
@@ -85,12 +85,12 @@ Action& UCTNode::select() {
 		}
 		float priority = edge.R / edge.N + c * quick_sqrt(ln(N) / edge.N);
 		if (priority > highest_priority) {
-			best_action = edge;
+			best_action = &edge;
 			highest_priority = priority;
 		}
 	}
 
-	return best_action;
+	return *best_action;
 }
 
 

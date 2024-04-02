@@ -10,7 +10,7 @@
 
 std::atomic_bool Search::searching = false;
 
-SearchType Search::search_style = CC;
+SearchType Search::search_style = NANA;
 
 int Search::core_count = 4;
 
@@ -130,10 +130,11 @@ void Search::search(int threadIdx) {
 
                 action->N += 1;
 
-                //std::cout << "selected action #" << action->id << std::endl;
-
-                //std::cout << "action.N: " << action->N << std::endl;
-                //std::cout << "action.R: " << action->R << std::endl;
+                if (hash == root_state.hash()) {
+                    std::cout << "selected action #" << action->id << std::endl;
+                    std::cout << "action.N: " << action->N << std::endl;
+                    std::cout << "action.R: " << action->R << std::endl;
+                }
 
                 state.set_move(action->move);
 
@@ -264,7 +265,7 @@ float Search::rollout(EmulationGame state, int threadIdx) {
         // rather than eval, the expectation of eval is more stable and basically free,
         // since we already computed eval for all possible boards
         if (search_style == NANA) {
-            reward += Distribution::expectation(cc_dist);
+            reward = Distribution::expectation(cc_dist);
         }
         if (search_style == CC) {
             reward = std::max(reward, Distribution::max_value(cc_dist));
@@ -311,10 +312,11 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
         }
+        std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
 
     }
 
-    std::cout << "best move was visited " << biggest_N << " times, with reward " << biggest_R << std::endl;
+    std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N<< std::endl;
 
     return best_move;
 }
