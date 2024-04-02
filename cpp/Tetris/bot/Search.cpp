@@ -10,7 +10,7 @@
 
 std::atomic_bool Search::searching = false;
 
-SearchType Search::search_style = NANA;
+SearchType Search::search_style = CC;
 
 int Search::core_count = 4;
 
@@ -304,19 +304,24 @@ Move Search::bestMove() {
                 biggest_N = action.N;
                 best_move = action.move;
             }
+            std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
         }
         if (search_style == CC) {
             if (action.R > biggest_R) {
                 biggest_R = action.R;
                 biggest_N = action.N;
                 best_move = action.move;
-            }
+            }std::cout << "N:" << action.N << " R_max:" << action.R << std::endl;
         }
-        std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
+        
 
     }
-
-    std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N<< std::endl;
+    if (search_style == NANA) {
+        std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N << std::endl;
+    }
+    if (search_style == CC) {
+        std::cout << "best move was visited " << biggest_N << " times, with R_max " << biggest_R << std::endl;
+    }
 
     return best_move;
 }
