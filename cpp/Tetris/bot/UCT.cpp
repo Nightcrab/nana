@@ -67,17 +67,29 @@ UCTNode::UCTNode(EmulationGame state) {
 	this->N = 1;
 };
 
-Action& UCTNode::select() {
+Action& UCTNode::select_r_max() {
 	Action* best_action = &actions[0];
 	float highest_priority = -1.0;
 	constexpr float c = 1.41421356237;
 
-	//std::cout << "action count: " << actions.size() << std::endl;
+	for (Action& edge : actions) {
+		if (edge.N == 0) {
+			return edge;
+		}
+		float priority = edge.R + c * quick_sqrt(ln(N) / edge.N);
+		if (priority > highest_priority) {
+			best_action = &edge;
+			highest_priority = priority;
+		}
+	}
 
-	//for (Action& edge : actions) {
-		//std::cout << edge.N << "," << edge.R << " ";
-	//}
-	//std::cout << std::endl;
+	return *best_action;
+}
+
+Action& UCTNode::select() {
+	Action* best_action = &actions[0];
+	float highest_priority = -1.0;
+	constexpr float c = 1.41421356237;
 
 	for (Action& edge : actions) {
 		if (edge.N == 0) {
@@ -92,7 +104,6 @@ Action& UCTNode::select() {
 
 	return *best_action;
 }
-
 
 Action& UCTNode::select_SOR(RNG &rng) {
 

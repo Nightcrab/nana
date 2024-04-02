@@ -122,6 +122,7 @@ void Search::search(int threadIdx) {
                 }
                 if (search_style == CC) {
 
+                    //action = &node.select_r_max();
                     action = &node.select_SOR(uct.rng[threadIdx]);
                 }
 
