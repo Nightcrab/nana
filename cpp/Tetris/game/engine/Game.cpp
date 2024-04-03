@@ -304,7 +304,7 @@ std::vector<Piece> Game::movegen(PieceType piece_type) const {
     open_nodes.reserve(150);
     std::vector<Piece> next_nodes;
     next_nodes.reserve(150);
-    std::map<u32, bool> visited;
+    std::vector<bool> visited = std::vector<bool>(6444);
 
     std::vector<Piece> valid_moves;
     valid_moves.reserve(100);
@@ -315,7 +315,7 @@ std::vector<Piece> Game::movegen(PieceType piece_type) const {
     while (open_nodes.size() > 0) {
         // expand edges
         for (auto& piece : open_nodes) {
-            auto h = piece.hash();
+            auto h = piece.compact_hash();
             if (visited[h])
                 continue;
             // mark node as visited

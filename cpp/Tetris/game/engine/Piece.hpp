@@ -38,6 +38,7 @@ class Piece {
     void calculate_rotate(TurnDirection direction);
     void rotate(TurnDirection direction);
     uint32_t hash() const;
+    uint32_t compact_hash() const;
 
     std::array<Coord, 4> minos;
     Coord position;

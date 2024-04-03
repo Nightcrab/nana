@@ -1,6 +1,9 @@
 #include "Piece.hpp"
 
 void Piece::rotate(TurnDirection direction) {
+
+    return calculate_rotate(direction);
+
     int shift;
 
     if (direction == TurnDirection::Left) {
@@ -35,4 +38,8 @@ void Piece::calculate_rotate(TurnDirection direction) {
 
 uint32_t Piece::hash() const {
     return ((int)type << 24) | (position.x << 16) | (position.y << 8) | (rotation);
+}
+
+uint32_t Piece::compact_hash() const {
+    return rotation + position.x * 4 + position.y * 10 * 4 + (int) type * 10 * 20 * 4;
 }
