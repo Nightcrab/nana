@@ -24,7 +24,12 @@ class EmulationGame {
     Move move;
     Chance chance;
 
+    int pieces = 0;
+    int attack = 0;
+
     bool game_over = false;
+
+    float app();
 
     void set_move(Move move);
 

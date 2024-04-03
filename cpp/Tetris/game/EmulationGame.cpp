@@ -31,6 +31,7 @@ void EmulationGame::play_moves(){
     spinType spin = move.piece.spin;
     if (!move.null_move) {
         game.place_piece(move.piece);
+        pieces += 1;
     }
     int cleared_lines = game.board.clearLines();
 
@@ -52,6 +53,8 @@ void EmulationGame::play_moves(){
     }
 
     int damage = game.damage_sent(cleared_lines, spin, pc);
+
+    attack += damage;
 
     // cancel damage but never send cause the opponent doesnt exist
     while (damage > 0 && garbage_meter.size() > 0) {
@@ -127,4 +130,8 @@ uint32_t EmulationGame::hash() {
         hash = fasthash32(&garbage, sizeof(garbage), hash);
     }
     return hash;
+}
+
+float EmulationGame::app() {
+    return (float) attack / (float) pieces;
 }
