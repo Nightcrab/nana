@@ -51,7 +51,7 @@ UCTNode::UCTNode(EmulationGame state) {
 
 	for (int rank = 1; rank <= prior.size(); rank++) {
 		float prob = 1.0 / (rank * rank);
-		prior[rank - 1].probability = prob;
+		prior[rank - 1].probability = prob * 100;
 	}
 
 	prior = normalise(prior);
@@ -70,13 +70,13 @@ UCTNode::UCTNode(EmulationGame state) {
 Action& UCTNode::select_r_max() {
 	Action* best_action = &actions[0];
 	float highest_priority = -1.0;
-	constexpr float c = 1.41421356237;
+	constexpr float c = 1.41421356237 / 10;
 
 	for (Action& edge : actions) {
 		if (edge.N == 0) {
 			return edge;
 		}
-		float priority = edge.R + c * quick_sqrt(ln(N) / edge.N);
+		float priority = edge.R + c * edge.prior * quick_sqrt(ln(N) / edge.N);
 		if (priority > highest_priority) {
 			best_action = &edge;
 			highest_priority = priority;
@@ -89,13 +89,13 @@ Action& UCTNode::select_r_max() {
 Action& UCTNode::select() {
 	Action* best_action = &actions[0];
 	float highest_priority = -1.0;
-	constexpr float c = 1.41421356237;
+	constexpr float c = 1.41421356237 / 20;
 
 	for (Action& edge : actions) {
 		if (edge.N == 0) {
 			return edge;
 		}
-		float priority = edge.R / edge.N + c * quick_sqrt(ln(N) / edge.N);
+		float priority = edge.R / edge.N + c * edge.prior * quick_sqrt(ln(N) / edge.N);
 		if (priority > highest_priority) {
 			best_action = &edge;
 			highest_priority = priority;
@@ -133,7 +133,7 @@ Action& UCTNode::select_SOR(RNG &rng) {
 
 bool UCT::nodeExists(uint32_t nodeID) {
 	return nodes[nodeID % workers].find(nodeID) != nodes[nodeID % workers].end();
-};
+}
 
 
 UCTNode& UCT::getNode(uint32_t nodeID) {

@@ -67,6 +67,11 @@ void Search::startSearch(EmulationGame state, int core_count) {
 void Search::endSearch() {
     searching = false;
 
+    for (int i = 0; i < core_count; i++) {
+        Job stop_job = Job();
+        queues[i]->enqueue(stop_job, core_count);
+    }
+
     std::cout << "stopped searching" << std::endl;
 
     std::cout << "nodes created: " << uct.size << std::endl;
@@ -83,19 +88,19 @@ void Search::search(int threadIdx) {
         // Master thread is required to spawn SELECT jobs from the root
         // otherwise we risk deadlock
         Job job = queues[threadIdx]->dequeue();
+
+        if (job.type == STOP) {
+            return;
+        }
+
         if (job.type == SELECT) {
 
             EmulationGame& state = job.state;
 
             uint32_t hash = state.hash();
 
-            //std::cout << "SELECT" <<  std::endl;
-
-            //std::cout << "state hash: " << hash % 1000 << std::endl;
-
-
             if (state.game_over) {
-                //std::cout << "Game Over" << std::endl;
+
                 float reward = rollout(state, threadIdx);
 
                 Job backprop_job = Job(reward, state, BACKPROP, job.path);
@@ -112,10 +117,10 @@ void Search::search(int threadIdx) {
 
             } 
             if (uct.nodeExists(hash)) {
-                //std::cout << "Node Exists" << std::endl;
 
                 UCTNode& node = uct.getNode(hash);
                 Action* action = &node.actions[0];
+
                 if (search_style == NANA) {
 
                     action = &node.select();
@@ -131,11 +136,6 @@ void Search::search(int threadIdx) {
 
                 action->N += 1;
 
-                if (hash == root_state.hash()) {
-                    std::cout << "selected action #" << action->id << std::endl;
-                    std::cout << "action.N: " << action->N << std::endl;
-                    std::cout << "action.R: " << action->R << std::endl;
-                }
 
                 state.set_move(action->move);
 
@@ -143,19 +143,16 @@ void Search::search(int threadIdx) {
 
                 uint32_t new_hash = state.hash();
 
-                //std::cout << "newstate hash: " << new_hash % 1000 << std::endl;
-
                 // Get the owner of the updated state based on the hash
                 uint32_t ownerIdx = uct.getOwner(new_hash);
 
-                job.path.push(HashActionPair(hash, action->id));
-
                 Job select_job = Job(0.0, state, SELECT, job.path);
+
+                select_job.path.push(HashActionPair(hash, action->id));
 
                 queues[ownerIdx]->enqueue(select_job, threadIdx);
             } else {
-                //std::cout << "Creating Node" << std::endl;
-                UCTNode node = UCTNode(job.state);
+                UCTNode node = UCTNode(state);
 
                 uct.insertNode(node);
 
@@ -183,23 +180,11 @@ void Search::search(int threadIdx) {
 
                 Job backprop_job = Job(reward, state, BACKPROP, job.path);
 
-                job.path.push(HashActionPair(hash, action->id));
-
                 // send rollout reward to parent, who also owns the arm that got here
 
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
             }
         } else if (job.type == BACKPROP) {
-            //std::cout << "BACKPROP" << std::endl;
-            if (job.path.empty()) {
-                // start a new search iteration
-                Job select_job = Job(root_state, SELECT, job.path);
-
-                queues[threadIdx]->enqueue(select_job, threadIdx);
-
-                continue;
-            }
-
             UCTNode& node = uct.getNode(job.path.top().hash);
 
             float reward = job.R;
@@ -209,15 +194,25 @@ void Search::search(int threadIdx) {
                 node.actions[job.path.top().actionID].R += reward;
             }
             if (search_style == CC) {
-                float new_reward = std::max(reward, node.actions[job.path.top().actionID].R);
-                node.actions[job.path.top().actionID].R = new_reward;
+                if (reward > node.actions[job.path.top().actionID].R) {
+                    node.actions[job.path.top().actionID].R = reward;
+                }
+            }
+
+            job.path.pop();
+
+            if (job.path.empty()) {
+                // start a new search iteration
+                Job select_job = Job(root_state, SELECT, job.path);
+
+                queues[threadIdx]->enqueue(select_job, threadIdx);
+
+                continue;
             }
 
             uint32_t parent_hash = job.path.top().hash;
 
             uint32_t parentIdx = uct.getOwner(parent_hash);
-
-            job.path.pop();
 
             Job backprop_job = Job(reward, job.state, BACKPROP, job.path);
 
@@ -263,13 +258,16 @@ float Search::rollout(EmulationGame state, int threadIdx) {
             cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
         }
 
-        // rather than eval, the expectation of eval is more stable and basically free,
-        // since we already computed eval for all possible boards
         if (search_style == NANA) {
-            reward = Distribution::expectation(cc_dist);
+            float r = Distribution::max_value(cc_dist) + state.app() / 10;
+            //float r = Distribution::expectation(cc_dist);
+            //float r = state.app();
+            reward = r;
         }
         if (search_style == CC) {
-            reward = std::max(reward, Distribution::max_value(cc_dist));
+            float r = Distribution::max_value(cc_dist) + state.app() / 10;
+            //float r = state.app();
+            reward = std::max(reward, r);
         }
 
         SoR_policy = Distribution::normalise(SoR_policy);

@@ -52,6 +52,7 @@ public:
 		this->ID = ID;
 		this->N = N;
 	}
+
 	uint32_t ID;
 	int N;
 
@@ -75,7 +76,8 @@ public:
 
 enum JobType {
 	SELECT,
-	BACKPROP
+	BACKPROP,
+	STOP
 };
 
 
@@ -84,7 +86,7 @@ public:
 	Job() {
 		this->R = 0.0;
 		this->state = EmulationGame();
-		this->type = SELECT;
+		this->type = STOP;
 		this->path = std::stack<HashActionPair>();
 	};
 	Job(EmulationGame state, JobType type) {
