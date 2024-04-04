@@ -105,6 +105,8 @@ void EmulationGame::play_moves(){
         }
     }
 
+    game.app = app();
+
     chance_move();
 };
 

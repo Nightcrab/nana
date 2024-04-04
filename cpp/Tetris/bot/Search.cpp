@@ -264,7 +264,7 @@ void Search::search(int threadIdx) {
     }
 }
 
-float Search::rollout(EmulationGame state, int threadIdx) {
+float Search::rollout(EmulationGame& state, int threadIdx) {
     // Rollout using a square-of-rank policy distribution.
 
     float reward = 0;
@@ -274,50 +274,64 @@ float Search::rollout(EmulationGame state, int threadIdx) {
             return 0.0;
         }
 
-        // todo: create a UCTNode and take legal moves from that
-        std::vector<Move> moves = state.legal_moves();
+        float max_eval = -1;
+        Move move;
 
-        std::vector<Stochastic<Move>> policy;
-        std::vector<Stochastic<Move>> SoR_policy;
-        std::vector<Stochastic<float>> cc_dist;
+        if (threadIdx == uct.getOwner(state.hash())) {
 
-        policy.reserve(moves.size());
+            UCTNode node = UCTNode(state);
 
-        for (auto& move : moves) {
-            // raw scores
-            policy.push_back(Stochastic<Move>(move, Eval::eval_CC(state.game, move)));
+            uct.insertNode(node);
+
+            move = node.select_SOR(uct.rng[threadIdx]).move;
+
+            for (auto& action : node.actions) {
+                max_eval = std::max(max_eval, action.eval);
+            }
         }
+        else {
+            std::vector<Move> moves = state.legal_moves();
 
-        // sort in descending order
-        std::ranges::sort(policy, [](const Stochastic<Move>& a, const Stochastic<Move>& b) {
-            return a.probability > b.probability;
-        });
+            std::vector<Stochastic<Move>> policy;
+            std::vector<Stochastic<Move>> SoR_policy;
+            std::vector<Stochastic<float>> cc_dist;
 
-        // square of rank
+            policy.reserve(moves.size());
 
-        for (int rank = 1; rank <= policy.size(); rank++) {
-            float prob = 1.0 / (rank * rank);
-            SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
-            cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
+            for (auto& move : moves) {
+                // raw scores
+                policy.push_back(Stochastic<Move>(move, Eval::eval_CC(state.game, move)));
+            }
+
+            // sort in descending order
+            std::ranges::sort(policy, [](const Stochastic<Move>& a, const Stochastic<Move>& b) {
+                return a.probability > b.probability;
+                });
+
+            // square of rank
+
+            for (int rank = 1; rank <= policy.size(); rank++) {
+                float prob = 1.0 / (rank * rank);
+                SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
+                cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
+            }
+
+            max_eval = Distribution::max_value(cc_dist);
         }
 
         if (search_style == NANA) {
-            float r = Distribution::max_value(cc_dist) + state.app() / 10 + state.b2b() / 50;;
+            float r = max_eval;
             //float r = Distribution::expectation(cc_dist);
             //float r = state.app();
             reward = std::max(reward, r);
         }
         if (search_style == CC) {
-            float r = Distribution::max_value(cc_dist) + state.app() / 10 + state.b2b() / 50;
+            float r = max_eval;
             //float r = state.app();
             reward = std::max(reward, r);
         }
 
-        SoR_policy = Distribution::normalise(SoR_policy);
-
-        Move sample = Distribution::sample(SoR_policy, uct.rng[threadIdx]);
-
-        state.set_move(sample);
+        state.set_move(move);
         state.play_moves();
     }
 

@@ -89,6 +89,8 @@ class Game {
     int b2b = 0;
     int combo = 0;
 
+    float app = 0;
+
     // tetrio stuff
     int currentcombopower = 0;
     int currentbtbchainpower = 0;

@@ -100,6 +100,12 @@ class Job {
     std::stack<HashActionPair> path;
 };
 
+class WorkerStatistics {
+public:
+    int nodes = 0;
+    int deepest_node = 0;
+};
+
 // one of these shared by all threads
 class UCT {
    public:
@@ -107,6 +113,7 @@ class UCT {
         this->workers = workers;
         this->nodes = std::vector<std::unordered_map<int, UCTNode>>(workers);
         this->rng = std::vector<RNG>(workers);
+        this->stats = std::vector<WorkerStatistics>(workers);
         auto devrng = std::random_device();
         for (auto& thread_rng : this->rng) {
             thread_rng.PPTRNG = devrng();
@@ -118,6 +125,7 @@ class UCT {
 
     std::vector<std::unordered_map<int, UCTNode>> nodes;
     std::vector<RNG> rng;
+    std::vector<WorkerStatistics> stats;
 
     bool nodeExists(uint32_t nodeID);
 

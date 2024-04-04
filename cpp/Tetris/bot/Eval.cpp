@@ -409,5 +409,5 @@ double Eval::eval_CC(const Board& board) {
 
 double Eval::eval_CC(Game game, Move move) {
     game.place_piece(move.piece);
-    return eval_CC(game.board);
+    return eval_CC(game.board) + game.app / 10 + game.b2b / 50;
 }

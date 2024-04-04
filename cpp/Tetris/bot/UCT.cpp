@@ -155,7 +155,7 @@ UCTNode& UCT::getNode(uint32_t nodeID) {
 };
 
 void UCT::insertNode(UCTNode node) {
-	size++;
+	stats[node.ID % workers].nodes++;
 	nodes[node.ID % workers].insert({ node.ID, node });
 };
 
