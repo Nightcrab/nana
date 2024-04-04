@@ -81,9 +81,9 @@ void Search::continueSearch(EmulationGame state) {
         queues[i] = new zib::wait_mpsc_queue<Job>(core_count + 1);
     }
 
-    std::vector<int> indices(core_count);
+    core_indices = std::vector<int>(core_count);
 
-    std::iota(indices.begin(), indices.end(), 0);
+    std::iota(core_indices.begin(), core_indices.end(), 0);
 
     int rootOwnerIdx = uct.getOwner(state.hash());
 
@@ -91,9 +91,8 @@ void Search::continueSearch(EmulationGame state) {
         queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
-    for (auto& idx : indices) {
-        std::thread t(search, idx);
-        t.detach();
+    for (auto& idx : core_indices) {
+        worker_threads[idx] = std::jthread(search, idx);
     }
 }
 
@@ -110,14 +109,9 @@ void Search::endSearch() {
 		thread.join();
 	}
 
-
     std::cout << "stopped searching" << std::endl;
 
     std::cout << "nodes created: " << uct.size << std::endl;
-
-
-    // store best move
-    uct = UCT(core_count);
 
 };
 
