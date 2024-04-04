@@ -224,6 +224,8 @@ private:
             game.set_move(Move(game.game.current_piece, false));
 
             game.play_moves();
+
+            std::cout << "APP:" << game.app() << std::endl;
         }
 
         if (GetKey(olc::Key::P).bPressed) {
@@ -231,7 +233,7 @@ private:
                 Search::endSearch();
             }
             else {
-                Search::startSearch(game, 2);
+                Search::startSearch(game, 4);
             }
             
         }
@@ -278,6 +280,10 @@ private:
             game.set_move(Search::bestMove());
 
             game.play_moves();
+
+            Search::continueSearch(game);
+
+            std::cout << "APP:" << game.app() << std::endl;
         }
         
         if (GetKey(olc::Key::R).bPressed) {

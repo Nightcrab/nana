@@ -20,14 +20,14 @@ using DyLUT_h_t = std::vector<entry>;
 using DyLUT_v_t = std::vector<entry>;
 
 namespace Eval {
-DyLUT_h_t LUT_h;
-DyLUT_v_t LUT_v;
+    DyLUT_h_t LUT_h;
+    DyLUT_v_t LUT_v;
 
-std::unordered_map<uint64_t, uint64_t> LUT_h_map;
-std::unordered_map<uint64_t, uint64_t> LUT_v_map;
+    std::unordered_map<uint64_t, uint64_t> LUT_h_map;
+    std::unordered_map<uint64_t, uint64_t> LUT_v_map;
 
-void init();
-bool needs_init = true;
+    void init();
+    bool needs_init = true;
 }  // namespace Eval
 
 static size_t hashh(size_t left, size_t middle, size_t right, size_t height) {
@@ -97,7 +97,7 @@ double Eval::eval_LUT(const Board& board) {
                     bits |= 1 << (wy + wx * 3);
             }
         return bits;
-    };
+        };
 
     auto get_3x3 = [](Board board, size_t x, size_t y) {
         uint16_t bits = 0;
@@ -113,18 +113,21 @@ double Eval::eval_LUT(const Board& board) {
 
             if (filled == 0b001) {
                 filled = 0b100;
-            } else if (filled == 0b011) {
+            }
+            else if (filled == 0b011) {
                 filled = 0b110;
-            } else if (filled == 0b100) {
+            }
+            else if (filled == 0b100) {
                 filled = 0b001;
-            } else if (filled == 0b110) {
+            }
+            else if (filled == 0b110) {
                 filled = 0b011;
             }
 
             bits |= filled << (wx * 3);
         }
         return bits;
-    };
+        };
 
     double score = 1.0;
     struct fentry {
@@ -276,7 +279,7 @@ static std::pair<int, int> height_features(const Board& board) {
         min_air = std::min(air, min_air);
     }
 
-    return { 32 - max_air - 1, 32 - min_air - 1};
+    return { 32 - max_air - 1, 32 - min_air - 1 };
 }
 
 static std::pair<int, int> n_covered_cells(Board board) {
@@ -298,11 +301,12 @@ static std::pair<int, int> n_covered_cells(Board board) {
 
     return { covered, covered_sq };
 }
+
 static auto abss(auto num) {
-    if (num >= 0)
-        return num;
-    else
+    if (num < 0)
         return -num;
+    else
+        return num;
 
 }
 
@@ -312,7 +316,7 @@ static std::pair<int, int> get_bumpiness(const Board& board) {
 
     std::array<int, Board::width> air;
 
-    for (int i = 1; i < Board::width; ++i) {
+    for (int i = 0; i < Board::width; ++i) {
         air[i] = std::countl_zero(board.board[i]);
     }
 
@@ -321,7 +325,6 @@ static std::pair<int, int> get_bumpiness(const Board& board) {
 
     for (int i = 1; i < Board::width; ++i) {
         bump[i] = abss(air[i] - air[i - 1]);
-
     }
 
     for (int i = 1; i < Board::width; ++i) {
