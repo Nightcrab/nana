@@ -150,9 +150,10 @@ void Search::search(int threadIdx) {
             return;
         }
 
-        uct.stats[threadIdx].nodes++;
 
         if (job.type == SELECT) {
+
+            uct.stats[threadIdx].nodes++;
 
             EmulationGame& state = job.state;
 
@@ -288,6 +289,8 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
 
     float reward = 0;
     for (int i = 0; i < monte_carlo_depth; i++) {
+        
+        uct.stats[threadIdx].nodes++;
 
         if (state.game_over) {
             return 0.0;
@@ -349,8 +352,6 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
             //float r = state.app();
             reward = std::max(reward, r);
         }
-
-        uct.stats[threadIdx].nodes++;
 
         state.set_move(move);
         state.play_moves();
