@@ -26,7 +26,7 @@ std::vector<std::jthread> worker_threads;
 
 std::chrono::steady_clock::time_point search_start_time;
 
-const int LOAD_FACTOR = 50;
+const int LOAD_FACTOR = 6;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
 
@@ -263,7 +263,9 @@ void Search::search(int threadIdx) {
 
             // Undo Virtual Loss by adding R
             if (search_style == NANA) {
-                node.actions[job.path.top().actionID].R += reward;
+                float& R = node.actions[job.path.top().actionID].R;
+                int& N = node.actions[job.path.top().actionID].N;
+                R = R + reward;
             }
             if (search_style == CC) {
                 if (reward > node.actions[job.path.top().actionID].R) {
