@@ -24,6 +24,7 @@ zib::wait_mpsc_queue<Job>* Search::queues[256];
 std::vector<int> core_indices;
 std::vector<std::jthread> worker_threads;
 
+const int LOAD_FACTOR = 100;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
 
@@ -55,7 +56,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     int rootOwnerIdx = uct.getOwner(state.hash());
 
     // Spawn jobs
-    for (int i = 0; i < 6 * core_count; i++) {
+    for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
         queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
@@ -87,7 +88,7 @@ void Search::continueSearch(EmulationGame state) {
 
     int rootOwnerIdx = uct.getOwner(state.hash());
 
-    for (int i = 0; i < 6 * core_count; i++) {
+    for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
         queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
