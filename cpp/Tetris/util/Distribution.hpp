@@ -76,6 +76,7 @@ namespace Distribution {
 	}
 
 	template <typename T>
+    // sort based off of probability
 	void sort_des(std::vector<Stochastic<T>> &pdf) {
 		std::ranges::sort(pdf, [](const Stochastic<T>& a, const Stochastic<T>& b) {
 			return a.probability > b.probability;

@@ -30,7 +30,7 @@ float quick_sqrt(const float x)
 	return x * u.x * (1.5f - xhalf * u.x * u.x);// Newton step, repeating increases accuracy 
 }
 
-UCTNode::UCTNode(EmulationGame state) {
+UCTNode::UCTNode(EmulationGame &state) {
 	std::vector<Piece> raw_actions = state.game.get_possible_piece_placements();
 
 	std::vector<Action> actions;
@@ -42,7 +42,7 @@ UCTNode::UCTNode(EmulationGame state) {
 
 	for (auto& raw_action : raw_actions) {
 		float eval = Eval::eval_CC(state.game, Move(raw_action, false));
-		actions.push_back(Action(Move(raw_action, false), idx, eval));
+		actions.emplace_back(Move(raw_action, false), idx, eval);
 		prior.push_back(Stochastic<int>(idx, eval));
 		idx++;
 	}
