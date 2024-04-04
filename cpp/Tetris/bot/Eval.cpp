@@ -298,24 +298,37 @@ static std::pair<int, int> n_covered_cells(Board board) {
 
     return { covered, covered_sq };
 }
+static auto abss(auto num) {
+    if (num >= 0)
+        return num;
+    else
+        return -num;
 
-static std::pair<int, int> get_bumpiness(Board board) {
+}
+
+static std::pair<int, int> get_bumpiness(const Board& board) {
     int bumpiness = 0;
     int bumpiness_sq = 0;
 
-    uint32_t prev_col = board.board[0];
-    int prev_air = std::countl_zero(prev_col);
-    for (int i = 1; i < Board::width; ++i) {
-        auto col = board.board[i];
-        int col_air = std::countl_zero(col);
-        int bump = abs(prev_air - col_air);
-        prev_col = col;
-        prev_air = col_air;
+    std::array<int, Board::width> air;
 
-        bumpiness += bump;
-        bumpiness_sq += bump << 1;
+    for (int i = 1; i < Board::width; ++i) {
+        air[i] = std::countl_zero(board.board[i]);
     }
 
+    std::array<int, Board::width> bump;
+
+
+    for (int i = 1; i < Board::width; ++i) {
+        bump[i] = abss(air[i] - air[i - 1]);
+
+    }
+
+    for (int i = 1; i < Board::width; ++i) {
+        bumpiness += bump[i];
+        bumpiness_sq += bump[i] * bump[i];
+
+    }
     return { bumpiness, bumpiness_sq };
 }
 
