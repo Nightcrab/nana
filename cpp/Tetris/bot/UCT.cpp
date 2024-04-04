@@ -70,13 +70,13 @@ UCTNode::UCTNode(EmulationGame state) {
 Action& UCTNode::select_r_max() {
 	Action* best_action = &actions[0];
 	float highest_priority = -1.0;
-	constexpr float c = 1.41421356237 / 10;
+	constexpr float c = 1.41421356237 / 100;
 
 	for (Action& edge : actions) {
 		if (edge.N == 0) {
 			return edge;
 		}
-		float priority = edge.R + c * edge.prior * quick_sqrt(ln(N) / edge.N);
+		float priority = edge.R + c * quick_sqrt(ln(N) / edge.N);
 		if (priority > highest_priority) {
 			best_action = &edge;
 			highest_priority = priority;
@@ -106,6 +106,7 @@ Action& UCTNode::select() {
 }
 
 Action& UCTNode::select_SOR(RNG &rng) {
+	const float k = 0.0;
 
 	std::vector<Stochastic<int>> policy;
 
@@ -117,7 +118,7 @@ Action& UCTNode::select_SOR(RNG &rng) {
 
 	for (int rank = 1; rank <= policy.size(); rank++) {
 		float prob = 1.0 / (rank * rank);
-		policy[rank - 1].probability = prob;
+		policy[rank - 1].probability = prob + k;
 	}
 
 	policy = normalise(policy);

@@ -135,3 +135,7 @@ uint32_t EmulationGame::hash() {
 float EmulationGame::app() {
     return (float) attack / (float) pieces;
 }
+
+float EmulationGame::b2b() {
+    return (float) game.b2b; 
+}

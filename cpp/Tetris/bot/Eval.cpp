@@ -388,7 +388,6 @@ double Eval::eval_CC(const Board& board) {
     score += values.first * bumpiness;
     score += values.second * bumpiness_sq;
 
-
     return (score + 10000) / 10000;
 }
 

@@ -31,6 +31,8 @@ class EmulationGame {
 
     float app();
 
+    float b2b();
+
     void set_move(Move move);
 
     void chance_move();

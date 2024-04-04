@@ -12,7 +12,7 @@ std::atomic_bool Search::searching = false;
 
 SearchType Search::search_style = CC;
 
-int Search::core_count = 4;
+int Search::core_count = 0;
 
 int Search::monte_carlo_depth = 1;
 
@@ -202,7 +202,6 @@ void Search::search(int threadIdx) {
             job.path.pop();
 
             if (job.path.empty()) {
-                // start a new search iteration
                 Job select_job = Job(root_state, SELECT, job.path);
 
                 queues[threadIdx]->enqueue(select_job, threadIdx);
@@ -259,13 +258,13 @@ float Search::rollout(EmulationGame state, int threadIdx) {
         }
 
         if (search_style == NANA) {
-            float r = Distribution::max_value(cc_dist) + state.app() / 10;
+            float r = Distribution::max_value(cc_dist) + state.app() / 10 + state.b2b() / 50;;
             //float r = Distribution::expectation(cc_dist);
             //float r = state.app();
             reward = r;
         }
         if (search_style == CC) {
-            float r = Distribution::max_value(cc_dist) + state.app() / 10;
+            float r = Distribution::max_value(cc_dist) + state.app() / 10 + state.b2b() / 50;
             //float r = state.app();
             reward = std::max(reward, r);
         }
