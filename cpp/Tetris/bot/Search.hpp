@@ -32,6 +32,8 @@ namespace Search {
 
 	void startSearch(EmulationGame state, int core_count);
 
+	void continueSearch(EmulationGame state);
+
 	void endSearch();
 
 	void search(int threadIdx);

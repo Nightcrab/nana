@@ -64,6 +64,40 @@ void Search::startSearch(EmulationGame state, int core_count) {
     }
 };
 
+void Search::continueSearch(EmulationGame state) {
+    std::cout << "started searching, root hash is: " << (int)(state.hash() % 1000) << std::endl;
+
+    searching = true;
+
+    root_state = state;
+
+    if (!uct.nodeExists(state.hash())) {
+        uct.insertNode(UCTNode(state));
+    }
+
+    // Initialise worker queues
+    for (int i = 0; i < core_count; i++) {
+        queues[i] = new zib::wait_mpsc_queue<Job>(core_count + 1);
+    }
+
+    std::vector<int> indices(core_count);
+
+    std::iota(indices.begin(), indices.end(), 0);
+
+    int rootOwnerIdx = uct.getOwner(state.hash());
+
+    for (int i = 0; i < 6 * core_count; i++) {
+        Job select_job = Job(EmulationGame(root_state), SELECT);
+
+        queues[rootOwnerIdx]->enqueue(select_job, core_count);
+    }
+
+    for (auto& idx : indices) {
+        std::thread t(search, idx);
+        t.detach();
+    }
+}
+
 void Search::endSearch() {
     searching = false;
 
