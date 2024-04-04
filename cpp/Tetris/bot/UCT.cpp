@@ -50,8 +50,8 @@ UCTNode::UCTNode(EmulationGame state) {
 	sort_des(prior);
 
 	for (int rank = 1; rank <= prior.size(); rank++) {
-		float prob = 1.0 / (rank * rank);
-		prior[rank - 1].probability = prob * 100;
+		float prob = 1.0 / rank;
+		prior[rank - 1].probability = prob;
 	}
 
 	prior = normalise(prior);
@@ -88,14 +88,20 @@ Action& UCTNode::select_r_max() {
 
 Action& UCTNode::select() {
 	Action* best_action = &actions[0];
-	float highest_priority = -1.0;
-	constexpr float c = 1.41421356237 / 20;
+	float highest_priority = -2.0;
+	constexpr float c_init = 2.5;
+	constexpr float c_base = 19652;
+
+	float c_puct = ln((N + c_base + 1.0) / c_base) + c_init;
 
 	for (Action& edge : actions) {
+		float Q = edge.R / edge.N;
 		if (edge.N == 0) {
-			return edge;
+			Q = 0.0;
 		}
-		float priority = edge.R / edge.N + c * edge.prior * quick_sqrt(ln(N) / edge.N);
+		float U = c_puct * edge.prior * quick_sqrt(N) / (1 + edge.N);
+		float priority = Q + U;
+
 		if (priority > highest_priority) {
 			best_action = &edge;
 			highest_priority = priority;

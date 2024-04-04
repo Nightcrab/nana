@@ -10,11 +10,11 @@
 
 std::atomic_bool Search::searching = false;
 
-SearchType Search::search_style = CC;
+SearchType Search::search_style = NANA;
 
 int Search::core_count = 0;
 
-int Search::monte_carlo_depth = 1;
+int Search::monte_carlo_depth = 2;
 
 UCT Search::uct = UCT(4);
 
@@ -104,6 +104,10 @@ void Search::search(int threadIdx) {
                 float reward = rollout(state, threadIdx);
 
                 Job backprop_job = Job(reward, state, BACKPROP, job.path);
+
+                if (job.path.empty()) {
+                    continue;
+                }
 
                 uint32_t parent_hash = job.path.top().hash;
 
@@ -261,7 +265,7 @@ float Search::rollout(EmulationGame state, int threadIdx) {
             float r = Distribution::max_value(cc_dist) + state.app() / 10 + state.b2b() / 50;;
             //float r = Distribution::expectation(cc_dist);
             //float r = state.app();
-            reward = r;
+            reward = std::max(reward, r);
         }
         if (search_style == CC) {
             float r = Distribution::max_value(cc_dist) + state.app() / 10 + state.b2b() / 50;
