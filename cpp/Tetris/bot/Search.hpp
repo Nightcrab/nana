@@ -40,7 +40,10 @@ namespace Search {
 
 	float rollout(EmulationGame& state, int threadIdx);
 
+	void printStatistics();
+
 	// See the best move found so far.
 	Move bestMove();
+
 };
 #endif

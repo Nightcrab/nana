@@ -283,6 +283,8 @@ private:
 
             Search::continueSearch(game);
 
+            Search::printStatistics();
+
             std::cout << "APP:" << game.app() << std::endl;
         }
         

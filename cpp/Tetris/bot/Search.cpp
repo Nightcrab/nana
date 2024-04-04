@@ -24,11 +24,15 @@ zib::wait_mpsc_queue<Job>* Search::queues[256];
 std::vector<int> core_indices;
 std::vector<std::jthread> worker_threads;
 
+std::chrono::steady_clock::time_point search_start_time;
+
 const int LOAD_FACTOR = 50;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
 
     std::cout << "started searching, root hash is: " <<  (int) (state.hash() % 1000) << std::endl;
+
+    search_start_time = std::chrono::steady_clock::now();
 
     searching = true;
 
@@ -113,10 +117,23 @@ void Search::endSearch() {
 	}
 
     std::cout << "stopped searching" << std::endl;
+ };
 
-    std::cout << "nodes created: " << uct.size << std::endl;
+void Search::printStatistics() {
 
-};
+    std::chrono::steady_clock::time_point search_end_time = std::chrono::steady_clock::now();
+
+    int ms = std::chrono::duration_cast<std::chrono::microseconds>(search_end_time - search_start_time).count();
+
+    int nodes = 0;
+
+    for (WorkerStatistics stat : uct.stats) {
+        nodes += stat.nodes;
+    }
+
+    std::cout << "nodes / second: " << nodes / ((ms - (ms % 1000000)) / 1000000) << std::endl;
+
+}
 
 void Search::search(int threadIdx) {
     while (true) {
@@ -132,6 +149,8 @@ void Search::search(int threadIdx) {
         if (job.type == STOP) {
             return;
         }
+
+        uct.stats[threadIdx].nodes++;
 
         if (job.type == SELECT) {
 
@@ -330,6 +349,8 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
             //float r = state.app();
             reward = std::max(reward, r);
         }
+
+        uct.stats[threadIdx].nodes++;
 
         state.set_move(move);
         state.play_moves();
