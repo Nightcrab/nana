@@ -30,7 +30,7 @@ namespace Search {
 
 	extern zib::wait_mpsc_queue<Job>* queues[256];
 
-	void startSearch(EmulationGame state, int core_count);
+	void startSearch(const EmulationGame& state, int core_count);
 
 	void continueSearch(EmulationGame state);
 

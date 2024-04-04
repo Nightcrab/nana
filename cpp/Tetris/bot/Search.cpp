@@ -21,8 +21,11 @@ UCT Search::uct = UCT(4);
 EmulationGame Search::root_state;
 
 zib::wait_mpsc_queue<Job>* Search::queues[256];
+std::vector<int> core_indices;
+std::vector<std::jthread> worker_threads;
 
-void Search::startSearch(EmulationGame state, int core_count) {
+
+void Search::startSearch(const EmulationGame &state, int core_count) {
 
     std::cout << "started searching, root hash is: " <<  (int) (state.hash() % 1000) << std::endl;
 
@@ -36,7 +39,7 @@ void Search::startSearch(EmulationGame state, int core_count) {
     uct = UCT(core_count);
 
     // Create root node
-    uct.insertNode(UCTNode(state));
+    uct.insertNode(state);
 
     // Initialise worker queues
     for (int i = 0; i < core_count; i++) {
@@ -44,23 +47,21 @@ void Search::startSearch(EmulationGame state, int core_count) {
     }
 
     // Thread indices
-    std::vector<int> indices(core_count);
+    core_indices = std::vector<int>(core_count);
+    worker_threads = std::vector<std::jthread>(core_count);
 
-    std::iota(indices.begin(), indices.end(), 0);
+    std::iota(core_indices.begin(), core_indices.end(), 0);
 
     int rootOwnerIdx = uct.getOwner(state.hash());
 
     // Spawn jobs
     for (int i = 0; i < 6 * core_count; i++) {
-        Job select_job = Job(EmulationGame(root_state), SELECT);
-
-        queues[rootOwnerIdx]->enqueue(select_job, core_count);
+        queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
     // Spawn worker threads
-    for (auto& idx : indices) {
-        std::thread t(search, idx);
-        t.detach();
+    for (auto& idx : core_indices) {
+        worker_threads[idx] = std::jthread(search, idx);
     }
 };
 
@@ -87,9 +88,7 @@ void Search::continueSearch(EmulationGame state) {
     int rootOwnerIdx = uct.getOwner(state.hash());
 
     for (int i = 0; i < 6 * core_count; i++) {
-        Job select_job = Job(EmulationGame(root_state), SELECT);
-
-        queues[rootOwnerIdx]->enqueue(select_job, core_count);
+        queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
     for (auto& idx : indices) {
@@ -102,13 +101,23 @@ void Search::endSearch() {
     searching = false;
 
     for (int i = 0; i < core_count; i++) {
-        Job stop_job = Job();
-        queues[i]->enqueue(stop_job, core_count);
+        queues[i]->enqueue(Job(), core_count);
     }
+
+    // join threads
+    
+    for (auto& thread : worker_threads) {
+		thread.join();
+	}
+
 
     std::cout << "stopped searching" << std::endl;
 
     std::cout << "nodes created: " << uct.size << std::endl;
+
+
+    // store best move
+    uct = UCT(core_count);
 
 };
 

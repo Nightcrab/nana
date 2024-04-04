@@ -41,5 +41,5 @@ class EmulationGame {
 
     std::vector<Move> legal_moves();
 
-    uint32_t hash();
+    uint32_t hash() const;
 };

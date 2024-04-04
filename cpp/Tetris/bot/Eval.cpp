@@ -293,7 +293,7 @@ static std::pair<int, int> n_covered_cells(Board board) {
             col_covered = 0;
         }
         covered += col_covered;
-        covered_sq += col_covered << 1;
+        covered_sq += col_covered * col_covered;
     }
 
     return { covered, covered_sq };
