@@ -26,6 +26,7 @@ class Chance {
     int garbage_amount;
 
     RNG rng;
+    RNG emulator_rng;
 
     RNG rng1;
     RNG rng2;
@@ -34,9 +35,7 @@ class Chance {
     PieceType p2_next_piece;
 
     int get_garbage_column() {
-        int ret = p1_garbage_column;
-        p1_garbage_column = rng1.getRand(Board::width);
-        return ret;
+        return emulator_rng.getRand(Board::width);
     }
 
     void new_move() {
@@ -44,6 +43,6 @@ class Chance {
         p2_next_piece = rng2.getPiece();
         p1_garbage_column = rng1.getRand(Board::width);
         p2_garbage_column = rng2.getRand(Board::width);
-        garbage_amount = rng1.getRand(4);
+        garbage_amount = emulator_rng.getRand(4);
     };
 };

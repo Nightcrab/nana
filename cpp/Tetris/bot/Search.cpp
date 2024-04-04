@@ -24,7 +24,7 @@ zib::wait_mpsc_queue<Job>* Search::queues[256];
 std::vector<int> core_indices;
 std::vector<std::jthread> worker_threads;
 
-const int LOAD_FACTOR = 100;
+const int LOAD_FACTOR = 50;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
 
@@ -40,7 +40,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     uct = UCT(core_count);
 
     // Create root node
-    uct.insertNode(state);
+    uct.insertNode(UCTNode(state));
 
     // Initialise worker queues
     for (int i = 0; i < core_count; i++) {
@@ -57,7 +57,9 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
 
     // Spawn jobs
     for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
-        queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
+        EmulationGame state = EmulationGame(root_state);
+        state.chance.emulator_rng = RNG();
+        queues[rootOwnerIdx]->enqueue(Job(state, SELECT), core_count);
     }
 
     // Spawn worker threads
@@ -123,8 +125,8 @@ void Search::search(int threadIdx) {
         }
 
         // Thread waits here until something is in the queue
-        // Master thread is required to spawn SELECT jobs from the root
-        // otherwise we risk deadlock
+        // Master thread is required to spawn SELECT and STOP jobs from the root
+        // otherwise we have deadlock
         Job job = queues[threadIdx]->dequeue();
 
         if (job.type == STOP) {

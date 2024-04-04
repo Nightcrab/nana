@@ -44,7 +44,7 @@ class Action {
 // state
 class UCTNode {
    public:
-    UCTNode(EmulationGame &state);
+    UCTNode(const EmulationGame &state);
     UCTNode(const std::vector<Action>& p_actions, int ID, int N) {
         this->actions = p_actions;
         for (int i = 0; i < actions.size(); i++) {
@@ -88,12 +88,15 @@ class Job {
         : R(0.0), state(state), type(type){};
     Job(EmulationGame& state, JobType type, std::stack<HashActionPair> path)
         : R(0.0), state(state), type(type), path(path){};
-    // for going backwards
     Job(float R, EmulationGame& state, JobType type, std::stack<HashActionPair> path)
         : R(R), state(state), type(type), path(path){};
+
     float R;
     EmulationGame state;
     JobType type;
+
+    // for going backwards
+
     std::stack<HashActionPair> path;
 };
 

@@ -30,7 +30,7 @@ float quick_sqrt(const float x)
 	return x * u.x * (1.5f - xhalf * u.x * u.x);// Newton step, repeating increases accuracy 
 }
 
-UCTNode::UCTNode(EmulationGame &state) {
+UCTNode::UCTNode(const EmulationGame &state) {
 	std::vector<Piece> raw_actions = state.game.get_possible_piece_placements();
 
 	std::vector<Action> actions;
@@ -89,6 +89,13 @@ Action& UCTNode::select_r_max() {
 Action& UCTNode::select() {
 	Action* best_action = &actions[0];
 	float highest_priority = -2.0;
+
+	/*
+		D. Silver's PUCT formula.
+
+		Dynamically selects actions based on both policy prior and pull statistics.
+	*/
+
 	constexpr float c_init = 2.5;
 	constexpr float c_base = 19652;
 
