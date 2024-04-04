@@ -83,6 +83,10 @@ void Search::continueSearch(EmulationGame state) {
         uct.insertNode(UCTNode(state));
     }
 
+    for (WorkerStatistics& stat : uct.stats) {
+        stat.deepest_node = 0;
+    }
+
     // Initialise worker queues
     for (int i = 0; i < core_count; i++) {
         queues[i] = new zib::wait_mpsc_queue<Job>(core_count + 1);
@@ -123,16 +127,18 @@ void Search::printStatistics() {
 
     std::chrono::steady_clock::time_point search_end_time = std::chrono::steady_clock::now();
 
-    int ms = std::chrono::duration_cast<std::chrono::microseconds>(search_end_time - search_start_time).count();
+    float ms = std::chrono::duration_cast<std::chrono::microseconds>(search_end_time - search_start_time).count();
 
     int nodes = 0;
+    int depth = 0;
 
     for (WorkerStatistics stat : uct.stats) {
         nodes += stat.nodes;
+        depth = std::max(stat.deepest_node, depth);
     }
 
-    std::cout << "nodes / second: " << nodes / ((ms - (ms % 1000000)) / 1000000) << std::endl;
-
+    std::cout << "nodes / second: " << nodes / (ms/ 1000000) << std::endl;
+    std::cout << "tree depth: " << depth << std::endl;
 }
 
 void Search::search(int threadIdx) {
@@ -213,6 +219,8 @@ void Search::search(int threadIdx) {
                 Job select_job = Job(0.0, state, SELECT, job.path);
 
                 select_job.path.push(HashActionPair(hash, action->id));
+
+                uct.stats[threadIdx].deepest_node = std::max(uct.stats[threadIdx].deepest_node, (int) select_job.path.size());
 
                 queues[ownerIdx]->enqueue(select_job, threadIdx);
             } else {
@@ -382,14 +390,17 @@ Move Search::bestMove() {
                 biggest_N = action.N;
                 best_move = action.move;
             }
-            std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
+
+            // std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
         }
         if (search_style == CC) {
             if (action.R > biggest_R) {
                 biggest_R = action.R;
                 biggest_N = action.N;
                 best_move = action.move;
-            }std::cout << "N:" << action.N << " R_max:" << action.R << std::endl;
+            }
+            
+            // std::cout << "N:" << action.N << " R_max:" << action.R << std::endl;
         }
         
 

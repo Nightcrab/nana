@@ -275,15 +275,15 @@ private:
             game.play_moves();
         }
 
-        if (GetKey(olc::Key::Q).bPressed) {
+        if (GetKey(olc::Key::Q).bPressed && Search::searching) {
             Search::endSearch();
             game.set_move(Search::bestMove());
 
             game.play_moves();
 
-            Search::continueSearch(game);
-
             Search::printStatistics();
+
+            Search::continueSearch(game);
 
             std::cout << "APP:" << game.app() << std::endl;
         }
