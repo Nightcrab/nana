@@ -290,14 +290,11 @@ std::pair<int, int> Eval::n_covered_cells(Board board) {
     for (int i = 0; i < Board::width; ++i) {
         auto col = board.board[i];
         int col_covered = 0;
-        while (col != 0) {
-            int zeros = std::countl_zero(col);
-            col <<= zeros; // 00011101 -> 11101
-            int ones = std::countl_one(col);
-            if (zeros + ones != 32) {
-                col_covered += col_covered + ones; 
-            }
-            col <<= ones; // 11101 -> 01
+        int zeros = std::countl_zero(col);
+        col <<= zeros; // 00011101 -> 11101
+        int ones = std::countl_one(col);
+        if (zeros + ones != 32) {
+            col_covered += col_covered + ones; 
         }
         covered += col_covered;
         covered_sq += col_covered * col_covered;
