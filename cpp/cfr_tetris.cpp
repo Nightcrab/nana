@@ -265,7 +265,7 @@ private:
                 cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
             }
 
-            std::cout << "expectation of this state was: " << Distribution::expectation(cc_dist) << std::endl;
+            //std::cout << "expectation of this state was: " << Distribution::expectation(cc_dist) << std::endl;
 
             Distribution::normalise(SoR_policy);
 
@@ -273,6 +273,8 @@ private:
 
             game.set_move(sample);
             game.play_moves();
+
+            std::cout << "covered cells: " << Eval::n_covered_cells(game.game.board).first << std::endl;
         }
 
         if (GetKey(olc::Key::Q).bPressed && Search::searching) {

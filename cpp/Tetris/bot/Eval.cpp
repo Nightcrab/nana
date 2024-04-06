@@ -217,7 +217,7 @@ double Eval::eval_LUT(const Board& board) {
     return score;
 }
 
-static bool is_top_quarter(const Board& board) {
+static bool Eval::is_top_quarter(const Board& board) {
     // do NOT touch anything this vectorizes
     constexpr uint32_t top_quarter_collider = (1 << 15) - 1;
 
@@ -230,7 +230,7 @@ static bool is_top_quarter(const Board& board) {
     return ret;
 }
 
-static bool is_top_half(const Board& board) {
+static bool Eval::is_top_half(const Board& board) {
     // do NOT touch anything this vectorizes
     constexpr uint32_t top_half_collider = (1 << 10) - 1;
 
@@ -243,7 +243,7 @@ static bool is_top_half(const Board& board) {
     return ret;
 }
 
-static std::pair<int, int> n_cavities(const Board& board) {
+static std::pair<int, int> Eval::n_cavities(const Board& board) {
     int count = 0;
     int count_sq = 0;
 
@@ -265,7 +265,8 @@ static std::pair<int, int> n_cavities(const Board& board) {
     return { count, count_sq };
 }
 
-static std::pair<int, int> height_features(const Board& board) {
+// lowest height, highest height
+static std::pair<int, int> Eval::height_features(const Board& board) {
 
     // air is the complement of height
 
@@ -282,18 +283,21 @@ static std::pair<int, int> height_features(const Board& board) {
     return { 32 - max_air - 1, 32 - min_air - 1 };
 }
 
-static std::pair<int, int> n_covered_cells(Board board) {
+std::pair<int, int> Eval::n_covered_cells(Board board) {
     int covered = 0;
     int covered_sq = 0;
 
     for (int i = 0; i < Board::width; ++i) {
         auto col = board.board[i];
         int col_covered = 0;
-        col <<= std::countl_zero(col);
-        col_covered += std::countl_one(col);
-        col <<= col_covered;
-        if (col == 0) {
-            col_covered = 0;
+        while (col != 0) {
+            int zeros = std::countl_zero(col);
+            col <<= zeros; // 00011101 -> 11101
+            int ones = std::countl_one(col);
+            if (zeros + ones != 32) {
+                col_covered += col_covered + ones; 
+            }
+            col <<= ones; // 11101 -> 01
         }
         covered += col_covered;
         covered_sq += col_covered * col_covered;
@@ -310,7 +314,7 @@ static auto abss(auto num) {
 
 }
 
-static std::pair<int, int> get_bumpiness(const Board& board) {
+static std::pair<int, int> Eval::get_bumpiness(const Board& board) {
     int bumpiness = 0;
     int bumpiness_sq = 0;
 
@@ -336,7 +340,7 @@ static std::pair<int, int> get_bumpiness(const Board& board) {
 }
 
 // Identify clean count to 4
-static bool ct4(const Board& board) {
+static bool Eval::ct4(const Board& board) {
 
     int garbage_height = height_features(board).first;
 
