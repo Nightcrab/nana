@@ -88,6 +88,7 @@ void EmulationGame::play_moves(){
             game.add_garbage(garbage, chance.get_garbage_column());
 
             incoming -= garbage;
+            garbage_used += garbage;
 
             if (incoming == 0) {
                 garbage_meter.pop_back();
