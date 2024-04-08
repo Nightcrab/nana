@@ -270,11 +270,13 @@ private:
             Distribution::normalise(SoR_policy);
 
             Move sample = Distribution::sample(SoR_policy, game.chance.rng);
-
+            std::cout << "eval was:" << Eval::eval_CC(game.game, sample) << std::endl;
             game.set_move(sample);
             game.play_moves();
-
             std::cout << "covered cells: " << Eval::n_covered_cells(game.game.board).first << std::endl;
+            std::cout << "cavities: " << Eval::cavities_overhangs(game.game.board).first << std::endl;
+            std::cout << "overhangs: " << Eval::cavities_overhangs(game.game.board).second << std::endl;
+            std::cout << "well position: " << Eval::well_position(game.game.board) << std::endl;
         }
 
         if (GetKey(olc::Key::Q).bPressed && Search::searching) {

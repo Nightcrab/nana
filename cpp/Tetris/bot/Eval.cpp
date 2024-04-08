@@ -243,26 +243,50 @@ static bool Eval::is_top_half(const Board& board) {
     return ret;
 }
 
-static std::pair<int, int> Eval::n_cavities(const Board& board) {
-    int count = 0;
-    int count_sq = 0;
-
-    Board shifted_board = board;
+std::pair<int, int> Eval::cavities_overhangs(const Board& board) {
+    int cavities = 0;
+    int overhangs = 0;
 
     for (int i = 0; i < Board::width; ++i) {
-        auto& col = shifted_board.board[i];
-        col >>= 1;
+        auto col = board.board[i];
+        if (col == 0) {
+            continue;
+        }
         col = ~col;
-        col &= board.board[i];
+        col = col << std::countl_one(col);
+        cavities += std::popcount(col);
     }
+
+    for (int i = 1; i < Board::width; ++i) {
+        auto col1 = board.board[i - 1];
+        auto col2 = board.board[i];
+        col1 = col1 >> (32 - std::countl_zero(col2));
+        if (col1 == 0) {
+            continue;
+        }
+        col1 = ~col1;
+        col1 = col1 << std::countl_one(col1);
+        overhangs += std::popcount(col1);
+    }
+
+    return { cavities, overhangs };
+}
+
+int Eval::well_position(const Board& board) {
+
+    int max_air = -1;
+    int well_position = 0;
 
     for (int i = 0; i < Board::width; ++i) {
-        int colcount = std::popcount(shifted_board.board[i]);
-        count += colcount;
-        count_sq += colcount * colcount;
+        auto& col = board.board[i];
+        int air = std::countl_zero(col);
+        if (air > max_air) {
+            max_air = air;
+            well_position = i;
+        }
     }
 
-    return { count, count_sq };
+    return well_position;
 }
 
 // lowest height, highest height
@@ -364,16 +388,20 @@ static bool Eval::ct4(const Board& board) {
     return true;
 }
 
-double Eval::eval_CC(const Board& board) {
+double Eval::eval_CC(const Board& board, int lines) {
     constexpr auto top_half = -150.0;
     constexpr auto top_quarter = -511.0;
     constexpr auto cavity_cells = -173.0;
     constexpr auto cavity_cells_sq = -3.0;
+    constexpr auto overhangs = -47.0;
+    constexpr auto overhangs_sq = -9.0;
     constexpr auto covered_cells = -17.0;
     constexpr auto covered_cells_sq = -1.0;
     constexpr auto bumpiness = -24.0;
     constexpr auto bumpiness_sq = -7.0;
     constexpr auto height = -39.0;
+    constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
+    constexpr float clears[5] = { -40, -140, -80, -100, 390 };
 
     double score = 0.0;
 
@@ -385,11 +413,15 @@ double Eval::eval_CC(const Board& board) {
     if (is_top_quarter(board))
         score += top_quarter;
 
-    values = n_cavities(board);
+    values = cavities_overhangs(board);
 
     score += values.first * cavity_cells;
 
-    score += values.second * cavity_cells_sq;
+    score += values.first * values.first * cavity_cells_sq;
+
+    score += values.second * overhangs;
+
+    score += values.second * values.second * overhangs_sq;
 
     values = height_features(board);
 
@@ -405,10 +437,14 @@ double Eval::eval_CC(const Board& board) {
     score += values.first * bumpiness;
     score += values.second * bumpiness_sq;
 
+    score += well_columns[well_position(board)];
+    score += clears[lines];
+
     return (score + 10000) / 10000;
 }
 
 double Eval::eval_CC(Game game, Move move) {
     game.place_piece(move.piece);
-    return eval_CC(game.board) + game.app / 10 + game.b2b / 50;
+    int lines = game.board.clearLines();
+    return eval_CC(game.board, lines) + game.app / 8 + game.b2b / 10;
 }

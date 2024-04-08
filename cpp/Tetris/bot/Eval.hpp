@@ -6,13 +6,15 @@
 
 namespace Eval {
 double eval_LUT(const Board& board);
-double eval_CC(const Board& board);
+double eval_CC(const Board& board, int lines);
 double eval_CC(Game game, Move move);
 
 static bool is_top_quarter(const Board& board);
 static bool is_top_half(const Board& board);
 
-static std::pair<int, int> n_cavities(const Board& board);
+std::pair<int, int> cavities_overhangs(const Board& board);
+
+int well_position(const Board& board);
 
 // lowest height, highest height
 static std::pair<int, int> height_features(const Board& board);
