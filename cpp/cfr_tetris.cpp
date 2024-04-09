@@ -290,6 +290,11 @@ private:
             Search::continueSearch(game);
 
             std::cout << "APP:" << game.app() << std::endl;
+
+            for (int garbage : game.garbage_meter) {
+
+                std::cout << "garbage meter:" << garbage << std::endl;
+            }
         }
         
         if (GetKey(olc::Key::R).bPressed) {

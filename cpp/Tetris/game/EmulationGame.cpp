@@ -49,7 +49,7 @@ void EmulationGame::play_moves(){
 
     // zero pass through
     if (chance.garbage_amount > 0) {
-        garbage_meter.push_back(chance.garbage_amount);
+        garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
     }
 
     int damage = game.damage_sent(cleared_lines, spin, pc);
@@ -58,7 +58,7 @@ void EmulationGame::play_moves(){
 
     // cancel damage but never send cause the opponent doesnt exist
     while (damage > 0 && garbage_meter.size() > 0) {
-        int &incoming = garbage_meter.front();
+        int &incoming = garbage_meter.back();
 
         if (incoming >= damage) {
             incoming -= damage;
@@ -71,7 +71,6 @@ void EmulationGame::play_moves(){
         if (incoming == 0) {
             garbage_meter.pop_back();
         }
-
     }
 
     // combo block
@@ -81,7 +80,7 @@ void EmulationGame::play_moves(){
 
         // place garbage
         while (garbage_meter.size() > 0) {
-            int& incoming = garbage_meter.front();
+            int& incoming = garbage_meter.back();
 
             int garbage = std::min(incoming, 8 - garbage_used);
 

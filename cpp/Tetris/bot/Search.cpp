@@ -75,6 +75,8 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
 void Search::continueSearch(EmulationGame state) {
     std::cout << "started searching, root hash is: " << (int)(state.hash() % 1000) << std::endl;
 
+    search_start_time = std::chrono::steady_clock::now();
+
     searching = true;
 
     root_state = state;
@@ -85,6 +87,7 @@ void Search::continueSearch(EmulationGame state) {
 
     for (WorkerStatistics& stat : uct.stats) {
         stat.deepest_node = 0;
+        stat.nodes = 0;
     }
 
     // Initialise worker queues
