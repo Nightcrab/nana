@@ -111,7 +111,8 @@ class UCT {
    public:
     UCT(int workers) {
         this->workers = workers;
-        this->nodes = std::vector<std::unordered_map<int, UCTNode>>(workers);
+        this->nodes_left = std::vector<std::unordered_map<int, UCTNode>>(workers);
+        this->nodes_right = std::vector<std::unordered_map<int, UCTNode>>(workers);
         this->rng = std::vector<RNG>(workers);
         this->stats = std::vector<WorkerStatistics>(workers);
         auto devrng = std::random_device();
@@ -123,7 +124,9 @@ class UCT {
     int workers = 4;
     int size = 0;
 
-    std::vector<std::unordered_map<int, UCTNode>> nodes;
+    std::vector<std::unordered_map<int, UCTNode>> nodes_left;
+    std::vector<std::unordered_map<int, UCTNode>> nodes_right;
+
     std::vector<RNG> rng;
     std::vector<WorkerStatistics> stats;
 
@@ -134,4 +137,6 @@ class UCT {
     void insertNode(UCTNode node);
 
     uint32_t getOwner(uint32_t hash);
+
+    void collect();
 };

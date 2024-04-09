@@ -120,6 +120,8 @@ void Search::endSearch() {
 		thread.join();
 	}
 
+    uct.collect();
+
     std::cout << "stopped searching" << std::endl;
  };
 

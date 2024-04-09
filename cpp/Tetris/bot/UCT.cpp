@@ -146,20 +146,36 @@ Action& UCTNode::select_SOR(RNG &rng) {
 }
 
 bool UCT::nodeExists(uint32_t nodeID) {
-	return nodes[nodeID % workers].find(nodeID) != nodes[nodeID % workers].end();
+	// node could be on left or right side
+	bool exists = nodes_left[nodeID % workers].find(nodeID) != nodes_left[nodeID % workers].end();
+	exists = exists || (nodes_right[nodeID % workers].find(nodeID) != nodes_right[nodeID % workers].end());
+	return exists;
 }
 
 
 UCTNode& UCT::getNode(uint32_t nodeID) {
-	return nodes[nodeID % workers].at(nodeID);
+	// if we're here, the node exists somewhere
+
+	if (nodes_right[nodeID % workers].find(nodeID) == nodes_right[nodeID % workers].end()) {
+		// copy from left side to right side
+		insertNode(nodes_left[nodeID % workers].at(nodeID));
+	}
+	return nodes_right[nodeID % workers].at(nodeID);
 };
 
 void UCT::insertNode(UCTNode node) {
+	// insertions always done on right side
 	stats[node.ID % workers].nodes++;
-	nodes[node.ID % workers].insert({ node.ID, node });
+	nodes_right[node.ID % workers].insert({ node.ID, node });
 };
 
 uint32_t UCT::getOwner(uint32_t hash) {
 	return hash % workers;
 }
 
+void UCT::collect() {
+	// clear out left side
+	nodes_left = std::vector<std::unordered_map<int, UCTNode>>(workers);
+	// exchange sides
+	std::swap(nodes_left, nodes_right);
+}
