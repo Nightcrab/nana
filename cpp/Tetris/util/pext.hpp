@@ -40,8 +40,7 @@ constexpr T pext(const T src, const T mask) {
         return pext_impl(src, mask);
     }
 
-#if defined(__GNUC__) && defined(__BMI2__)
-
+#if defined(__BMI2__)
     if constexpr (std::same_as<T, std::uint64_t>) {
         return _pext_u64(src, mask);
     }
