@@ -388,7 +388,7 @@ static bool Eval::ct4(const Board& board) {
     return true;
 }
 
-double Eval::eval_CC(const Board& board, int lines) {
+double Eval::eval_CC(const Board& board, int lines, bool tspin) {
     constexpr auto top_half = -150.0;
     constexpr auto top_quarter = -511.0;
     constexpr auto cavity_cells = -173.0;
@@ -402,6 +402,7 @@ double Eval::eval_CC(const Board& board, int lines) {
     constexpr auto height = -39.0;
     constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
     constexpr float clears[5] = { -40, -140, -80, -100, 390 };
+    constexpr float tspins[4] = { 0, 131, 392, 628 };
 
     double score = 0.0;
 
@@ -440,11 +441,21 @@ double Eval::eval_CC(const Board& board, int lines) {
     score += well_columns[well_position(board)];
     score += clears[lines];
 
+    if (tspin) {
+        score += tspins[lines];
+    }
+
     return (score + 10000) / 10000;
 }
 
 double Eval::eval_CC(Game game, Move move) {
     game.place_piece(move.piece);
-    int lines = game.board.filledRows();
-    return eval_CC(game.board, lines) + game.app / 8 + game.b2b / 10;
+    int lines = game.board.clearLines();
+    spinType spin = move.piece.spin;
+    bool tspin = false;
+    if (spin == spinType::normal) {
+        tspin = true;
+    }
+
+    return eval_CC(game.board, lines, tspin) + game.app / 4 + game.b2b / 5;
 }

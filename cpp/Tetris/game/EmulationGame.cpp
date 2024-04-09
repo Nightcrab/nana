@@ -53,7 +53,6 @@ void EmulationGame::play_moves(){
     }
 
     int damage = game.damage_sent(cleared_lines, spin, pc);
-    damage = 0;
 
     attack += damage;
 
