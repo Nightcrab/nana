@@ -122,6 +122,10 @@ void Search::endSearch() {
 
     uct.collect();
 
+    for (int i = 0; i < core_count; i++) {
+        delete queues[i];
+    }
+
     std::cout << "stopped searching" << std::endl;
  };
 
