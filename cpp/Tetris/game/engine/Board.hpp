@@ -76,5 +76,13 @@ class Board {
         return lines_cleared;
     }
 
+    int filledRows() {
+        uint32_t mask = UINT32_MAX;
+        for (uint32_t& column : board)
+            mask &= column;
+
+        return std::popcount(mask);
+    }
+
     std::array<uint32_t, Board::width> board;
 };

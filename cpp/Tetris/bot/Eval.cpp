@@ -445,6 +445,6 @@ double Eval::eval_CC(const Board& board, int lines) {
 
 double Eval::eval_CC(Game game, Move move) {
     game.place_piece(move.piece);
-    int lines = game.board.clearLines();
+    int lines = game.board.filledRows();
     return eval_CC(game.board, lines) + game.app / 8 + game.b2b / 10;
 }

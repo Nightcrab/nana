@@ -43,6 +43,6 @@ class Chance {
         p2_next_piece = rng2.getPiece();
         p1_garbage_column = rng1.getRand(Board::width);
         p2_garbage_column = rng2.getRand(Board::width);
-        garbage_amount = 1;//emulator_rng.getRand(5);
+        garbage_amount = 1;//emulator_rng.getRand(2);
     };
 };

@@ -10,7 +10,7 @@
 
 std::atomic_bool Search::searching = false;
 
-SearchType Search::search_style = NANA;
+SearchType Search::search_style = CC;
 
 int Search::core_count = 0;
 
