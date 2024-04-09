@@ -44,8 +44,8 @@ class Chance {
         p1_garbage_column = rng1.getRand(Board::width);
         p2_garbage_column = rng2.getRand(Board::width);
         garbage_amount = 0;
-        if (emulator_rng.getRand(2) == 0) {
-            garbage_amount = emulator_rng.getRand(4) + 4;
+        if (emulator_rng.getRand(3) == 0) {
+            garbage_amount = emulator_rng.getRand(2) + 4;
         }
     };
 };
