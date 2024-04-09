@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "Piece.hpp"
+#include "pext.hpp"
 
 class Board {
    public:
@@ -46,22 +47,7 @@ class Board {
         }
     }
 
-    // taken from:
-    // https://stackoverflow.com/questions/21144237/standard-c11-code-equivalent-to-the-pext-haswell-instruction-and-likely-to-be
-    int32_t extract_bits(int32_t x, int32_t mask) {
-        int32_t res = 0;
-        int bb = 1;
-
-        do {
-            int32_t lsb = mask & -mask;
-            mask &= ~lsb;
-            bool isset = x & lsb;
-            res |= isset ? bb : 0;
-            bb += bb;
-        } while (mask);
-
-        return res;
-    }
+    
 
     int clearLines() {
         uint32_t mask = UINT32_MAX;
@@ -71,7 +57,7 @@ class Board {
         mask = ~mask;
 
         for (uint32_t& column : board)
-            column = extract_bits(column, mask);
+            column = pext(column, mask);
 
         return lines_cleared;
     }
