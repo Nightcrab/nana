@@ -66,6 +66,21 @@ class Tetris : public olc::PixelGameEngine {
         FillRect(x_offset, SCREEN_HEIGHT - meter * 25, 25, 25 * meter, olc::RED);
     }
 
+    void renderQueue(Game& game) {
+        for (int i = 0; i < QUEUE_SIZE; i++) {
+            Piece piece = Piece(game.queue[i]);
+
+            for (int j = 0; j < 4; j++) {
+                int x = piece.minos[j].x;
+                int y = piece.minos[j].y;
+                const int size = 10;
+                // manually define orange
+                olc::Pixel colors[] = {olc::GREEN, olc::RED, olc::DARK_BLUE, olc::Pixel(255, 165, 0, 255), olc::MAGENTA, olc::YELLOW, olc::CYAN};
+                FillRect(x * size + 250 + 25, (4 - y) * size + (i+1) * 25 * 2, size, size, colors[(size_t)game.queue[i]]);
+            }
+        }
+    }
+
     bool OnUserCreate() override {
         // give both players a bag
         game.p1_game.current_piece = player_1_rng.getPiece();
@@ -82,6 +97,7 @@ class Tetris : public olc::PixelGameEngine {
         Eval::eval_LUT(board);
         return true;
     }
+
     bool OnUserUpdate(float fElapsedTime) override {
         // fill the screen with black
         Clear(olc::BLUE);
@@ -309,9 +325,9 @@ private:
 
         renderPiece(game.game, 0);
         renderBoard(game.game, 0);
-        renderHold(game.game, 0);
+        renderHold(game.game, 25);
+        renderQueue(game.game);
         renderMeter(std::accumulate(game.garbage_meter.begin(), game.garbage_meter.end(), 0), 25 * 10);
-
         return true;
     }
 };
