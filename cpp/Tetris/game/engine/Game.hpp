@@ -35,7 +35,7 @@ const std::array<std::array<int, 13>, 2> combotable = {{{0, 1, 1, 2, 2, 3, 3, 4,
                                                         {0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4}}};
 }  // namespace GarbageValues
 
-constexpr int QUEUE_SIZE = 5;
+constexpr int QUEUE_SIZE = 6;
 
 class Game {
    public:

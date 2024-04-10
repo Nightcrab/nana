@@ -67,7 +67,7 @@ class Tetris : public olc::PixelGameEngine {
     }
 
     void renderQueue(Game& game) {
-        for (int i = 0; i < QUEUE_SIZE; i++) {
+        for (int i = 0; i < QUEUE_SIZE - 1; i++) {
             Piece piece = Piece(game.queue[i]);
 
             for (int j = 0; j < 4; j++) {

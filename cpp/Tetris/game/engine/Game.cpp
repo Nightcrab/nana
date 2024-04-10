@@ -30,6 +30,8 @@ void Game::do_hold() {
         current_piece = queue.front();
 
         std::shift_left(queue.begin(), queue.end(), 1);
+
+        queue.back() = PieceType::Empty;
     }
 }
 
