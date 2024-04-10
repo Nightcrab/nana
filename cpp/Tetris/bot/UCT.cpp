@@ -6,7 +6,7 @@
 
 using namespace Distribution;
 
-constexpr static float ln(float x) {
+static float ln(float x) {
 	unsigned int bx = *(unsigned int*)(&x);
 	unsigned int ex = bx >> 23;
 	signed int t = (signed int)ex - (signed int)127;
@@ -16,7 +16,7 @@ constexpr static float ln(float x) {
 	return -1.49278 + (2.11263 + (-0.729104 + 0.10969 * x) * x) * x + 0.6931471806 * t;
 }
 
-constexpr static float quick_sqrt(const float x)
+static float quick_sqrt(const float x)
 {
 	const float xhalf = 0.5f * x;
 
