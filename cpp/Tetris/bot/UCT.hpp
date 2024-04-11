@@ -86,9 +86,9 @@ class Job {
         : R(0.0), state(EmulationGame()), type(STOP){};
     Job(EmulationGame& state, JobType type)
         : R(0.0), state(state), type(type){};
-    Job(EmulationGame& state, JobType type, std::stack<HashActionPair> path)
+    Job(EmulationGame& state, JobType type, std::vector<HashActionPair> path)
         : R(0.0), state(state), type(type), path(path){};
-    Job(float R, EmulationGame& state, JobType type, std::stack<HashActionPair> path)
+    Job(float R, EmulationGame& state, JobType type, std::vector<HashActionPair> path)
         : R(R), state(state), type(type), path(path){};
 
     float R;
@@ -97,7 +97,7 @@ class Job {
 
     // for going backwards
 
-    std::stack<HashActionPair> path;
+    std::vector<HashActionPair> path;
 };
 
 class WorkerStatistics {

@@ -184,7 +184,7 @@ void Search::search(int threadIdx) {
                     continue;
                 }
 
-                uint32_t parent_hash = job.path.top().hash;
+                uint32_t parent_hash = job.path.back().hash;
 
                 uint32_t parentIdx = uct.getOwner(parent_hash);
 
@@ -227,7 +227,7 @@ void Search::search(int threadIdx) {
 
                 Job select_job = Job(0.0, state, SELECT, job.path);
 
-                select_job.path.push(HashActionPair(hash, action->id));
+                select_job.path.push_back(HashActionPair(hash, action->id));
 
                 uct.stats[threadIdx].deepest_node = std::max(uct.stats[threadIdx].deepest_node, (int) select_job.path.size());
 
@@ -255,7 +255,7 @@ void Search::search(int threadIdx) {
 
                 float reward = rollout(state, threadIdx);
 
-                uint32_t parent_hash = job.path.top().hash;
+                uint32_t parent_hash = job.path.back().hash;
 
                 uint32_t parentIdx = uct.getOwner(parent_hash);
 
@@ -266,23 +266,23 @@ void Search::search(int threadIdx) {
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
             }
         } else if (job.type == BACKPROP) {
-            UCTNode& node = uct.getNode(job.path.top().hash);
+            UCTNode& node = uct.getNode(job.path.back().hash);
 
             float reward = job.R;
 
             // Undo Virtual Loss by adding R
             if (search_style == NANA) {
-                float& R = node.actions[job.path.top().actionID].R;
-                int& N = node.actions[job.path.top().actionID].N;
+                float& R = node.actions[job.path.back().actionID].R;
+                int& N = node.actions[job.path.back().actionID].N;
                 R = R + reward;
             }
             if (search_style == CC) {
-                if (reward > node.actions[job.path.top().actionID].R) {
-                    node.actions[job.path.top().actionID].R = reward;
+                if (reward > node.actions[job.path.back().actionID].R) {
+                    node.actions[job.path.back().actionID].R = reward;
                 }
             }
 
-            job.path.pop();
+            job.path.pop_back();
 
             if (job.path.empty()) {
                 Job select_job = Job(root_state, SELECT, job.path);
@@ -292,7 +292,7 @@ void Search::search(int threadIdx) {
                 continue;
             }
 
-            uint32_t parent_hash = job.path.top().hash;
+            uint32_t parent_hash = job.path.back().hash;
 
             uint32_t parentIdx = uct.getOwner(parent_hash);
 
