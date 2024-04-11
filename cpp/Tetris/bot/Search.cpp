@@ -165,7 +165,6 @@ void Search::search(int threadIdx) {
             return;
         }
 
-
         if (job.type == SELECT) {
 
             uct.stats[threadIdx].nodes++;
@@ -197,7 +196,7 @@ void Search::search(int threadIdx) {
             } 
             if (uct.nodeExists(hash)) {
 
-                UCTNode& node = uct.getNode(hash);
+                UCTNode& node = uct.getNode(hash, threadIdx);
                 Action* action = &node.actions[0];
 
                 if (search_style == NANA) {
@@ -225,14 +224,16 @@ void Search::search(int threadIdx) {
                 // Get the owner of the updated state based on the hash
                 uint32_t ownerIdx = uct.getOwner(new_hash);
 
-                Job select_job = Job(0.0, state, SELECT, job.path);
+                Job select_job = Job(state, SELECT, job.path);
 
                 select_job.path.push_back(HashActionPair(hash, action->id));
 
                 uct.stats[threadIdx].deepest_node = std::max(uct.stats[threadIdx].deepest_node, (int) select_job.path.size());
 
                 queues[ownerIdx]->enqueue(select_job, threadIdx);
+
             } else {
+
                 UCTNode node = UCTNode(state);
 
                 uct.insertNode(node);
@@ -266,7 +267,7 @@ void Search::search(int threadIdx) {
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
             }
         } else if (job.type == BACKPROP) {
-            UCTNode& node = uct.getNode(job.path.back().hash);
+            UCTNode& node = uct.getNode(job.path.back().hash, threadIdx);
 
             float reward = job.R;
 
@@ -285,23 +286,73 @@ void Search::search(int threadIdx) {
             job.path.pop_back();
 
             if (job.path.empty()) {
-                Job select_job = Job(root_state, SELECT, job.path);
+                Job select_job = Job(root_state, SELECT);
 
                 queues[threadIdx]->enqueue(select_job, threadIdx);
 
                 continue;
             }
 
-            uint32_t parent_hash = job.path.back().hash;
+            bool should_backprop = true;
 
-            uint32_t parentIdx = uct.getOwner(parent_hash);
+            // check if backpropagating would change the outcome at higher nodes
+            /*
+            for (HashActionPair ha : job.path) {
 
-            Job backprop_job = Job(reward, job.state, BACKPROP, job.path);
+                if ((ha.hash % core_count) != threadIdx) {
+                    continue;
+                }
 
-            queues[parentIdx]->enqueue(backprop_job, threadIdx);
+                UCTNode& higher_node = uct.getNode(ha.hash, threadIdx);
+                Action* action = &node.actions[0];
+
+                if (search_style == NANA) {
+
+                    action = &node.select();
+                }
+                if (search_style == CC) {
+
+                    action = &node.select_r_max();
+                }
+
+                if (action->id != ha.actionID) {
+                    // a sibling is better right now, so backpropagating may change the outcome
+                    should_backprop = true;
+                    break;
+                }
+            }
+            */
+
+            if (should_backprop) {
+
+                uint32_t parent_hash = job.path.back().hash;
+
+                uint32_t parentIdx = uct.getOwner(parent_hash);
+
+                // drain stashed rewards
+
+                reward += node.R_buffer;
+                node.R_buffer = 0;
+
+                Job backprop_job = Job(reward, job.state, BACKPROP, job.path);
+
+                queues[parentIdx]->enqueue(backprop_job, threadIdx);
+            }
+            else {
+
+                // stash reward and start a new rollout
+
+                node.R_buffer += reward;
+
+                Job select_job = Job(root_state, SELECT);
+
+                queues[threadIdx]->enqueue(select_job, threadIdx);
+            }
+
         }
     }
 }
+
 
 float Search::rollout(EmulationGame& state, int threadIdx) {
     // Rollout using a square-of-rank policy distribution.

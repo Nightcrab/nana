@@ -44,18 +44,20 @@ class Action {
 // state
 class UCTNode {
    public:
+    UCTNode() {};
     UCTNode(const EmulationGame &state);
-    UCTNode(const std::vector<Action>& p_actions, int ID, int N) {
+    UCTNode(const std::vector<Action>& p_actions, int id, int N) {
         this->actions = p_actions;
         for (int i = 0; i < actions.size(); i++) {
             actions[i].id = i;
         }
-        this->ID = ID;
+        this->id = id;
         this->N = N;
     }
 
-    uint32_t ID;
+    uint32_t id;
     int N;
+    float R_buffer = 0.0;
 
     std::vector<Action> actions;
 
@@ -66,7 +68,7 @@ class UCTNode {
 
 class HashActionPair {
    public:
-    HashActionPair(int hash, int actionID) {
+    HashActionPair(uint32_t hash, int actionID) {
         this->hash = hash;
         this->actionID = actionID;
     }
@@ -84,10 +86,13 @@ class Job {
    public:
     Job()
         : R(0.0), state(EmulationGame()), type(STOP){};
+
     Job(EmulationGame& state, JobType type)
         : R(0.0), state(state), type(type){};
+
     Job(EmulationGame& state, JobType type, std::vector<HashActionPair> path)
         : R(0.0), state(state), type(type), path(path){};
+
     Job(float R, EmulationGame& state, JobType type, std::vector<HashActionPair> path)
         : R(R), state(state), type(type), path(path){};
 
@@ -131,6 +136,8 @@ class UCT {
     std::vector<WorkerStatistics> stats;
 
     bool nodeExists(uint32_t nodeID);
+
+    UCTNode& getNode(uint32_t nodeID, int threadIdx);
 
     UCTNode& getNode(uint32_t nodeID);
 

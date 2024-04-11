@@ -62,7 +62,7 @@ UCTNode::UCTNode(const EmulationGame &state) {
 
 	this->actions = actions;
 
-	this->ID = state.hash();
+	this->id = state.hash();
 
 	this->N = 1;
 };
@@ -70,13 +70,9 @@ UCTNode::UCTNode(const EmulationGame &state) {
 Action& UCTNode::select_r_max() {
 	Action* best_action = &actions[0];
 	float highest_priority = -1.0;
-	constexpr float c = 1.41421356237 / 100;
 
 	for (Action& edge : actions) {
-		if (edge.N == 0) {
-			return edge;
-		}
-		float priority = edge.R + c * quick_sqrt(ln(N) / edge.N);
+		float priority = std::max(edge.eval, edge.R);
 		if (priority > highest_priority) {
 			best_action = &edge;
 			highest_priority = priority;
@@ -153,20 +149,41 @@ bool UCT::nodeExists(uint32_t nodeID) {
 }
 
 
-UCTNode& UCT::getNode(uint32_t nodeID) {
+UCTNode& UCT::getNode(uint32_t nodeID, int threadIdx) {
 	// if we're here, the node exists somewhere
+
+	if (!nodes_right[nodeID % workers].count(nodeID)) {
+		// node is on the left side
+
+		if ((nodeID % workers) != threadIdx) {
+			// not the owner, so we're not allowed to write
+			return nodes_left[nodeID % workers].at(nodeID);
+		}
+		else {
+			// copy from left side to right side
+			insertNode(nodes_left[nodeID % workers].at(nodeID));
+		}
+	}
+
+	return nodes_right[nodeID % workers].at(nodeID);
+};
+
+// singlethreaded version
+UCTNode& UCT::getNode(uint32_t nodeID) {
 
 	if (nodes_right[nodeID % workers].find(nodeID) == nodes_right[nodeID % workers].end()) {
 		// copy from left side to right side
 		insertNode(nodes_left[nodeID % workers].at(nodeID));
 	}
+
 	return nodes_right[nodeID % workers].at(nodeID);
 };
 
+
 void UCT::insertNode(UCTNode node) {
 	// insertions always done on right side
-	stats[node.ID % workers].nodes++;
-	nodes_right[node.ID % workers].insert({ node.ID, node });
+	stats[node.id % workers].nodes++;
+	nodes_right[node.id % workers].insert({ node.id, node });
 };
 
 uint32_t UCT::getOwner(uint32_t hash) {
