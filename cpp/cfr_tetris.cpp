@@ -242,6 +242,10 @@ private:
             game.play_moves();
 
             std::cout << "APP:" << game.app() << std::endl;
+            std::pair<int, int> values = Eval::height_features(game.game.board);
+            std::cout << "min height: " << values.first << std::endl;
+            std::cout << "max height: " << values.second << std::endl;
+            std::cout << "has TSD: " << Eval::has_tsd(game.game.board, values.first, values.second) << std::endl;
         }
 
         if (GetKey(olc::Key::P).bPressed) {

@@ -314,7 +314,7 @@ int Eval::well_position(const Board& board) {
 }
 
 // lowest height, highest height
-static std::pair<int, int> Eval::height_features(const Board& board) {
+std::pair<int, int> Eval::height_features(const Board& board) {
 
     // air is the complement of height
 
@@ -328,7 +328,7 @@ static std::pair<int, int> Eval::height_features(const Board& board) {
         min_air = std::min(air, min_air);
     }
 
-    return { 32 - max_air - 1, 32 - min_air - 1 };
+    return { 32 - max_air, 32 - min_air };
 }
 
 std::pair<int, int> Eval::n_covered_cells(Board board) {
@@ -384,6 +384,66 @@ static std::pair<int, int> Eval::get_bumpiness(const Board& board) {
     return { bumpiness, bumpiness_sq };
 }
 
+bool has_v(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b001;
+    uint32_t col2 = 0b000;
+    uint32_t col3 = 0b001;
+
+    uint32_t mask = 0b111;
+
+    bool ret = false;
+
+    for (int m = 0; m < 2; m++) {
+        for (int y = min_height; y < max_height - 3; y++) {
+            for (int i = 0; i < Board::width - 3; ++i) {
+                auto& b_col1 = board.board[i];
+                auto& b_col2 = board.board[i + 1];
+                auto& b_col3 = board.board[i + 2];
+                bool tsd = true;
+                tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
+                tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
+                tsd = tsd && (((b_col3 & (mask << y)) >> y) == col3);
+                if (tsd) {
+                    return true;
+                }
+            }
+        }
+        std::swap(col1, col3);
+    }
+
+    return ret;
+}
+
+bool Eval::has_tsd(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b101;
+    uint32_t col2 = 0b000;
+    uint32_t col3 = 0b001;
+
+    uint32_t mask = 0b111;
+
+    bool ret = false;
+
+    for (int m = 0; m < 2; m++) {
+        for (int y = min_height; y < max_height - 3; y++) {
+            for (int i = 0; i < Board::width - 3; ++i) {
+                auto& b_col1 = board.board[i];
+                auto& b_col2 = board.board[i + 1];
+                auto& b_col3 = board.board[i + 2];
+                bool tsd = true;
+                tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
+                tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
+                tsd = tsd && (((b_col3 & (mask << y)) >> y) == col3);
+                if (tsd) {
+                    return true;
+                }
+            }
+        }
+        std::swap(col1, col3);
+    }
+
+    return ret;
+}
+
 // Identify clean count to 4
 static bool Eval::ct4(const Board& board) {
 
@@ -400,8 +460,12 @@ static bool Eval::ct4(const Board& board) {
         return false;
     }
 
+    if (garbage_height == 0) {
+        return true;
+    }
+
     for (int i = 0; i < Board::width; ++i) {
-        if (!board.get(i, garbage_height)) {
+        if (!board.get(i, garbage_height - 1)) {
             // check we have exactly 4 rows filled above this hole
             if (std::countl_zero(board.board[i]) != 28 - garbage_height) {
                 return false;
@@ -424,12 +488,15 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr auto covered_cells_sq = -1.0;
     constexpr auto bumpiness = -24.0;
     constexpr auto bumpiness_sq = -7.0;
-    constexpr auto height = -39.0;
+    constexpr auto height = -37.0;
     constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
-    constexpr float clears[5] = { 40, -140, -160, -100, 390 };
-    constexpr float tspins[4] = { 0, 131, 392, 628 };
+    constexpr float clears[5] = { 40, -120, -140, -170, 490 };
+    constexpr float tspins[4] = { 0, 231, 320, 728 };
     constexpr float perfect_clear = 1000.0;
-    constexpr float wasted_t = -52.0;
+    constexpr float wasted_t = -152.0;
+    constexpr float tsd_shape = 220.0;
+    constexpr float v_shape = 100.0;
+    constexpr float counting = 200.0;
 
     double score = 0.0;
 
@@ -461,6 +528,17 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     values = height_features(board);
 
     score += values.second * height;
+
+    if (has_tsd(board, values.first, values.second)) {
+        score += tsd_shape;
+    }
+    else if (has_v(board, values.first, values.second)) {
+        score += v_shape;
+    }
+
+    if (ct4(board)) {
+        score += counting;
+    }
 
     values = n_covered_cells(board);
 
