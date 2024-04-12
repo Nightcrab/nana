@@ -88,6 +88,7 @@ void Search::continueSearch(EmulationGame state) {
     for (WorkerStatistics& stat : uct.stats) {
         stat.deepest_node = 0;
         stat.nodes = 0;
+        stat.backprop_messages = 0;
     }
 
     // Initialise worker queues
@@ -140,13 +141,16 @@ void Search::printStatistics() {
 
     int nodes = 0;
     int depth = 0;
+    int backprops = 0;
 
     for (WorkerStatistics stat : uct.stats) {
         nodes += stat.nodes;
+        backprops += stat.backprop_messages;
         depth = std::max(stat.deepest_node, depth);
     }
 
     std::cout << "nodes / second: " << nodes / (ms/ 1000000) << std::endl;
+    std::cout << "backprops / second: " << backprops / (ms / 1000000) << std::endl;
     std::cout << "tree depth: " << depth << std::endl;
 }
 
@@ -267,6 +271,8 @@ void Search::search(int threadIdx) {
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
             }
         } else if (job.type == BACKPROP) {
+
+            uct.stats[threadIdx].backprop_messages++;
             UCTNode& node = uct.getNode(job.path.back().hash, threadIdx);
 
             float reward = job.R;
