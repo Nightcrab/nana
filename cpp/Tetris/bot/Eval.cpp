@@ -219,7 +219,7 @@ double Eval::eval_LUT(const Board& board) {
 
 static bool Eval::is_top_quarter(const Board& board) {
     // do NOT touch anything this vectorizes
-    constexpr uint32_t top_quarter_collider = (1 << 15) - 1;
+    constexpr uint32_t top_quarter_collider = ~((1 << 15) - 1);
 
     bool ret = false;
 
@@ -232,13 +232,37 @@ static bool Eval::is_top_quarter(const Board& board) {
 
 static bool Eval::is_top_half(const Board& board) {
     // do NOT touch anything this vectorizes
-    constexpr uint32_t top_half_collider = (1 << 10) - 1;
+    constexpr uint32_t top_half_collider = ~((1 << 10) - 1);
 
     bool ret = false;
 
     for (size_t x = 0; x < Board::width; x++) {
         if (board.get_column(x) & top_half_collider)
             ret = true;
+    }
+    return ret;
+}
+
+
+static bool is_low(const Board& board) {
+    constexpr uint32_t low_collider = (1 << 3) - 1;
+
+    bool ret = false;
+
+    for (size_t x = 0; x < Board::width; x++) {
+        if (board.get_column(x) & low_collider)
+            ret = true;
+    }
+    return ret;
+}
+
+static bool is_perfect_clear(const Board& board) {
+
+    bool ret = true;
+
+    for (size_t x = 0; x < Board::width; x++) {
+        if (board.get_column(x))
+            ret = false;
     }
     return ret;
 }
@@ -391,6 +415,7 @@ static bool Eval::ct4(const Board& board) {
 double Eval::eval_CC(const Board& board, int lines, bool tspin) {
     constexpr auto top_half = -150.0;
     constexpr auto top_quarter = -511.0;
+    constexpr auto low = -150.0;
     constexpr auto cavity_cells = -173.0;
     constexpr auto cavity_cells_sq = -3.0;
     constexpr auto overhangs = -47.0;
@@ -403,6 +428,7 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin) {
     constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
     constexpr float clears[5] = { -40, -140, -80, -100, 390 };
     constexpr float tspins[4] = { 0, 131, 392, 628 };
+    constexpr float perfect_clear = 1000.0;
 
     double score = 0.0;
 
@@ -413,6 +439,13 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin) {
 
     if (is_top_quarter(board))
         score += top_quarter;
+
+    if (is_low(board))
+        score += low;
+
+    if (is_perfect_clear(board))
+        score += perfect_clear;
+
 
     values = cavities_overhangs(board);
 
@@ -457,5 +490,5 @@ double Eval::eval_CC(Game game, Move move) {
         tspin = true;
     }
 
-    return eval_CC(game.board, lines, tspin) + game.app / 4 + game.b2b / 5;
+    return eval_CC(game.board, lines, tspin);
 }

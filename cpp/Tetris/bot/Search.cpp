@@ -418,14 +418,14 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         }
 
         if (search_style == NANA) {
-            float r = max_eval;
+            //float r = max_eval;
             //float r = Distribution::expectation(cc_dist);
-            //float r = state.app();
+            float r = state.app() + max_eval / 100;
             reward = std::max(reward, r);
         }
         if (search_style == CC) {
-            float r = max_eval;
-            //float r = state.app();
+            //float r = max_eval;
+            float r = state.app() + max_eval / 100;
             reward = std::max(reward, r);
         }
 
@@ -433,7 +433,7 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         state.play_moves();
     }
 
-    reward = (Distribution::sigmoid(reward) + 1)/2;
+    //reward = (Distribution::sigmoid(reward) + 1)/2;
 
     return reward;
 }
