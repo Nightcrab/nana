@@ -494,9 +494,9 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr float tspins[4] = { 0, 231, 320, 728 };
     constexpr float perfect_clear = 1000.0;
     constexpr float wasted_t = -152.0;
-    constexpr float tsd_shape = 220.0;
-    constexpr float v_shape = 100.0;
-    constexpr float counting = 200.0;
+    constexpr float tsd_shape = 120.0;
+    constexpr float v_shape = 50.0;
+    constexpr float counting = 80.0;
 
     double score = 0.0;
 

@@ -53,7 +53,5 @@ class Chance {
         if (emulator_rng.getRand(20) == 0) {
             garbage_amount = 10;
         }
-
-        garbage_amount = 0;
     };
 };

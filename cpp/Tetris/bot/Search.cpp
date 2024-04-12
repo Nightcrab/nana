@@ -14,7 +14,7 @@ SearchType Search::search_style = NANA;
 
 int Search::core_count = 0;
 
-int Search::monte_carlo_depth = 3;
+int Search::monte_carlo_depth = 1;
 
 UCT Search::uct = UCT(4);
 
