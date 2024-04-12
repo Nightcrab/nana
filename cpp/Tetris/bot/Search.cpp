@@ -420,12 +420,12 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         if (search_style == NANA) {
             //float r = max_eval;
             //float r = Distribution::expectation(cc_dist);
-            float r = state.app() + max_eval / 100;
+            float r = state.app() / 2 + max_eval;
             reward = std::max(reward, r);
         }
         if (search_style == CC) {
             //float r = max_eval;
-            float r = state.app() + max_eval / 100;
+            float r = state.app() / 2 + max_eval;
             reward = std::max(reward, r);
         }
 

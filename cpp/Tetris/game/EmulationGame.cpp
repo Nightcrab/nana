@@ -47,10 +47,6 @@ void EmulationGame::play_moves(){
         pc = false;
     }
 
-    // zero pass through
-    if (chance.garbage_amount > 0) {
-        garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
-    }
 
     int damage = game.damage_sent(cleared_lines, spin, pc);
 
@@ -103,6 +99,11 @@ void EmulationGame::play_moves(){
         if (piece == PieceType::Empty) {
             piece = chance.rng.getPiece();
         }
+    }
+
+    // garbage delay
+    if (chance.garbage_amount > 0) {
+        garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
     }
 
     game.app = app();

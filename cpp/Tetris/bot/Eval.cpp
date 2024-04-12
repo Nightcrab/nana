@@ -412,7 +412,7 @@ static bool Eval::ct4(const Board& board) {
     return true;
 }
 
-double Eval::eval_CC(const Board& board, int lines, bool tspin) {
+double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr auto top_half = -0.0;
     constexpr auto top_quarter = -0.0;
     constexpr auto low = -5.0;
@@ -429,6 +429,7 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin) {
     constexpr float clears[5] = { 40, -140, -160, -100, 390 };
     constexpr float tspins[4] = { 0, 131, 392, 628 };
     constexpr float perfect_clear = 1000.0;
+    constexpr float wasted_t = -52.0;
 
     double score = 0.0;
 
@@ -478,6 +479,10 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin) {
         score += tspins[lines];
     }
 
+    if (waste_t) {
+        score += wasted_t;
+    }
+
     return (score + 10000) / 10000;
 }
 
@@ -490,5 +495,13 @@ double Eval::eval_CC(Game game, Move move) {
         tspin = true;
     }
 
-    return eval_CC(game.board, lines, tspin);
+    bool waste_t = false;
+
+    if (move.piece.type == PieceType::T) {
+        if (!tspin) {
+            waste_t = true;
+        }
+    }
+
+    return eval_CC(game.board, lines, tspin, waste_t);
 }
