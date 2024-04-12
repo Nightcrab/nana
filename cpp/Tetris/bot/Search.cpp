@@ -14,7 +14,7 @@ SearchType Search::search_style = NANA;
 
 int Search::core_count = 0;
 
-int Search::monte_carlo_depth = 2;
+int Search::monte_carlo_depth = 3;
 
 UCT Search::uct = UCT(4);
 
@@ -406,7 +406,7 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
                 return a.probability > b.probability;
                 });
 
-            // square of rank
+            // rank
 
             for (int rank = 1; rank <= policy.size(); rank++) {
                 float prob = 1.0 / (rank * rank);

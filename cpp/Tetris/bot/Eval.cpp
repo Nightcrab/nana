@@ -245,13 +245,13 @@ static bool Eval::is_top_half(const Board& board) {
 
 
 static bool is_low(const Board& board) {
-    constexpr uint32_t low_collider = (1 << 3) - 1;
+    constexpr uint32_t high_collider = ~((1 << 4) - 1);
 
-    bool ret = false;
+    bool ret = true;
 
     for (size_t x = 0; x < Board::width; x++) {
-        if (board.get_column(x) & low_collider)
-            ret = true;
+        if (board.get_column(x) & high_collider)
+            ret = false;
     }
     return ret;
 }
@@ -413,9 +413,9 @@ static bool Eval::ct4(const Board& board) {
 }
 
 double Eval::eval_CC(const Board& board, int lines, bool tspin) {
-    constexpr auto top_half = -150.0;
-    constexpr auto top_quarter = -511.0;
-    constexpr auto low = -150.0;
+    constexpr auto top_half = -0.0;
+    constexpr auto top_quarter = -0.0;
+    constexpr auto low = -5.0;
     constexpr auto cavity_cells = -173.0;
     constexpr auto cavity_cells_sq = -3.0;
     constexpr auto overhangs = -47.0;
@@ -426,7 +426,7 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin) {
     constexpr auto bumpiness_sq = -7.0;
     constexpr auto height = -39.0;
     constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
-    constexpr float clears[5] = { -40, -140, -80, -100, 390 };
+    constexpr float clears[5] = { 40, -140, -160, -100, 390 };
     constexpr float tspins[4] = { 0, 131, 392, 628 };
     constexpr float perfect_clear = 1000.0;
 
