@@ -60,7 +60,7 @@ class Game {
 
     void place_piece();
 
-    void place_piece(Piece& piece);
+    bool place_piece(Piece& piece);
 
     void do_hold();
 

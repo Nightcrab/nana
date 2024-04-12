@@ -14,33 +14,20 @@ void VersusGame::play_moves()
 		return;
 	}
 
-	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
-		//std::cout << "game lasted: " << turn << std::endl;
-		game_over = true;
-		return;
-	}
-
-	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
-		//std::cout << "game lasted: " << turn << std::endl;
-		game_over = true;
-		return ;
-	}
-
-
-
-	if (p1_move.second() && p2_move.second()) {
-		p1_move.second() = false;
-		p2_move.second() = false;
+	if (p1_move.null_move && p2_move.null_move) {
+		p1_move.null_move = false;
+		p2_move.null_move = false;
 	}
 
 	turn += 1;
 
 	int p1_cleared_lines = 0;
+	bool p1_first_hold = false;
 	// player 1 move
-	if (!p1_move.second()) {
-		spinType spin = p1_game.current_piece.spin;
+	if (!p1_move.null_move) {
+		spinType spin = p1_move.piece.spin;
 
-		p1_game.place_piece(p1_move.first());
+		p1_first_hold = p1_game.place_piece(p1_move.piece);
 		p1_cleared_lines = p1_game.board.clearLines();
 
 		bool pc = true;
@@ -65,12 +52,15 @@ void VersusGame::play_moves()
 
 		p2_meter += dmg;
 	}
-	int p2_cleared_lines = 0;
-	// player 2 move
-	if (!p2_move.second()) {
-		spinType spin = p2_game.current_piece.spin;
 
-		p2_game.place_piece(p2_move.first());
+
+	int p2_cleared_lines = 0;
+	bool p2_first_hold = false;
+	// player 1 move
+	if (!p2_move.null_move) {
+		spinType spin = p2_move.piece.spin;
+
+		p2_first_hold = p2_game.place_piece(p2_move.piece);
 		p2_cleared_lines = p2_game.board.clearLines();
 
 		bool pc = true;
@@ -101,31 +91,46 @@ void VersusGame::play_moves()
 	p1_meter -= min_meter;
 	p2_meter -= min_meter;
 
-	std::vector<VersusGame> out = {};
-
-
 	// if possible for both players to have damage, update here
-	if (!p1_move.second() && p1_cleared_lines == 0)
+	if (!p1_move.null_move && p1_cleared_lines == 0)
 	{
 		if (p1_meter > 0)
 		{
+			// player 2 accepts garbage!
 			p1_game.add_garbage(p1_meter, c_move.p1_garbage_column);
 			p1_meter = 0;
 		}
 	}
 
-	if (!p2_move.second() && p2_cleared_lines == 0)
+	if (!p2_move.null_move && p2_cleared_lines == 0)
 	{
 		if (p2_meter > 0)
 		{
-			p2_game.add_garbage(p2_meter, c_move.p1_garbage_column);
+			// player 2 accepts garbage!
+			p2_game.add_garbage(p2_meter, c_move.p2_garbage_column);
 			p2_meter = 0;
 		}
 	}
 
+
 	p1_game.queue.back() = c_move.p1_next_piece;
 	p2_game.queue.back() = c_move.p2_next_piece;
-	c_move.new_move();
+	c_move.new_move(p1_first_hold, p2_first_hold);
+
+	if (p1_first_hold)
+		*(p1_game.queue.end() - 2) = c_move.p1_extra_piece;
+
+	if (p2_first_hold)
+		*(p2_game.queue.end() - 2) = c_move.p2_extra_piece;
+
+
+	if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
+		game_over = true;
+	}
+
+	if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
+		game_over = true;
+	}
 }
 
 VersusGame VersusGame::play_moves_not_inplace() {
@@ -147,7 +152,7 @@ std::vector<Move> VersusGame::get_moves(int id) const
 	PieceType hold = player.hold.has_value() ? player.hold.value().type : player.queue.front();
 
 	std::vector<Piece> hold_pieces;
-	if(hold != PieceType::Empty)
+	if (hold != PieceType::Empty)
 		hold_pieces = player.movegen(hold);
 
 	moves.reserve((movegen_pieces.size() + hold_pieces.size()) * 2);

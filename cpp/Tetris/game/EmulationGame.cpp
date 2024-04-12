@@ -7,7 +7,7 @@ void EmulationGame::set_move(Move move) {
 };
 
 void EmulationGame::chance_move() {
-    chance.new_move();
+    chance.new_move(false, false);
 };
 
 void EmulationGame::play_moves(){
