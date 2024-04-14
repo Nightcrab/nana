@@ -25,6 +25,8 @@ class Chance {
 
     int garbage_amount;
 
+    int time = 0;
+
     RNG rng;
     RNG emulator_rng;
 
@@ -54,17 +56,13 @@ class Chance {
             p2_next_piece = rng2.getPiece();
         }
 
+        time++;
+
 
         p1_garbage_column = rng1.getRand(Board::width);
         p2_garbage_column = rng2.getRand(Board::width);
         garbage_amount = 0;
-        if (emulator_rng.getRand(10) == 0) {
-            garbage_amount = emulator_rng.getRand(2);
-        }
-        if (emulator_rng.getRand(4) == 0) {
-            garbage_amount = 4 + emulator_rng.getRand(2);
-        }
-        if (emulator_rng.getRand(20) == 0) {
+        if (time % 10 == 0) {
             garbage_amount = 10;
         }
     };

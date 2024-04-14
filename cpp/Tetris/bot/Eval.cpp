@@ -478,7 +478,7 @@ static bool Eval::ct4(const Board& board) {
 
 double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr auto top_half = -0.0;
-    constexpr auto top_quarter = -0.0;
+    constexpr auto top_quarter = -120.0;
     constexpr auto low = -5.0;
     constexpr auto cavity_cells = -173.0;
     constexpr auto cavity_cells_sq = -3.0;
@@ -494,8 +494,8 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr float tspins[4] = { 0, 231, 320, 728 };
     constexpr float perfect_clear = 1000.0;
     constexpr float wasted_t = -152.0;
-    constexpr float tsd_shape = 120.0;
-    constexpr float v_shape = 50.0;
+    constexpr float tsd_shape = 180.0;
+    constexpr float v_shape = 70.0;
     constexpr float counting = 80.0;
 
     double score = 0.0;

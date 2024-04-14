@@ -192,6 +192,7 @@ public:
     }
 private:
     EmulationGame game;
+    int time = 0;
 
     bool OnUserCreate() override {
         game = EmulationGame();
@@ -299,7 +300,7 @@ private:
             std::cout << "well position: " << Eval::well_position(game.game.board) << std::endl;
         }
 
-        if (GetKey(olc::Key::Q).bPressed && Search::searching) {
+        if ((GetKey(olc::Key::Q).bPressed || time % 20 == 0) && Search::searching) {
             Search::endSearch();
             game.set_move(Search::bestMove());
 
@@ -326,6 +327,8 @@ private:
                 piece_type = game.chance.rng.getPiece();
             }
         }
+
+        time++;
 
         renderPiece(game.game, 0);
         renderBoard(game.game, 0);
