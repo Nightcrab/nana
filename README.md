@@ -3,7 +3,7 @@
 </p>
 <br>
 
-# Nana - Tetromino AI Engine
+# Nana
 
 --------------------------
 
