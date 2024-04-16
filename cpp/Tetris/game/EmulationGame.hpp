@@ -27,9 +27,13 @@ class EmulationGame {
     int pieces = 0;
     int attack = 0;
 
+    // does not count cancelling
+    int true_attack = 0;
+
     bool game_over = false;
 
     float app();
+    float true_app();
 
     float b2b();
 

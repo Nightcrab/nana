@@ -95,6 +95,8 @@ void EmulationGame::play_moves(){
         }
     }
 
+    true_attack += damage;
+
     for (auto& piece : game.queue) {
         if (piece == PieceType::Empty) {
             piece = chance.rng.getPiece();
@@ -137,6 +139,11 @@ uint32_t EmulationGame::hash() const {
 
 float EmulationGame::app() {
     return (float) attack / (float) pieces;
+}
+
+
+float EmulationGame::true_app() {
+    return (float)true_attack / (float)pieces;
 }
 
 float EmulationGame::b2b() {

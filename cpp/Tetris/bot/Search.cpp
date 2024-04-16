@@ -82,6 +82,7 @@ void Search::continueSearch(EmulationGame state) {
     root_state = state;
 
     state.attack = state.app() * 100;
+    state.true_attack = state.true_app() * 100;
     state.pieces = 100;
 
     if (!uct.nodeExists(state.hash())) {
@@ -423,12 +424,12 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         if (search_style == NANA) {
             //float r = max_eval;
             //float r = Distribution::expectation(cc_dist);
-            float r = state.app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
+            float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
         }
         if (search_style == CC) {
             //float r = max_eval;
-            float r = state.app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
+            float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
         }
 
