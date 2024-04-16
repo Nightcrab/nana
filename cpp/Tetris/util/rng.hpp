@@ -21,4 +21,5 @@ class RNG {
     u32 getRand(u32 upperBound);
 
     void makebag();
+    void new_seed();
 };

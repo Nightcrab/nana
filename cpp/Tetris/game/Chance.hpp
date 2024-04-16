@@ -41,7 +41,7 @@ class Chance {
     }
 
     void reset_rng() {
-        rng = RNG();
+        rng.new_seed();
     }
 
     void new_move(bool p1_first_hold, bool p2_first_hold) {

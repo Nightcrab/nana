@@ -35,3 +35,7 @@ void RNG::makebag() {
         std::swap(pieces[buffer], pieces[i]);
     }
 }
+
+void RNG::new_seed() {
+    PPTRNG = std::random_device()();
+}
