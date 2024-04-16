@@ -299,8 +299,96 @@ void Game::process_movement(Piece& piece, Movement movement) const {
     }
 }
 
+// Movegen for a convex board with free movement at the top.
+std::vector<Piece> Game::movegen_fast(PieceType piece_type) const {
+    Piece initial_piece = Piece(piece_type);
+
+    std::vector<Piece> open_nodes;
+    open_nodes.reserve(150);
+    std::vector<Piece> next_nodes;
+    next_nodes.reserve(150);
+    std::vector<bool> visited = std::vector<bool>(6444);
+
+    std::vector<Piece> valid_moves;
+    valid_moves.reserve(150);
+
+    // rotations
+    for (int r = 0; r < 4; r++) {
+        open_nodes.emplace_back(initial_piece);
+
+        initial_piece.rotate(TurnDirection::Right);
+
+        // lateral movement
+        while (open_nodes.size() > 0) {
+            // expand edges
+            for (auto& piece : open_nodes) {
+                auto h = piece.compact_hash();
+                if (visited[h])
+                    continue;
+                // mark node as visited
+                visited[h] = true;
+
+                valid_moves.push_back(piece);
+
+                Piece new_piece = piece;
+                process_movement(new_piece, Movement::Left);
+                next_nodes.emplace_back(new_piece);
+
+                new_piece = piece;
+                process_movement(new_piece, Movement::Right);
+                next_nodes.emplace_back(new_piece);
+            }
+            open_nodes = next_nodes;
+            next_nodes.clear();
+        }
+    }
+
+    for (Piece &piece : valid_moves) {
+        process_movement(piece, Movement::SonicDrop);
+    }
+
+    return valid_moves;
+}
+
+bool Game::is_convex() const {
+    Board shifted_board;
+
+    int garbage_height = get_garbage_height();
+
+    bool convex = true;
+
+    for (int i = 0; i < Board::width; ++i) {
+        shifted_board.board[i] = board.board[i] >> garbage_height;
+    }
+
+    for (int i = 0; i < Board::width; ++i) {
+        auto& col = shifted_board.board[i];
+        convex = convex && (std::popcount(col) == std::countr_one(col));
+    }
+
+    return convex;
+
+}
+
+int Game::get_garbage_height() const {
+
+    int max_air = -1;
+
+    for (int i = 0; i < Board::width; ++i) {
+        auto& col = board.board[i];
+        int air = std::countl_zero(col);
+        max_air = std::max(air, max_air);
+    }
+
+    return 32 - max_air;
+}
+
 std::vector<Piece> Game::movegen(PieceType piece_type) const {
     Piece initial_piece = Piece(piece_type);
+
+    if (is_convex()) {
+        return movegen_fast(piece_type);
+    }
 
     std::vector<Piece> open_nodes;
     open_nodes.reserve(150);

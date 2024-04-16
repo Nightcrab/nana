@@ -62,7 +62,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     // Spawn jobs
     for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
         EmulationGame state = EmulationGame(root_state);
-        state.chance.emulator_rng = RNG();
+        state.chance.reset_rng();
         queues[rootOwnerIdx]->enqueue(Job(state, SELECT), core_count);
     }
 
