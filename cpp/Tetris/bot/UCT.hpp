@@ -115,19 +115,22 @@ public:
 // one of these shared by all threads
 class UCT {
    public:
+    UCT() = default;
     UCT(int workers) {
         this->workers = workers;
         this->nodes_left = std::vector<std::unordered_map<int, UCTNode>>(workers);
         this->nodes_right = std::vector<std::unordered_map<int, UCTNode>>(workers);
         this->rng = std::vector<RNG>(workers);
         this->stats = std::vector<WorkerStatistics>(workers);
+
         auto devrng = std::random_device();
         for (auto& thread_rng : this->rng) {
             thread_rng.PPTRNG = devrng();
         }
     }
+    ~UCT() = default;
 
-    int workers = 4;
+    int workers = 0;
     int size = 0;
 
     std::vector<std::unordered_map<int, UCTNode>> nodes_left;

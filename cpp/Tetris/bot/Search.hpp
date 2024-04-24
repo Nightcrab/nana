@@ -1,49 +1,52 @@
 #pragma once
-#include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <vector>
+#include <memory>
+
 #include "EmulationGame.hpp"
+#include "MPSC.hpp"
 #include "Move.hpp"
 #include "UCT.hpp"
-#include "MPSC.hpp"
 
 enum SearchType {
-	CC,
-	NANA
+    CC,
+    NANA
 };
+
 
 #ifndef __SEARCH_HPP
 #define __SEARCH_HPP
 namespace Search {
 
-	extern std::atomic_bool searching;
+extern std::atomic_bool searching;
 
-	extern SearchType search_style;
+extern SearchType search_style;
 
-	extern int core_count;
+extern int core_count;
 
-	extern int monte_carlo_depth;
+extern int monte_carlo_depth;
 
-	extern UCT uct;
+extern UCT uct;
 
-	extern EmulationGame root_state;
+extern EmulationGame root_state;
 
-	extern zib::wait_mpsc_queue<Job>* queues[256];
+extern std::vector<std::unique_ptr<zib::wait_mpsc_queue<Job>>> queues;
 
-	void startSearch(const EmulationGame& state, int core_count);
+void startSearch(const EmulationGame& state, int core_count);
 
-	void continueSearch(EmulationGame state);
+void continueSearch(EmulationGame state);
 
-	void endSearch();
+void endSearch();
 
-	void search(int threadIdx);
+void search(int threadIdx);
 
-	float rollout(EmulationGame& state, int threadIdx);
+float rollout(EmulationGame& state, int threadIdx);
 
-	void printStatistics();
+void printStatistics();
 
-	// See the best move found so far.
-	Move bestMove();
+// See the best move found so far.
+Move bestMove();
 
-};
+};  // namespace Search
 #endif

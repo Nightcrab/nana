@@ -17,11 +17,11 @@ int Search::core_count = 0;
 
 int Search::monte_carlo_depth = 1;
 
-UCT Search::uct = UCT(4);
+UCT Search::uct;
 
 EmulationGame Search::root_state;
 
-zib::wait_mpsc_queue<Job>* Search::queues[256];
+std::vector<std::unique_ptr<zib::wait_mpsc_queue<Job>>> Search::queues;
 std::vector<int> core_indices;
 std::vector<std::jthread> worker_threads;
 
@@ -48,8 +48,11 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     uct.insertNode(UCTNode(state));
 
     // Initialise worker queues
+
+    queues.clear();
+
     for (int i = 0; i < core_count; i++) {
-        queues[i] = new zib::wait_mpsc_queue<Job>(core_count + 1);
+        queues.emplace_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
     }
 
     // Thread indices
@@ -91,14 +94,12 @@ void Search::continueSearch(EmulationGame state) {
     }
 
     for (WorkerStatistics& stat : uct.stats) {
-        stat.deepest_node = 0;
-        stat.nodes = 0;
-        stat.backprop_messages = 0;
+        stat = {};
     }
-
+    queues.clear();
     // Initialise worker queues
     for (int i = 0; i < core_count; i++) {
-        queues[i] = new zib::wait_mpsc_queue<Job>(core_count + 1);
+        queues.emplace_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
     }
 
     core_indices = std::vector<int>(core_count);
@@ -130,10 +131,7 @@ void Search::endSearch() {
 	}
 
     uct.collect();
-
-    for (int i = 0; i < core_count; i++) {
-        delete queues[i];
-    }
+    queues.clear();
 
     std::cout << "stopped searching" << std::endl;
  };
