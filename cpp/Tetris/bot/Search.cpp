@@ -7,6 +7,7 @@
 #include "Distribution.hpp"
 #include "Eval.hpp"
 #include <iostream>
+#include <thread>
 
 std::atomic_bool Search::searching = false;
 

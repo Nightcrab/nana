@@ -338,6 +338,12 @@ private:
         renderMeter(std::accumulate(game.garbage_meter.begin(), game.garbage_meter.end(), 0), 25 * 10);
         return true;
     }
+    bool OnUserDestroy() override {
+        if (Search::searching) {
+            Search::endSearch();
+        }
+        return true;
+    }
 };
 
 int main() {
