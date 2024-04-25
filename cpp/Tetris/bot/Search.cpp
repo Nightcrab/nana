@@ -50,9 +50,10 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     // Initialise worker queues
 
     queues.clear();
+    queues.reserve(core_count);
 
     for (int i = 0; i < core_count; i++) {
-        queues.emplace_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
+        queues.push_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
     }
 
     // Thread indices
@@ -97,6 +98,7 @@ void Search::continueSearch(EmulationGame state) {
         stat = {};
     }
     queues.clear();
+    queues.reserve(core_count);
     // Initialise worker queues
     for (int i = 0; i < core_count; i++) {
         queues.emplace_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
