@@ -145,7 +145,7 @@ class UCT {
 
     UCTNode& getNode(uint32_t nodeID);
 
-    void insertNode(UCTNode node);
+    void insertNode(const UCTNode &node);
 
     uint32_t getOwner(uint32_t hash);
 

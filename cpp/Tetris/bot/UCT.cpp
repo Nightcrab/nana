@@ -180,7 +180,7 @@ UCTNode& UCT::getNode(uint32_t nodeID) {
 };
 
 
-void UCT::insertNode(UCTNode node) {
+void UCT::insertNode(const UCTNode &node) {
 	// insertions always done on right side
 	stats[node.id % workers].nodes++;
 	nodes_right[node.id % workers].insert({ node.id, node });
