@@ -11,7 +11,7 @@
 
 std::atomic_bool Search::searching = false;
 
-SearchType Search::search_style = NANA;
+
 
 int Search::core_count = 0;
 
@@ -27,7 +27,7 @@ std::vector<std::jthread> worker_threads;
 
 std::chrono::steady_clock::time_point search_start_time;
 
-const int LOAD_FACTOR = 6;
+constexpr int LOAD_FACTOR = 6;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
 
@@ -159,7 +159,7 @@ void Search::printStatistics() {
     std::cout << "tree depth: " << depth << std::endl;
 }
 
-void Search::search(int threadIdx) {
+void Search::search(const int threadIdx) {
     while (true) {
         if (!searching) {
             return;
@@ -186,7 +186,7 @@ void Search::search(int threadIdx) {
 
                 float reward = rollout(state, threadIdx);
 
-                Job backprop_job = Job(reward, state, BACKPROP, job.path);
+                Job backprop_job(reward, state, BACKPROP, job.path);
 
                 if (job.path.empty()) {
                     continue;
@@ -201,18 +201,18 @@ void Search::search(int threadIdx) {
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
 
                 continue;
+            }
 
-            } 
             if (uct.nodeExists(hash)) {
 
                 UCTNode& node = uct.getNode(hash, threadIdx);
                 Action* action = &node.actions[0];
 
-                if (search_style == NANA) {
+                if constexpr (search_style == NANA) {
 
                     action = &node.select();
                 }
-                if (search_style == CC) {
+                if constexpr (search_style == CC) {
 
                     //action = &node.select_r_max();
                     action = &node.select_SOR(uct.rng[threadIdx]);
@@ -233,7 +233,7 @@ void Search::search(int threadIdx) {
                 // Get the owner of the updated state based on the hash
                 uint32_t ownerIdx = uct.getOwner(new_hash);
 
-                Job select_job = Job(state, SELECT, job.path);
+                Job select_job(state, SELECT, job.path);
 
                 select_job.path.push_back(HashActionPair(hash, action->id));
 
@@ -241,18 +241,19 @@ void Search::search(int threadIdx) {
 
                 queues[ownerIdx]->enqueue(select_job, threadIdx);
 
-            } else {
+            } 
+            else {
 
-                UCTNode node = UCTNode(state);
+                UCTNode node(state);
 
                 uct.insertNode(node);
 
                 Action* action = &node.actions[0];
-                if (search_style == NANA) {
+                if constexpr (search_style == NANA) {
 
                     action = &node.select();
                 }
-                if (search_style == CC) {
+                if constexpr (search_style == CC) {
 
                     action = &node.select_SOR(uct.rng[threadIdx]);
                 }
@@ -269,13 +270,14 @@ void Search::search(int threadIdx) {
 
                 uint32_t parentIdx = uct.getOwner(parent_hash);
 
-                Job backprop_job = Job(reward, state, BACKPROP, job.path);
+                Job backprop_job(reward, state, BACKPROP, job.path);
 
                 // send rollout reward to parent, who also owns the arm that got here
 
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
             }
-        } else if (job.type == BACKPROP) {
+        } 
+        else if (job.type == BACKPROP) {
 
             uct.stats[threadIdx].backprop_messages++;
             UCTNode& node = uct.getNode(job.path.back().hash, threadIdx);
@@ -283,12 +285,12 @@ void Search::search(int threadIdx) {
             float reward = job.R;
 
             // Undo Virtual Loss by adding R
-            if (search_style == NANA) {
+            if constexpr (search_style == NANA) {
                 float& R = node.actions[job.path.back().actionID].R;
                 int& N = node.actions[job.path.back().actionID].N;
                 R = R + reward;
             }
-            if (search_style == CC) {
+            if constexpr (search_style == CC) {
                 if (reward > node.actions[job.path.back().actionID].R) {
                     node.actions[job.path.back().actionID].R = reward;
                 }
@@ -297,7 +299,7 @@ void Search::search(int threadIdx) {
             job.path.pop_back();
 
             if (job.path.empty()) {
-                Job select_job = Job(root_state, SELECT);
+                Job select_job(root_state, SELECT);
 
                 queues[threadIdx]->enqueue(select_job, threadIdx);
 
@@ -345,7 +347,7 @@ void Search::search(int threadIdx) {
                 reward += node.R_buffer;
                 node.R_buffer = 0;
 
-                Job backprop_job = Job(reward, job.state, BACKPROP, job.path);
+                Job backprop_job(reward, job.state, BACKPROP, job.path);
 
                 queues[parentIdx]->enqueue(backprop_job, threadIdx);
             }
@@ -355,7 +357,7 @@ void Search::search(int threadIdx) {
 
                 node.R_buffer += reward;
 
-                Job select_job = Job(root_state, SELECT);
+                Job select_job(root_state, SELECT);
 
                 queues[threadIdx]->enqueue(select_job, threadIdx);
             }
@@ -422,13 +424,13 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
             max_eval = Distribution::max_value(cc_dist);
         }
 
-        if (search_style == NANA) {
+        if constexpr (search_style == NANA) {
             //float r = max_eval;
             //float r = Distribution::expectation(cc_dist);
             float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
         }
-        if (search_style == CC) {
+        if constexpr (search_style == CC) {
             //float r = max_eval;
             float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
@@ -450,7 +452,7 @@ Move Search::bestMove() {
     Move best_move;
 
     for (Action& action : uct.getNode(root_state.hash()).actions) {
-        if (search_style == NANA) {
+        if constexpr (search_style == NANA) {
             if (action.N == biggest_N) {
                 if (action.R > biggest_R) {
                     biggest_R = action.R;
@@ -466,7 +468,7 @@ Move Search::bestMove() {
 
             // std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
         }
-        if (search_style == CC) {
+        if constexpr (search_style == CC) {
             if (action.R > biggest_R) {
                 biggest_R = action.R;
                 biggest_N = action.N;
@@ -478,10 +480,10 @@ Move Search::bestMove() {
         
 
     }
-    if (search_style == NANA) {
+    if constexpr (search_style == NANA) {
         std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N << std::endl;
     }
-    if (search_style == CC) {
+    if constexpr (search_style == CC) {
         std::cout << "best move was visited " << biggest_N << " times, with R_max " << biggest_R << std::endl;
     }
 

@@ -87,13 +87,13 @@ class Job {
     Job()
         : R(0.0), state(EmulationGame()), type(STOP){};
 
-    Job(EmulationGame& state, JobType type)
+    Job(const EmulationGame& state, JobType type)
         : R(0.0), state(state), type(type){};
 
-    Job(EmulationGame& state, JobType type, std::vector<HashActionPair> path)
+    Job(const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
         : R(0.0), state(state), type(type), path(path){};
 
-    Job(float R, EmulationGame& state, JobType type, std::vector<HashActionPair> path)
+    Job(float R, const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
         : R(R), state(state), type(type), path(path){};
 
     float R;
