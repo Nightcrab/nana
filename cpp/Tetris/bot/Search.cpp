@@ -45,7 +45,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     uct = UCT(core_count);
 
     // Create root node
-    uct.insertNode(UCTNode(state));
+    uct.insertNode(UCTNode(root_state));
 
     // Initialise worker queues
 
@@ -66,9 +66,8 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
 
     // Spawn jobs
     for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
-        EmulationGame state = EmulationGame(root_state);
-        state.chance.reset_rng();
-        queues[rootOwnerIdx]->enqueue(Job(state, SELECT), core_count);
+        root_state.chance.reset_rng();
+        queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
     // Spawn worker threads
@@ -127,7 +126,6 @@ void Search::endSearch() {
     }
 
     // join threads
-    
     for (auto& thread : worker_threads) {
 		thread.join();
 	}
