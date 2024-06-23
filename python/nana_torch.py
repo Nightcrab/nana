@@ -18,7 +18,7 @@ class NN:
     
     def initialise(self):
         for weight in self.weights:
-            torch.nn.init.kaiming_uniform_(weight, mode='fan_in', nonlinearity='relu')
+            torch.nn.init.normal_(weight, mean=0.0, std=1.0)
         for bias in self.biases:
             torch.nn.init.zeros_(bias)
 
@@ -49,6 +49,12 @@ class StateEncoder(NN):
             torch.empty(32)
         ]
 
+    def initialise(self):
+        for weight in self.weights:
+            torch.nn.init.kaiming_uniform_(weight, mode='fan_in', nonlinearity='relu')
+        for bias in self.biases:
+            torch.nn.init.zeros_(bias)
+
     def __call__(self, board: torch.Tensor):
         # 32 channels, 3x3 kernels
         x = F.conv2d(board, self.weights[0], bias=self.biases[0], stride=1, padding=0)
@@ -66,7 +72,7 @@ class StateEncoder(NN):
         x = F.avg_pool2d(x, (2,2))
 
         # flatten 
-        v = torch.flatten(x)
+        v = torch.flatten(x, start_dim=1, end_dim=-1)
 
         return v
 
@@ -80,14 +86,19 @@ class DeathPredictor(NN):
         super().__init__()
 
         self.weights = [
-            torch.empty(2, 64),
+            torch.empty(2, 832),
         ]
 
-    def __call__(self, vector: torch.Tensor):
+        self.biases = [
+            torch.empty(2)
+        ]
+        
 
-        x = F.linear(x, self.weights[0], bias=self.biases[0])
+    def __call__(self, v: torch.Tensor):
+        
+        x = F.linear(v, self.weights[0], bias=self.biases[0])
         x = F.relu(x)
-        x = F.softmax(x)
+        x = F.softmax(x, dim=-1)
 
         return x
 
@@ -122,9 +133,13 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
+        board = torch.from_numpy(self.data[idx][1].board).to(dtype=torch.float32).unsqueeze(0)
+        death = torch.tensor(self.data[idx][0].death) - 1
+        death = torch.clip(death, 0, 1)
+        death = F.one_hot(death, 2).to(dtype=torch.float32)
         sample = (
-            self.data[idx][0].death,
-            self.data[idx][1].board
+            board,
+            death,
         )
         return sample
 
@@ -136,7 +151,7 @@ def train():
     predictor = DeathPredictor()
     predictor.initialise()
 
-    batch_size = 2048
+    batch_size = 32
     epochs = 10
 
     dataset = Dataset(DataProvider("data.bin"))
@@ -153,7 +168,7 @@ def train():
         lr=0.0001
     )
 
-    loss = 0
+    loss = torch.tensor([0.0], requires_grad=True)
 
     for epoch_i in range(epochs):
         epoch_loss = 0
@@ -169,13 +184,13 @@ def train():
             batch_loss = F.cross_entropy(outputs, targets)
 
             epoch_loss += batch_loss
-            loss += batch_loss
+            loss = torch.add(loss, batch_loss)
 
             loss.backward()
 
             optimizer.step()
 
-        print("epoch loss: ", epoch_loss)
+        print("epoch loss: ", float(epoch_loss))
 
 if __name__ == "__main__":
     train()
