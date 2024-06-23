@@ -8,6 +8,10 @@ class NN:
     """
     Base class.
     """
+    def __init__(self):
+        self.weights = []
+        self.biases = []
+
     def load_weights(self, weights, biases):
         self.weights = weights
         self.biases = biases
@@ -16,7 +20,7 @@ class NN:
         for weight in self.weights:
             torch.nn.init.kaiming_uniform_(weight, mode='fan_in', nonlinearity='relu')
         for bias in self.biases:
-            torch.nn.init.zeros(bias)
+            torch.nn.init.zeros_(bias)
 
 
 class AttackEmbedding:
@@ -72,6 +76,9 @@ class DeathPredictor(NN):
     64 state vector -> 2 categorical
     """
     def __init__(self):
+
+        super().__init__()
+
         self.weights = [
             torch.empty(2, 64),
         ]
@@ -107,17 +114,17 @@ class AttackPredictor:
         pass
 
 
-class EncoderDataset(torch.utils.data.Dataset):
+class Dataset(torch.utils.data.Dataset):
     def __init__(self, provider: DataProvider):
-        data: list[tuple[Death, State, State]] = provider.get_games_data_set()
+        self.data: list[tuple[Death, State, State]] = provider.get_games_data_set()
 
     def __len__(self):
-        return len(data)
+        return len(self.data)
 
     def __getitem__(self, idx):
         sample = (
-            data[i][0].death,
-            data[i][1].board
+            self.data[idx][0].death,
+            self.data[idx][1].board
         )
         return sample
 
@@ -126,15 +133,15 @@ def train():
     encoder = StateEncoder()
     encoder.initialise()
 
-    death = DeathPredictor()
-    death.initialise()
+    predictor = DeathPredictor()
+    predictor.initialise()
 
     batch_size = 2048
     epochs = 10
 
     dataset = Dataset(DataProvider("data.bin"))
 
-    dataloader = DataLoader(
+    dataloader = torch.utils.data.DataLoader(
         dataset, 
         batch_size=batch_size,
         shuffle=True, 
@@ -142,7 +149,7 @@ def train():
     )
 
     optimizer = torch.optim.Adam(
-        [*encoder.weights, *dp_weights],
+        [*encoder.weights, *predictor.weights],
         lr=0.0001
     )
 
@@ -157,7 +164,7 @@ def train():
             optimizer.zero_grad()
 
             Vs = encoder(inputs)
-            outputs = death(Vs)
+            outputs = predictor(Vs)
 
             batch_loss = F.cross_entropy(outputs, targets)
 
@@ -170,5 +177,5 @@ def train():
 
         print("epoch loss: ", epoch_loss)
 
-
-train()
+if __name__ == "__main__":
+    train()

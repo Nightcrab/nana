@@ -74,6 +74,9 @@ class State:
         move_x,
         move_y,
         meter,
+        sent,
+        received,
+        spin,
 
         queue,
         hold_type,
@@ -87,6 +90,9 @@ class State:
         self.move_x = move_x
         self.move_y = move_y
         self.meter = meter
+        self.sent = sent
+        self.received = received
+        self.spin = spin
         self.queue = queue
         self.hold_type = hold_type
 
@@ -102,7 +108,7 @@ class DataProvider:
         self.file = open(file_name, "rb")
 
     def get_next_data(self) -> tuple[Death, State, State] | None:
-        data = self.file.read(52 + 52 + 1)
+        data = self.file.read(55 + 55 + 1 + 1 + 1)
         if len(data) == 0:
             return None
         return (
@@ -115,8 +121,11 @@ class DataProvider:
                 data[44],
                 data[45],
                 data[46],
-                data[47:52],
-                data[52],
+                data[47],
+                data[48],
+                data[49],
+                data[50:55],
+                data[55],
             ),
             State(
                 data[53:93],
@@ -126,8 +135,11 @@ class DataProvider:
                 data[96],
                 data[97],
                 data[98],
-                data[99:104],
-                data[104],
+                data[99],
+                data[100],
+                data[101],
+                data[102:107],
+                data[107],
             ),
         )
 
