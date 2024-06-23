@@ -17,9 +17,17 @@ class NN:
         self.weights = []
         self.biases = []
 
-    def load_weights(self, weights, biases):
-        self.weights = weights
-        self.biases = biases
+    def load_weights(self, filename):
+        packed = torch.load(filename)
+        self.weights = packed['weights']
+        self.biases = packed['biases']
+
+    def save_weights(self, filename):
+        packed = {
+            'weights' : self.weights,
+            'biases' : self.biases,
+        }
+        torch.save(packed, filename)
     
     def initialise(self):
         for weight in self.weights:
@@ -255,21 +263,26 @@ class Dataset(torch.utils.data.Dataset):
         return sample
 
 
-def train():
+def train(use_saved=True):
+
     encoder = StateEncoder()
-    encoder.initialise()
-
     predictor_d = DeathPredictor()
-    predictor_d.initialise()
-
     embedding = AttackEmbedding()
-    embedding.initialise()
-
     predictor_s = StatePredictor()
-    predictor_s.initialise()
-
     decoder = Decoder()
-    decoder.initialise()
+
+    if use_saved:
+        encoder.load_weights("weights/encoder.pt")
+        predictor_d.load_weights("weights/predictor_d.pt")
+        predictor_s.load_weights("weights/predictor_s.pt")
+        embedding.load_weights("weights/embedding.pt")
+        decoder.load_weights("weights/decoder.pt")
+    else:
+        decoder.initialise()
+        predictor_s.initialise()
+        encoder.initialise()
+        predictor_d.initialise()
+        embedding.initialise()
 
     batch_size = 256
     epochs = 200
@@ -345,6 +358,12 @@ def train():
             optimizer.step()
 
         print("epoch loss: ", float(epoch_loss))
+
+        encoder.save_weights("weights/encoder.pt")
+        predictor_d.save_weights("weights/predictor_d.pt")
+        predictor_s.save_weights("weights/predictor_s.pt")
+        embedding.save_weights("weights/embedding.pt")
+        decoder.save_weights("weights/decoder.pt")
 
 if __name__ == "__main__":
     train()
