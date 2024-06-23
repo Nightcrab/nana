@@ -4,6 +4,7 @@ from torch.nn import functional as F
 
 from training import DataProvider, Death, State
 
+
 def parameter(*args, **kwargs):
     kwargs['requires_grad'] = True
     return torch.empty(*args, **kwargs)
@@ -23,21 +24,21 @@ class NN:
     def initialise(self):
         for weight in self.weights:
             torch.nn.init.normal_(weight, mean=0.0, std=1.0)
-            weight.requires_grad = True
         for bias in self.biases:
             torch.nn.init.zeros_(bias)
-            bias.requires_grad = True
 
 
-class AttackEmbedding:
+class AttackEmbedding(NN):
     """
     vector embedding for attacks
     integer (between 0 and 32) -> 2-vector
     """
     def __init__(self):
         self.weights = [
-            parameter(2, 32)
-        ] 
+            parameter(32, 2)
+        ]
+
+        self.biases = []
 
     def __call__(self, attack: torch.Tensor):
         attack = torch.clip(attack, 0, 32)
@@ -75,7 +76,6 @@ class StateEncoder(NN):
 
         for bias in self.biases:
             torch.nn.init.zeros_(bias)
-            bias.requires_grad = True
 
     def __call__(self, board):
         weights, biases = self.weights, self.biases
@@ -149,11 +149,11 @@ class DeathPredictor(NN):
 
 class StatePredictor(NN):
     """
-    64 state vector, attack 2 vector -> 64 vector
+    64 state vector, attack 2-vector -> 64 vector
     """
-    def __init__():
+    def __init__(self):
         self.weights = [
-            parameter(128, 66),
+            parameter(128, 64 + 2),
             parameter(64, 128)
         ]
 
@@ -162,12 +162,12 @@ class StatePredictor(NN):
             parameter(64)
         ]
 
-    def __call__(v: torch.Tensor, atk: torch.Tensor):
+    def __call__(self, v: torch.Tensor, atk: torch.Tensor):
 
-        x = F.concat(v, atk)
-        x = F.linear(x, self.weights[0], biases=self.biases[0])
+        x = torch.concat((v, atk), dim=-1)
+        x = F.linear(x, self.weights[0], bias=self.biases[0])
         x = F.relu(x)
-        x = F.linear(x, self.weights[1], biases=self.biases[1])
+        x = F.linear(x, self.weights[1], bias=self.biases[1])
         x = F.relu(x)
 
         return x
@@ -198,29 +198,60 @@ class AttackPredictor(NN):
 
         return x
 
+class Decoder(NN):
+    """
+    Tries to reconstruct a board from a latent vector.
+    Used for autoregressive training of the encoder.
+    64 vector -> 10x20 board
+    """
+    def __init__(self):
+        self.weights = [
+            parameter(320, 64)
+        ]
+
+        self.biases = [
+            parameter(320)
+        ]
+
+    def __call__(self, v: torch.Tensor):
+        x = F.linear(v, self.weights[0], bias=self.biases[0])
+        x = F.tanh(x)
+        x = torch.reshape(x, (-1, 1, 10, 32))
+
+        return x
+
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, provider: DataProvider):
 
-        self.data: list[tuple[Death, State, State]] = provider.get_games_data_set()
+        raw_data: list[tuple[Death, State, State]] = provider.get_games_data_set()
+        self.board_data = []
+        self.data = []
 
-        for idx in range(len(self.data) // 10):
-            board1 = torch.from_numpy(self.data[idx][1].board).to(dtype=torch.float32).unsqueeze(0)
-            board2 = torch.from_numpy(self.data[idx][2].board).to(dtype=torch.float32).unsqueeze(0)
-            death = torch.tensor(self.data[idx][0].death) - 1
+        for idx in range(len(raw_data) // 10):
+            board = torch.from_numpy(raw_data[idx][1].board).to(dtype=torch.float32).unsqueeze(0)
+            death = torch.tensor(raw_data[idx][0].death) - 1
             death = torch.clip(death, 0, 1)
             death = F.one_hot(death, 2).to(dtype=torch.float32)
 
-            self.data[idx] = (death, board1, board2)
+            self.board_data.append((death, board))
+        
+        for idx in range(len(raw_data) // 10 - 1):
+            death, board = self.board_data[idx]
+            death_, board_ = self.board_data[idx + 1]
+
+            received = raw_data[idx + 1][1].received
+            received = torch.tensor(received, dtype=torch.int)
+
+            tpl = ((death, board), received, (death_, board_))
+
+            self.data.append(tpl)
 
     def __len__(self):
         return len(self.data) // 10
 
     def __getitem__(self, idx):
-        sample = (
-            self.data[idx][1], # board
-            self.data[idx][0], # death (one-hot)
-        )
+        sample = self.data[idx]
         return sample
 
 
@@ -228,8 +259,17 @@ def train():
     encoder = StateEncoder()
     encoder.initialise()
 
-    predictor = DeathPredictor()
-    predictor.initialise()
+    predictor_d = DeathPredictor()
+    predictor_d.initialise()
+
+    embedding = AttackEmbedding()
+    embedding.initialise()
+
+    predictor_s = StatePredictor()
+    predictor_s.initialise()
+
+    decoder = Decoder()
+    decoder.initialise()
 
     batch_size = 256
     epochs = 200
@@ -244,7 +284,17 @@ def train():
     )
 
     optimizer = torch.optim.Adam(
-        [*encoder.weights, *encoder.biases, *predictor.weights, *predictor.biases],
+        [
+            *encoder.weights, 
+            *encoder.biases, 
+            *predictor_d.weights, 
+            *predictor_d.biases,
+            *embedding.weights,
+            *predictor_s.weights,
+            *predictor_s.biases,
+            *decoder.weights,
+            *decoder.biases,
+        ],
         lr=0.0001
     )
 
@@ -252,16 +302,41 @@ def train():
         epoch_loss = 0
 
         for batch_idx, data in enumerate(dataloader):
-            inputs, targets = data
+            pair1, attack, pair2 = data
+
+            dead, board = pair1
+            _, next_board = pair2
 
             optimizer.zero_grad()
 
             batch_loss = torch.tensor([0.0], requires_grad=True)
 
-            Vs = encoder(inputs)
-            outputs = predictor(Vs)
+            # encode board for V
+            V = encoder(board)
 
-            batch_loss = torch.add(batch_loss, F.cross_entropy(outputs, targets))
+            # encode next board for V'
+            V_ = encoder(next_board)
+
+            # embed attack
+            atk_vec = embedding(attack)
+
+            # predict Dead(V)
+            dead_predicted = predictor_d(V)
+
+            # predict V'
+            V_predicted = predictor_s(V, atk_vec)
+
+            # decode V
+            board_decoded = decoder(V)
+
+            # loss of predictor_d
+            batch_loss = torch.add(batch_loss, F.cross_entropy(dead_predicted, dead))
+
+            # loss of predictor_s
+            batch_loss = torch.add(batch_loss, F.mse_loss(V_, V_predicted))
+
+            # loss of decoder
+            batch_loss = torch.add(batch_loss, F.mse_loss(board_decoded, board))
 
             epoch_loss += batch_loss
 
