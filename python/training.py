@@ -155,71 +155,72 @@ class DataProvider:
             data_set.append(data)
 
 
-inputs = keras.Input(shape=(10, 32, 1))
+def keras_train():
+    inputs = keras.Input(shape=(10, 32, 1))
 
-conv2d = keras.layers.Conv2D(
-    32, kernel_size=(3, 3), activation="relu", data_format="channels_last"
-)(inputs)
+    conv2d = keras.layers.Conv2D(
+        32, kernel_size=(3, 3), activation="relu", data_format="channels_last"
+    )(inputs)
 
-conv2d2 = keras.layers.Conv2D(
-    32, kernel_size=(3, 3), activation="relu", data_format="channels_last"
-)(conv2d)
+    conv2d2 = keras.layers.Conv2D(
+        32, kernel_size=(3, 3), activation="relu", data_format="channels_last"
+    )(conv2d)
 
-conv2d3 = keras.layers.Conv2D(
-    32, kernel_size=(3, 3), activation="relu", data_format="channels_last"
-)(conv2d2)
+    conv2d3 = keras.layers.Conv2D(
+        32, kernel_size=(3, 3), activation="relu", data_format="channels_last"
+    )(conv2d2)
 
-pool = keras.layers.AveragePooling2D(pool_size=(2, 2))(conv2d3)
+    pool = keras.layers.AveragePooling2D(pool_size=(2, 2))(conv2d3)
 
-flatten = keras.layers.Flatten()(pool)
+    flatten = keras.layers.Flatten()(pool)
 
-# outputs the V vector :-)
-shared_vector = keras.layers.Dense(64, activation="relu", name="V")(flatten)
-
-
-# state predictor
-# concat a number called "attack" to the shared_vector
-attack = keras.Input(shape=(1,))
-concatenated = keras.layers.Concatenate(axis=1)([attack, shared_vector])
-raw_output_state = keras.layers.Dense(64, activation="relu")(concatenated)
+    # outputs the V vector :-)
+    shared_vector = keras.layers.Dense(64, activation="relu", name="V")(flatten)
 
 
-# attack predictor
-raw_output_attack = keras.layers.Dense(20, activation="relu")(shared_vector)
-attack_normalized = keras.layers.Softmax()(raw_output_attack)
-attack_model = keras.Model(
-    inputs=inputs, outputs=attack_normalized, name="Attack Predictor"
-)
-
-# death predictor
-raw_output_death = keras.layers.Dense(2, activation="relu", name="raw_output")(
-    shared_vector
-)
-death_normalized = keras.layers.Softmax()(raw_output_death)
-death_model = keras.Model(
-    inputs=inputs, outputs=death_normalized, name="Death Predictor"
-)
-
-death_model.compile(
-    optimizer=keras.optimizers.Adam(learning_rate=1e-4),
-    loss="categorical_crossentropy",
-    metrics=[keras.metrics.TopKCategoricalAccuracy(k=1)],
-)
-
-data_set = DataProvider("data.bin").get_games_data_set()
+    # state predictor
+    # concat a number called "attack" to the shared_vector
+    attack = keras.Input(shape=(1,))
+    concatenated = keras.layers.Concatenate(axis=1)([attack, shared_vector])
+    raw_output_state = keras.layers.Dense(64, activation="relu")(concatenated)
 
 
-attack_states = np.array([data[1].meter for data in data_set])
+    # attack predictor
+    raw_output_attack = keras.layers.Dense(20, activation="relu")(shared_vector)
+    attack_normalized = keras.layers.Softmax()(raw_output_attack)
+    attack_model = keras.Model(
+        inputs=inputs, outputs=attack_normalized, name="Attack Predictor"
+    )
 
-# death_states = np.array([data[0].death for data in data_set])
-# death_states = death_states - 1
+    # death predictor
+    raw_output_death = keras.layers.Dense(2, activation="relu", name="raw_output")(
+        shared_vector
+    )
+    death_normalized = keras.layers.Softmax()(raw_output_death)
+    death_model = keras.Model(
+        inputs=inputs, outputs=death_normalized, name="Death Predictor"
+    )
 
-# y_train = np.array([data[0].death for data in data_set])
-# y_train = keras.utils.to_categorical(death_states.clip(0, 1), num_classes=2)
+    death_model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+        loss="categorical_crossentropy",
+        metrics=[keras.metrics.TopKCategoricalAccuracy(k=1)],
+    )
 
-# # concat all of the dataset into a (N, 10, 20, 1) numpy array
-# x_train = np.array([data[1].board for data in data_set])
+    data_set = DataProvider("data.bin").get_games_data_set()
 
-# death_model.fit(x_train, y_train, epochs=100, batch_size=4096)
-# print("size of the dataset: ", len(data_set))
-# death_model.save("death_predictor.keras")
+
+    attack_states = np.array([data[1].meter for data in data_set])
+
+    # death_states = np.array([data[0].death for data in data_set])
+    # death_states = death_states - 1
+
+    # y_train = np.array([data[0].death for data in data_set])
+    # y_train = keras.utils.to_categorical(death_states.clip(0, 1), num_classes=2)
+
+    # # concat all of the dataset into a (N, 10, 20, 1) numpy array
+    # x_train = np.array([data[1].board for data in data_set])
+
+    # death_model.fit(x_train, y_train, epochs=100, batch_size=4096)
+    # print("size of the dataset: ", len(data_set))
+    # death_model.save("death_predictor.keras")
