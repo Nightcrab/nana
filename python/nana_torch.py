@@ -4,6 +4,8 @@ from torch.nn import functional as F
 
 from training import DataProvider, Death, State
 
+import timeit
+import os
 
 def parameter(*args, **kwargs):
     kwargs['requires_grad'] = True
@@ -18,6 +20,11 @@ class NN:
         self.biases = []
 
     def load_weights(self, filename):
+        if not os.path.exists(filename):
+            print(filename, "doesn't exist. using default initialisation")
+            self.initialise()
+            self.save_weights(filename)
+            return
         packed = torch.load(filename)
         self.weights = packed['weights']
         self.biases = packed['biases']
@@ -101,7 +108,7 @@ class StateEncoder(NN):
 
         x = F.batch_norm(x, None, None, weight=None, bias=None, training=True)
 
-        # 32 channels, 3x3 kernels
+        # 64 channels, 3x3 kernels
         x = F.conv2d(x, weights[2], bias=biases[2], stride=1, padding=0)
         x = F.relu(x)
 
@@ -110,7 +117,7 @@ class StateEncoder(NN):
 
         x = F.batch_norm(x, None, None, weight=None, bias=None, training=True)
 
-        # 32 channels, 3x3 kernels
+        # 128 channels, 3x3 kernels
         x = F.conv2d(x, weights[3], bias=biases[3], stride=1, padding=0)
         x = F.relu(x)
         
@@ -230,13 +237,20 @@ class Decoder(NN):
 
 
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, provider: DataProvider):
+    def __init__(self, provider: DataProvider, validation=False):
 
-        raw_data: list[tuple[Death, State, State]] = provider.get_games_data_set()
+        raw_data: list[tuple[Death, State, State]] = provider.get_games_data_set()[:10000]
+
+        if validation:
+            # use first 10% of data for validation
+            raw_data = raw_data[:len(raw_data) // 10]
+        else:
+            raw_data = raw_data[len(raw_data) // 10:]
+
         self.board_data = []
         self.data = []
 
-        for idx in range(len(raw_data) // 10):
+        for idx in range(len(raw_data)):
             board = torch.from_numpy(raw_data[idx][1].board).to(dtype=torch.float32).unsqueeze(0)
             death = torch.tensor(raw_data[idx][0].death) - 1
             death = torch.clip(death, 0, 1)
@@ -244,7 +258,7 @@ class Dataset(torch.utils.data.Dataset):
 
             self.board_data.append((death, board))
         
-        for idx in range(len(raw_data) // 10 - 1):
+        for idx in range(len(raw_data) - 1):
             death, board = self.board_data[idx]
             death_, board_ = self.board_data[idx + 1]
 
@@ -256,7 +270,7 @@ class Dataset(torch.utils.data.Dataset):
             self.data.append(tpl)
 
     def __len__(self):
-        return len(self.data) // 10
+        return len(self.data)
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -287,10 +301,22 @@ def train(use_saved=True):
     batch_size = 256
     epochs = 200
 
+    t = timeit.time.time()
     dataset = Dataset(DataProvider("data.bin"))
+    dataset_validation = Dataset(DataProvider("data.bin"), validation=True)
+    t_ = timeit.time.time()
+
+    print("Time to load dataset:", str(t_ - t)[:7], "s")
 
     dataloader = torch.utils.data.DataLoader(
         dataset, 
+        batch_size=batch_size,
+        shuffle=True, 
+        num_workers=0
+    )
+
+    dataloader_validation = torch.utils.data.DataLoader(
+        dataset_validation, 
         batch_size=batch_size,
         shuffle=True, 
         num_workers=0
@@ -311,16 +337,15 @@ def train(use_saved=True):
         lr=0.0001
     )
 
-    for epoch_i in range(epochs):
-        epoch_loss = 0
-
+    def _train(dataloader, epoch_loss, validation=False):
         for batch_idx, data in enumerate(dataloader):
             pair1, attack, pair2 = data
 
             dead, board = pair1
             _, next_board = pair2
 
-            optimizer.zero_grad()
+            if not validation:
+                optimizer.zero_grad()
 
             batch_loss = torch.tensor([0.0], requires_grad=True)
 
@@ -343,21 +368,47 @@ def train(use_saved=True):
             board_decoded = decoder(V)
 
             # loss of predictor_d
-            batch_loss = torch.add(batch_loss, F.cross_entropy(dead_predicted, dead))
+            d_loss = F.cross_entropy(dead_predicted, dead)
+            batch_loss = torch.add(batch_loss, d_loss)
 
             # loss of predictor_s
-            batch_loss = torch.add(batch_loss, F.mse_loss(V_, V_predicted))
+            s_loss = F.mse_loss(V_, V_predicted)
+            batch_loss = torch.add(batch_loss, s_loss)
 
             # loss of decoder
-            batch_loss = torch.add(batch_loss, F.mse_loss(board_decoded, board))
+            decoder_loss = F.mse_loss(board_decoded, board)
+            batch_loss = torch.add(batch_loss, decoder_loss)
 
-            epoch_loss += batch_loss
+            with torch.no_grad():
+                epoch_loss += torch.tensor([d_loss, s_loss, decoder_loss, batch_loss])
 
-            batch_loss.backward()
+            if not validation:
+                batch_loss.backward()
+                optimizer.step()
 
-            optimizer.step()
+    for epoch_i in range(epochs):
+        epoch_loss = torch.zeros(4)
+        validation_loss = torch.zeros(4)
 
-        print("epoch loss: ", float(epoch_loss))
+        t = timeit.time.time()
+        _train(dataloader, epoch_loss)
+        t_ = timeit.time.time()
+
+        printout = ""
+
+        printout += "Training time " + str(t_ - t)[:7] + " s | "
+
+        t = timeit.time.time()
+        with torch.no_grad():
+            _train(dataloader_validation, validation_loss, validation=True)
+        t_ = timeit.time.time()
+
+        printout += "Validation time " + str(t_ - t)[:7] + " s | "
+
+        printout += "Loss: " + str(float(epoch_loss[3]))[:10] + "| "
+        printout += "Validation Loss: " + str(float(validation_loss[3]))[:10]
+
+        print(printout)
 
         encoder.save_weights("weights/encoder.pt")
         predictor_d.save_weights("weights/predictor_d.pt")
