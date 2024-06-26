@@ -7,14 +7,17 @@ from training import DataProvider, Death, State
 import timeit
 import os
 
+
 def parameter(*args, **kwargs):
-    kwargs['requires_grad'] = True
+    kwargs["requires_grad"] = True
     return torch.empty(*args, **kwargs)
+
 
 class NN:
     """
     Base class.
     """
+
     def __init__(self):
         self.weights = []
         self.biases = []
@@ -26,16 +29,16 @@ class NN:
             self.save_weights(filename)
             return
         packed = torch.load(filename)
-        self.weights = packed['weights']
-        self.biases = packed['biases']
+        self.weights = packed["weights"]
+        self.biases = packed["biases"]
 
     def save_weights(self, filename):
         packed = {
-            'weights' : self.weights,
-            'biases' : self.biases,
+            "weights": self.weights,
+            "biases": self.biases,
         }
         torch.save(packed, filename)
-    
+
     def initialise(self):
         for weight in self.weights:
             torch.nn.init.normal_(weight, mean=0.0, std=1.0)
@@ -48,10 +51,9 @@ class AttackEmbedding(NN):
     vector embedding for attacks
     integer (between 0 and 32) -> 2-vector
     """
+
     def __init__(self):
-        self.weights = [
-            parameter(32, 2)
-        ]
+        self.weights = [parameter(32, 2)]
 
         self.biases = []
 
@@ -68,11 +70,11 @@ class StateEncoder(NN):
     # constructor
     def __init__(self):
         self.weights = [
-            parameter(32, 1, 3, 3), 
-            parameter(32, 32, 2, 2), 
+            parameter(32, 1, 3, 3),
+            parameter(32, 32, 2, 2),
             parameter(64, 32, 2, 2),
             parameter(128, 64, 2, 2),
-            parameter(64, 1536)
+            parameter(64, 1536),
         ]
 
         self.biases = [
@@ -80,12 +82,12 @@ class StateEncoder(NN):
             parameter(32),
             parameter(64),
             parameter(128),
-            parameter(64)
+            parameter(64),
         ]
 
     def initialise(self):
         for weight in self.weights[:-1]:
-            torch.nn.init.kaiming_normal_(weight, mode='fan_in', nonlinearity='relu')
+            torch.nn.init.kaiming_normal_(weight, mode="fan_in", nonlinearity="relu")
 
         torch.nn.init.normal_(self.weights[-1], mean=0.0, std=1.0)
 
@@ -104,7 +106,7 @@ class StateEncoder(NN):
         x = F.relu(x)
 
         # average pooling
-        x = F.avg_pool2d(x, (1,2))
+        x = F.avg_pool2d(x, (1, 2))
 
         x = F.batch_norm(x, None, None, weight=None, bias=None, training=True)
 
@@ -113,20 +115,20 @@ class StateEncoder(NN):
         x = F.relu(x)
 
         # average pooling
-        x = F.avg_pool2d(x, (2,1))
+        x = F.avg_pool2d(x, (2, 1))
 
         x = F.batch_norm(x, None, None, weight=None, bias=None, training=True)
 
         # 128 channels, 3x3 kernels
         x = F.conv2d(x, weights[3], bias=biases[3], stride=1, padding=0)
         x = F.relu(x)
-        
+
         # average pooling
-        x = F.avg_pool2d(x, (1,2))
-        
+        x = F.avg_pool2d(x, (1, 2))
+
         x = F.batch_norm(x, None, None, weight=None, bias=None, training=True)
 
-        # flatten 
+        # flatten
         v = torch.flatten(x, start_dim=1, end_dim=-1)
 
         # dense
@@ -140,6 +142,7 @@ class DeathPredictor(NN):
     """
     64 state vector -> 2 categorical
     """
+
     def __init__(self):
 
         super().__init__()
@@ -148,13 +151,10 @@ class DeathPredictor(NN):
             parameter(2, 64),
         ]
 
-        self.biases = [
-            parameter(2)
-        ]
-        
+        self.biases = [parameter(2)]
 
     def __call__(self, v: torch.Tensor):
-        
+
         x = F.linear(v, self.weights[0], bias=self.biases[0])
         x = F.relu(x)
         x = F.softmax(x, dim=-1)
@@ -166,16 +166,11 @@ class StatePredictor(NN):
     """
     64 state vector, attack 2-vector -> 64 vector
     """
-    def __init__(self):
-        self.weights = [
-            parameter(128, 64 + 2),
-            parameter(64, 128)
-        ]
 
-        self.biases = [
-            parameter(128),
-            parameter(64)
-        ]
+    def __init__(self):
+        self.weights = [parameter(128, 64 + 2), parameter(64, 128)]
+
+        self.biases = [parameter(128), parameter(64)]
 
     def __call__(self, v: torch.Tensor, atk: torch.Tensor):
 
@@ -192,18 +187,13 @@ class AttackPredictor(NN):
     """
     64 vector -> attack probabilities 16-vector
     """
-    def __init__():
-        self.weights = [
-            parameter(32, 64),
-            parameter(16, 32)
-        ]
 
-        self.biases = [
-            parameter(32),
-            parameter(16)
-        ]
+    def __init__(self):
+        self.weights = [parameter(32, 64), parameter(16, 32)]
 
-    def __call__(v: torch.Tensor):
+        self.biases = [parameter(32), parameter(16)]
+
+    def __call__(self, v: torch.Tensor):
         x = F.linear(v, self.weights[0], bias=self.biases[0])
         x = F.relu(x)
         x = F.linear(v, self.weights[1], bias=self.biases[1])
@@ -213,20 +203,18 @@ class AttackPredictor(NN):
 
         return x
 
+
 class Decoder(NN):
     """
     Tries to reconstruct a board from a latent vector.
     Used for autoregressive training of the encoder.
     64 vector -> 10x20 board
     """
-    def __init__(self):
-        self.weights = [
-            parameter(320, 64)
-        ]
 
-        self.biases = [
-            parameter(320)
-        ]
+    def __init__(self):
+        self.weights = [parameter(320, 64)]
+
+        self.biases = [parameter(320)]
 
     def __call__(self, v: torch.Tensor):
         x = F.linear(v, self.weights[0], bias=self.biases[0])
@@ -239,25 +227,31 @@ class Decoder(NN):
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, provider: DataProvider, validation=False):
 
-        raw_data: list[tuple[Death, State, State]] = provider.get_games_data_set()[:10000]
+        raw_data: list[tuple[Death, State, State]] = provider.get_games_data_set()[
+            :10000
+        ]
 
         if validation:
             # use first 10% of data for validation
-            raw_data = raw_data[:len(raw_data) // 10]
+            raw_data = raw_data[: len(raw_data) // 10]
         else:
-            raw_data = raw_data[len(raw_data) // 10:]
+            raw_data = raw_data[len(raw_data) // 10 :]
 
         self.board_data = []
         self.data = []
 
         for idx in range(len(raw_data)):
-            board = torch.from_numpy(raw_data[idx][1].board).to(dtype=torch.float32).unsqueeze(0)
+            board = (
+                torch.from_numpy(raw_data[idx][1].board)
+                .to(dtype=torch.float32)
+                .unsqueeze(0)
+            )
             death = torch.tensor(raw_data[idx][0].death) - 1
             death = torch.clip(death, 0, 1)
             death = F.one_hot(death, 2).to(dtype=torch.float32)
 
             self.board_data.append((death, board))
-        
+
         for idx in range(len(raw_data) - 1):
             death, board = self.board_data[idx]
             death_, board_ = self.board_data[idx + 1]
@@ -309,24 +303,18 @@ def train(use_saved=True):
     print("Time to load dataset:", str(t_ - t)[:7], "s")
 
     dataloader = torch.utils.data.DataLoader(
-        dataset, 
-        batch_size=batch_size,
-        shuffle=True, 
-        num_workers=0
+        dataset, batch_size=batch_size, shuffle=True, num_workers=0
     )
 
     dataloader_validation = torch.utils.data.DataLoader(
-        dataset_validation, 
-        batch_size=batch_size,
-        shuffle=True, 
-        num_workers=0
+        dataset_validation, batch_size=batch_size, shuffle=True, num_workers=0
     )
 
     optimizer = torch.optim.Adam(
         [
-            *encoder.weights, 
-            *encoder.biases, 
-            *predictor_d.weights, 
+            *encoder.weights,
+            *encoder.biases,
+            *predictor_d.weights,
             *predictor_d.biases,
             *embedding.weights,
             *predictor_s.weights,
@@ -334,7 +322,7 @@ def train(use_saved=True):
             *decoder.weights,
             *decoder.biases,
         ],
-        lr=0.0001
+        lr=0.0001,
     )
 
     def _train(dataloader, epoch_loss, validation=False):
@@ -415,6 +403,7 @@ def train(use_saved=True):
         predictor_s.save_weights("weights/predictor_s.pt")
         embedding.save_weights("weights/embedding.pt")
         decoder.save_weights("weights/decoder.pt")
+
 
 if __name__ == "__main__":
     train()
