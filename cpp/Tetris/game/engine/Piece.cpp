@@ -3,19 +3,6 @@
 void Piece::rotate(TurnDirection direction) {
 
     return calculate_rotate(direction);
-
-    int shift;
-
-    if (direction == TurnDirection::Left) {
-        shift = 3;
-    }
-    else {
-        shift = 1;
-    }
-
-    rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + shift) % 4);
-
-    minos = minoLUT()[(int)type * 4 + rotation];
 }
 
 void Piece::calculate_rotate(TurnDirection direction) {

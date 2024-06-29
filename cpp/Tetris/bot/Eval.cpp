@@ -171,7 +171,7 @@ double Eval::eval_LUT(const Board& board) {
 
             bool exists = std::binary_search(freq_h.begin(), freq_h.end(), hashh(left, middle, right, effective_y), Comp{});
             if (!exists)
-                freq_h.emplace_back(hashh(left, middle, right, effective_y), 1.0);
+                freq_h.push_back({hashh(left, middle, right, effective_y), 1.0});
             else {
                 auto it = std::lower_bound(freq_h.begin(), freq_h.end(), hashh(left, middle, right, effective_y), Comp{});
                 it->data += 1.0;
@@ -192,7 +192,7 @@ double Eval::eval_LUT(const Board& board) {
 
             bool exists = std::binary_search(freq_v.begin(), freq_v.end(), hashv(bottom, top, effective_y), Comp{});
             if (!exists)
-                freq_v.emplace_back(hashv(bottom, top, effective_y), 1.0);
+                freq_v.push_back({hashv(bottom, top, effective_y), 1.0});
             else {
                 auto it = std::lower_bound(freq_v.begin(), freq_v.end(), hashv(bottom, top, effective_y), Comp{});
                 it->data += 1.0;

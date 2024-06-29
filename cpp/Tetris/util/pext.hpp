@@ -10,7 +10,7 @@
 // gcc
 #include <immintrin.h>
 #endif
-#elif
+#else
 // clang
 #include <immintrin.h>
 #endif
