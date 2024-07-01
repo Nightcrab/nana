@@ -43,8 +43,6 @@ class EmulationGame {
 
     void play_moves();
 
-    float eval(Move move);
-
     std::vector<Move> legal_moves();
 
     uint32_t hash() const;

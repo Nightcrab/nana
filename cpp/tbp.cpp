@@ -190,19 +190,27 @@ int main() {
             break;
         } else if (type == "start") {
             /*
-            The start message tells the bot to begin calculating from the specified position. This message must be sent before asking the bot for a move.
-                Attribute 	Description
-                hold 	Either a pieces if hold is filled or null if hold is empty.
-                queue 	A list of pieces. Example: ["S", "Z", "O"]
-                combo 	The number of consecutive line clears that have been made.
-                back_to_back 	A boolean indicating back to back status.
-                board 	A list of 40 lists of 10 board cells.
-            A board cell can be either null to indicate that it is empty, or a string indicating which piece was used to fill it, or "G" for garbage cells.*/
-            Board board = json_to_board(message["board"]);
-            queue = json_to_queue(message["queue"]);
-            PieceType hold = json_to_type(message["hold"]);
-            int combo = message["combo"];
-            bool back_to_back = message["back_to_back"];
+            The `start` message tells the bot to begin calculating from the specified
+            position. This message must be sent before asking the bot for a move. This 
+            message must be an array of the specified attributes, each element in the 
+            array being a player. The player the bot will be acting on should be on index 
+            0.
+
+
+            Attribute       | Description
+            ---------       | -----------
+            `hold`          | Either a pieces if hold is filled or `null` if hold is empty.
+            `queue`         | A list of pieces. Example: `["S", "Z", "O"]`
+            `combo`         | The number of consecutive line clears that have been made.
+            `back_to_back`  | An integer indicating back to back status.
+            `board`         | A list of 40 lists of 10 board cells..*/
+
+            auto player_1 = message["states"].array()[0];
+            Board board = json_to_board(player_1["board"]);
+            queue = json_to_queue(player_1["queue"]);
+            PieceType hold = json_to_type(player_1["hold"]);
+            int combo = player_1["combo"];
+            int back_to_back = player_1["back_to_back"];
 
             game.game.board = board;
             game.game.current_piece = queue[0];
