@@ -55,20 +55,49 @@ bool Game::place_piece(Piece& piece) {
     return first_hold;
 }
 
-bool Game::collides(const Board& board, const Piece& piece) const {
-    for (size_t i = 0; i < n_minos; ++i) {
-        int x_pos = piece.x_minos[i] + piece.position.x;
-        if (x_pos < 0 || x_pos >= Board::width)
-            return true;
+consteval std::array<bool, 256> shable_maker() {
+    std::array<bool, 256> ret;
+    ret.fill(true);
 
-        int y_pos = piece.y_minos[i] + piece.position.y;
-        if (y_pos < 0 || y_pos >= Board::height)
-            return true;
-        if (board.get(x_pos, y_pos))
-            return true;
+    for (int i = 0; i < 10; ++i) {
+        ret[i] = false;
     }
 
-    return false;
+    return ret;
+}
+
+bool Game::collides(const Board& board, const Piece& piece) const {
+    constexpr static auto shable = shable_maker();
+
+    std::array<uint8_t, n_minos> x_minos{};
+    std::array<uint8_t, n_minos> y_minos{};
+
+    for (size_t i = 0; i < n_minos; ++i) {
+        x_minos[i] = piece.x_minos[i] + piece.position.x;
+        y_minos[i] = piece.y_minos[i] + piece.position.y;
+    }
+
+    bool coll = false;
+
+    for (size_t i = 0; i < n_minos; ++i) {
+        coll |= shable[x_minos[i]];
+        coll |= y_minos[i] < 0;
+        coll |= y_minos[i] >= Board::height;
+    }
+
+    if (coll)
+        return coll;
+
+    coll = false;
+    for (size_t i = 0; i < n_minos; ++i) {
+        auto x_pos = x_minos[i];
+        auto y_pos = y_minos[i];
+
+        if (board.board[x_pos] & (1 << y_pos))
+            coll = true;
+    }
+
+    return coll;
 }
 
 void Game::rotate(Piece& piece, TurnDirection dir) const {
