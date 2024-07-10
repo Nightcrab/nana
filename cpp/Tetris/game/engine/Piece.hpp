@@ -30,12 +30,12 @@ class Piece {
     Piece& operator=(const Piece& other) noexcept = default;
 
 
-    constexpr void rotate(TurnDirection direction) {
+    constexpr inline void rotate(TurnDirection direction) {
 
         return calculate_rotate(direction);
     }
 
-    constexpr void calculate_rotate(TurnDirection direction) {
+    constexpr inline void calculate_rotate(TurnDirection direction) {
         if (direction == TurnDirection::Left) {
             rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + (n_minos - 1)) % n_minos);
             for (auto& mino : minos) {
@@ -54,11 +54,11 @@ class Piece {
         }
     }
 
-    constexpr uint32_t hash() const {
+    constexpr inline uint32_t hash() const {
         return ((int)type << 24) | (position.x << 16) | (position.y << 8) | (rotation);
     }
 
-    constexpr uint32_t compact_hash() const {
+    constexpr inline uint32_t compact_hash() const {
         return rotation + position.x * n_minos + position.y * 10 * n_minos + (int)type * 10 * 20 * n_minos;
     }
 

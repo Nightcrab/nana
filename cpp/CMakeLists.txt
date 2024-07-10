@@ -16,7 +16,6 @@ set(TETRIS_SOURCES
     "Tetris/util/fasthash.cpp"
 	"Tetris/game/engine/Game.cpp"
 	"Tetris/game/engine/Game.hpp"
-	"Tetris/game/engine/Piece.cpp"
 	"Tetris/game/engine/Piece.hpp"
 	"Tetris/util/rng.cpp"
 	"Tetris/util/rng.hpp"

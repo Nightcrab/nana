@@ -189,7 +189,7 @@ auto json_to_spin(nlohmann::json json) -> spinType {
 
 #define STR2(x) #x
 #define STR(x) STR2(x)
-#define CHECK_ERR(code) try { code; } catch (std::exception e) { std::cerr << __LINE__ << ": " << STR(code) << std::endl << e.what() << std::endl; return 1; }
+#define CHECK_ERR(code) try { code; } catch (std::exception &e) { std::cerr << __LINE__ << ": " << STR(code) << std::endl << e.what() << std::endl; return 1; }
 
 // TBP entry point
 int main() {
