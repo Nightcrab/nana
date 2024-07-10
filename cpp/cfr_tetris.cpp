@@ -318,7 +318,7 @@ private:
 
             game.play_moves();
 
-            //Search::printStatistics();
+            Search::printStatistics();
 
             Search::continueSearch(game);
 

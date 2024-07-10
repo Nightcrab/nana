@@ -31,8 +31,17 @@ public:
 
 
     constexpr inline void rotate(TurnDirection direction) {
+        if (direction == TurnDirection::Left) {
+            rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + (n_minos - 1)) % n_minos);
+        }
+        else {
+            rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + 1) % n_minos);
+		}
+        minos = rot_piece_def[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
 
-        return calculate_rotate(direction);
+        return;
+
+        calculate_rotate(direction);
     }
 
     constexpr inline void calculate_rotate(TurnDirection direction) {

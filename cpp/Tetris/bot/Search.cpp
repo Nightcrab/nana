@@ -463,8 +463,9 @@ Move Search::bestMove() {
                 biggest_N = action.N;
                 best_move = action.move;
             }
-
-            // std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
+#ifndef TBP
+            //std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
+#endif
         }
         if constexpr (search_style == CC) {
             if (action.R > biggest_R) {
@@ -472,17 +473,23 @@ Move Search::bestMove() {
                 biggest_N = action.N;
                 best_move = action.move;
             }
-            
-            // std::cout << "N:" << action.N << " R_max:" << action.R << std::endl;
+
+#ifndef TBP
+            //std::cout << "N:" << action.N << " R_max:" << action.R << std::endl;
+#endif
         }
         
 
     }
     if constexpr (search_style == NANA) {
-        // std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N << std::endl;
+#ifndef TBP
+         //std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N << std::endl;
+#endif
     }
     if constexpr (search_style == CC) {
-        // std::cout << "best move was visited " << biggest_N << " times, with R_max " << biggest_R << std::endl;
+#ifndef TBP
+         //std::cout << "best move was visited " << biggest_N << " times, with R_max " << biggest_R << std::endl;
+#endif
     }
 
     return best_move;
