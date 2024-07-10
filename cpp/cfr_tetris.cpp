@@ -208,6 +208,17 @@ private:
         // fill the screen with black
         Clear(olc::BLUE);
         // for manually playing as player 1
+#define SHAK_CONTROLS
+#ifdef SHAK_CONTROLS
+        bool hard_drop = GetKey(olc::Key::W).bPressed;
+        bool move_left = GetKey(olc::Key::A).bPressed;
+        bool sonic_drop = GetKey(olc::Key::S).bPressed;
+        bool move_right = GetKey(olc::Key::D).bPressed;
+        bool rotate_right = GetKey(olc::Key::RIGHT).bPressed;
+        bool rotate_left = GetKey(olc::Key::LEFT).bPressed;
+        bool hold = GetKey(olc::Key::UP).bPressed;
+#else
+
         bool hard_drop = GetKey(olc::Key::V).bPressed;
         bool move_left = GetKey(olc::Key::LEFT).bPressed;
         bool sonic_drop = GetKey(olc::Key::DOWN).bPressed;
@@ -215,7 +226,7 @@ private:
         bool rotate_right = GetKey(olc::Key::D).bPressed;
         bool rotate_left = GetKey(olc::Key::S).bPressed;
         bool hold = GetKey(olc::Key::UP).bPressed;
-
+#endif
         if (move_left)
             game.game.process_movement(game.game.current_piece, Movement::Left);
 
@@ -307,7 +318,7 @@ private:
 
             game.play_moves();
 
-            Search::printStatistics();
+            //Search::printStatistics();
 
             Search::continueSearch(game);
 
