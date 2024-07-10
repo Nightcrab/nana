@@ -31,7 +31,7 @@ constexpr int LOAD_FACTOR = 6;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
 
-    std::cout << "started searching, root hash is: " <<  (int) (state.hash() % 1000) << std::endl;
+    //std::cout << "started searching, root hash is: " <<  (int) (state.hash() % 1000) << std::endl;
 
     search_start_time = std::chrono::steady_clock::now();
 
@@ -77,7 +77,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
 };
 
 void Search::continueSearch(EmulationGame state) {
-    std::cout << "started searching, root hash is: " << (int)(state.hash() % 1000) << std::endl;
+    //std::cout << "started searching, root hash is: " << (int)(state.hash() % 1000) << std::endl;
 
     search_start_time = std::chrono::steady_clock::now();
 
@@ -133,7 +133,7 @@ void Search::endSearch() {
     uct.collect();
     queues.clear();
 
-    std::cout << "stopped searching" << std::endl;
+    //std::cout << "stopped searching" << std::endl;
  };
 
 void Search::printStatistics() {
@@ -479,10 +479,10 @@ Move Search::bestMove() {
 
     }
     if constexpr (search_style == NANA) {
-        std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N << std::endl;
+        // std::cout << "best move was visited " << biggest_N << " times, with R_avg " << biggest_R / biggest_N << std::endl;
     }
     if constexpr (search_style == CC) {
-        std::cout << "best move was visited " << biggest_N << " times, with R_max " << biggest_R << std::endl;
+        // std::cout << "best move was visited " << biggest_N << " times, with R_max " << biggest_R << std::endl;
     }
 
     return best_move;
