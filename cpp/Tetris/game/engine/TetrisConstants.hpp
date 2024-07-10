@@ -114,17 +114,20 @@ consteval auto generate_rot_piece_def() {
 
     for (size_t type = 0; type < piece_definitions.size(); ++type) {
         auto minos = piece_definitions[type];
+        // this relies on the ordering of the directions to be: N E S W
         for (size_t rot = 0; rot < RotationDirection::RotationDirections_N; ++rot) {
+            // set the minos
+            for (size_t mino = 0; mino < n_minos; ++mino) {
+                rot_piece_def[rot][type][mino] = minos[mino];
+            }
 
+            // rotate them to the right
             for (auto& mino : minos) {
                 Coord temp_mino = mino;
                 temp_mino.x *= -1;
                 mino = { temp_mino.y, temp_mino.x };
             }
 
-            for (size_t mino = 0; mino < n_minos; ++mino) {
-                rot_piece_def[rot][type][mino] = minos[mino];
-            }
         }
     }
 

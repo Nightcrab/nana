@@ -160,9 +160,9 @@ class Tetris : public olc::PixelGameEngine {
         }
         if (GetKey(olc::Key::P).bHeld) {
             // t = time.time()
-            std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+            //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
             game.play_moves();
-            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
             // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[us]" << std::endl;
         }

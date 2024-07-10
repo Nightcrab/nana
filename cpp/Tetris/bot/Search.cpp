@@ -285,7 +285,7 @@ void Search::search(const int threadIdx) {
             // Undo Virtual Loss by adding R
             if constexpr (search_style == NANA) {
                 float& R = node.actions[job.path.back().actionID].R;
-                int& N = node.actions[job.path.back().actionID].N;
+                //int& N = node.actions[job.path.back().actionID].N;
                 R = R + reward;
             }
             if constexpr (search_style == CC) {

@@ -82,7 +82,7 @@ double Eval::eval_LUT(const Board& board) {
         init();
         needs_init = false;
     }
-    auto get_3x3s = [](Board board, int x, int y) {
+    [[maybe_unused]] auto get_3x3s = [](Board board, int x, int y) {
         uint16_t bits = 0;
 
         for (int wx = 0; wx < 3; ++wx)

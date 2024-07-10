@@ -5,15 +5,15 @@
 #include "TetrisConstants.hpp"
 
 class Piece {
-   public:
-    Piece(PieceType type) noexcept {
+public:
+    constexpr Piece(PieceType type) noexcept {
         this->type = type;
         rotation = RotationDirection::North;
-        position = {10 / 2 - 1, 20 - 2};
+        position = { 10 / 2 - 1, 20 - 2 };
         minos = piece_definitions[static_cast<size_t>(type)];
         spin = spinType::null;
     }
-    Piece(PieceType type, RotationDirection dir) noexcept {
+    constexpr Piece(PieceType type, RotationDirection dir) noexcept {
         this->type = type;
         rotation = dir;
         position = { 10 / 2 - 1, 20 - 2 };
@@ -68,3 +68,28 @@ class Piece {
     PieceType type;
     spinType spin;
 };
+
+
+// compile time unit tests for sanity
+consteval bool piece_test_1() {
+    for (size_t type = 0; type < static_cast<size_t>(PieceType::PieceTypes_N); ++type)
+    {
+        Piece first(static_cast<PieceType>(type));
+        for (size_t rot = 0; rot < RotationDirection::RotationDirections_N; ++rot) {
+            Piece second(static_cast<PieceType>(type), static_cast<RotationDirection>(rot));
+
+            for (size_t mino = 0; mino < n_minos; ++mino) {
+                if ((first.minos[mino].x != second.minos[mino].x) ||
+                    (first.minos[mino].y != second.minos[mino].y))
+                        return false;
+
+            }
+
+            first.calculate_rotate(TurnDirection::Right);
+        }
+    }
+    return true;
+}
+
+// you will see this as a compile time error if it didnt work
+static_assert(piece_test_1(), "piece_test_1 didnt work");
