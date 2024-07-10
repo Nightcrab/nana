@@ -45,8 +45,8 @@ class Tetris : public olc::PixelGameEngine {
     }
     void renderPiece(Game& game, int x_offset) {
         for (int i = 0; i < 4; i++) {
-            int x = game.current_piece.position.x + game.current_piece.minos[i].x;
-            int y = game.current_piece.position.y + game.current_piece.minos[i].y;
+            int x = game.current_piece.position.x + game.current_piece.x_minos[i];
+            int y = game.current_piece.position.y + game.current_piece.y_minos[i];
             const int size = 25;
             FillRect(x * size + x_offset, (31 - y) * size, size, size, olc::RED);
         }
@@ -55,8 +55,8 @@ class Tetris : public olc::PixelGameEngine {
     void renderHold(Game& game, int x_offset) {
         if (game.hold.has_value()) {
             for (int i = 0; i < 4; i++) {
-                int x = game.hold.value().minos[i].x;
-                int y = game.hold.value().minos[i].y;
+                int x = game.hold.value().x_minos[i];
+                int y = game.hold.value().y_minos[i];
                 const int size = 10;
                 FillRect(x * size + 250 + x_offset, (4 - y) * size, size, size, olc::RED);
             }
@@ -71,8 +71,8 @@ class Tetris : public olc::PixelGameEngine {
             Piece piece = Piece(game.queue[i]);
 
             for (int j = 0; j < 4; j++) {
-                int x = piece.minos[j].x;
-                int y = piece.minos[j].y;
+                int x = piece.x_minos[j];
+                int y = piece.y_minos[j];
                 const int size = 10;
                 // manually define orange
                 olc::Pixel colors[] = {olc::GREEN, olc::RED, olc::DARK_BLUE, olc::Pixel(255, 165, 0, 255), olc::MAGENTA, olc::YELLOW, olc::CYAN};

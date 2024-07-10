@@ -56,12 +56,12 @@ bool Game::place_piece(Piece& piece) {
 }
 
 bool Game::collides(const Board& board, const Piece& piece) const {
-    for (auto& mino : piece.minos) {
-        int x_pos = mino.x + piece.position.x;
+    for (size_t i = 0; i < n_minos; ++i) {
+        int x_pos = piece.x_minos[i] + piece.position.x;
         if (x_pos < 0 || x_pos >= Board::width)
             return true;
 
-        int y_pos = mino.y + piece.position.y;
+        int y_pos = piece.y_minos[i] + piece.position.y;
         if (y_pos < 0 || y_pos >= Board::height)
             return true;
         if (board.get(x_pos, y_pos))
@@ -144,11 +144,11 @@ void Game::shift(Piece& piece, int dir) const {
 
 void Game::sonic_drop(const Board board, Piece& piece) const {
     int distance = 32;
-    for (auto& mino : piece.minos) {
+    for (size_t i = 0; i < n_minos; ++i) {
 
-        int mino_height = mino.y + piece.position.y;
+        int mino_height = piece.y_minos[i] + piece.position.y;
 
-        uint32_t column = board.board[mino.x + piece.position.x];
+        uint32_t column = board.board[piece.x_minos[i] + piece.position.x];
 
         if (column && mino_height != 0) {
             int air = 32 - mino_height;
