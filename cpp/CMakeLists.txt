@@ -36,7 +36,8 @@ set(TETRIS_SOURCES
 	"Tetris/bot/Search.hpp"
 	"Tetris/util/Distribution.hpp"
 	"Tetris/util/MPSC.hpp"
- "Tetris/util/Distribution.cpp")
+ "Tetris/util/Distribution.cpp"
+)
  
 
 if(UNIX AND NOT APPLE)
@@ -50,6 +51,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 
 # Add source to this project's executable.
 add_executable (cfr_tetris "cfr_tetris.cpp" "cfr_tetris.h" ${TETRIS_SOURCES})
+add_executable (tbp_tetris "tbp.cpp" ${TETRIS_SOURCES})
+
+target_compile_definitions(tbp_tetris PRIVATE TBP1)
 
 if(UNIX AND NOT APPLE)
     target_include_directories(cfr_tetris PRIVATE ${X11_INCLUDE_DIR} ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR})
@@ -59,6 +63,7 @@ endif()
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 20)
+  set_property(TARGET tbp_tetris PROPERTY CXX_STANDARD 20)
 endif()
 
 # TODO: Add tests and install targets if needed.
