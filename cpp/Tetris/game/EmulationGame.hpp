@@ -42,6 +42,7 @@ class EmulationGame {
     void chance_move();
 
     void play_moves();
+    void objectively_play_moves();
 
     std::vector<Move> legal_moves();
 

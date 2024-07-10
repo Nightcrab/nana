@@ -113,6 +113,12 @@ void EmulationGame::play_moves(){
     chance_move();
 };
 
+void EmulationGame::objectively_play_moves() {
+
+
+}
+
+
 std::vector<Move> EmulationGame::legal_moves() {
     std::vector<Piece> raw_actions = game.get_possible_piece_placements();
 
