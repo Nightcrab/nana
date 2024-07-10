@@ -70,7 +70,8 @@ enum class Movement : uint_fast8_t {
 };
 
 // number of kicks srs has, including for initial
-constexpr auto srs_kicks = 5;
+constexpr std::size_t srs_kicks = 5;
+constexpr std::size_t n_minos = 4;
 
 constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_offsets_JLSTZ = {{
     {{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}},
@@ -94,7 +95,7 @@ constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_o
     {{{0, 1}, {0, 1}, {0, 1}, {0, -1}, {0, 2}}},
 }};
 
-constexpr std::array<std::array<Coord, 4>, (int)PieceType::PieceTypes_N> piece_definitions = {
+constexpr std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N> piece_definitions = {
 
     {
         {{{-1, 0}, {0, 0}, {0, 1}, {1, 1}}},   // S
@@ -106,3 +107,28 @@ constexpr std::array<std::array<Coord, 4>, (int)PieceType::PieceTypes_N> piece_d
         {{{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},   // I
         {{{0, 0}, {0, 0}, {0, 0}, {0, 0}}}     // NULL
     }};
+
+
+consteval auto generate_rot_piece_def() {
+    std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def{};
+
+    for (size_t type = 0; type < piece_definitions.size(); ++type) {
+        auto minos = piece_definitions[type];
+        for (size_t rot = 0; rot < RotationDirection::RotationDirections_N; ++rot) {
+
+            for (auto& mino : minos) {
+                Coord temp_mino = mino;
+                temp_mino.x *= -1;
+                mino = { temp_mino.y, temp_mino.x };
+            }
+
+            for (size_t mino = 0; mino < n_minos; ++mino) {
+                rot_piece_def[rot][type][mino] = minos[mino];
+            }
+        }
+    }
+
+    return rot_piece_def;
+}
+
+constexpr std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def = generate_rot_piece_def();
