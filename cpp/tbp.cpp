@@ -6,59 +6,68 @@
 
 auto type_to_json(PieceType type) -> nlohmann::json {
     switch (type) {
-        case PieceType::S:
-            return "S";
-            break;
-        case PieceType::Z:
-            return "Z";
-            break;
-        case PieceType::J:
-            return "J";
-            break;
-        case PieceType::L:
-            return "L";
-            break;
-        case PieceType::T:
-            return "T";
-            break;
-        case PieceType::O:
-            return "O";
-            break;
-        case PieceType::I:
-            return "I";
-            break;
-        case PieceType::Empty:
-            return "I";
-            break;
-        default:
-            return nullptr;
-            break;
+    case PieceType::S:
+        return "S";
+        break;
+    case PieceType::Z:
+        return "Z";
+        break;
+    case PieceType::J:
+        return "J";
+        break;
+    case PieceType::L:
+        return "L";
+        break;
+    case PieceType::T:
+        return "T";
+        break;
+    case PieceType::O:
+        return "O";
+        break;
+    case PieceType::I:
+        return "I";
+        break;
+    case PieceType::Empty:
+        return "I";
+        break;
+    default:
+        return nullptr;
+        break;
     }
 };
-
 auto json_to_type(nlohmann::json json) -> PieceType {
+
+    if (json.is_null()) {
+        return PieceType::Empty;
+    }
+
     std::string str = json.get<std::string>();
+
     if (str == "S") {
         return PieceType::S;
-    } else if (str == "Z") {
+    }
+    else if (str == "Z") {
         return PieceType::Z;
-    } else if (str == "J") {
+    }
+    else if (str == "J") {
         return PieceType::J;
-    } else if (str == "L") {
+    }
+    else if (str == "L") {
         return PieceType::L;
-    } else if (str == "T") {
+    }
+    else if (str == "T") {
         return PieceType::T;
-    } else if (str == "O") {
+    }
+    else if (str == "O") {
         return PieceType::O;
-    } else if (str == "I") {
+    }
+    else if (str == "I") {
         return PieceType::I;
-    } else if (str == "null") {
-        return PieceType::Empty;
-    } else {
+    }
+    else {
         return PieceType::Empty;
     }
 };
-
 auto board_to_json(Board board) -> nlohmann::json {
     nlohmann::json json;
     std::array<std::array<std::optional<std::string>, 40>, 10> tbpBoard;
@@ -78,7 +87,8 @@ auto board_to_json(Board board) -> nlohmann::json {
         for (int x = 0; x < Board::width; ++x) {
             if (tbpBoard[x][y].has_value()) {
                 tmp.push_back(tbpBoard[x][y].value());
-            } else {
+            }
+            else {
                 tmp.push_back(nullptr);
             }
         }
@@ -86,7 +96,6 @@ auto board_to_json(Board board) -> nlohmann::json {
     }
     return json;
 };
-
 auto json_to_board(nlohmann::json json) -> Board {
     Board board;
     for (int y = 0; y < Board::height; ++y) {
@@ -98,10 +107,9 @@ auto json_to_board(nlohmann::json json) -> Board {
     }
     return board;
 };
-
 auto json_to_queue(nlohmann::json json) -> std::vector<PieceType> {
     std::vector<PieceType> queue;
-    for (auto &piece : json) {
+    for (auto& piece : json) {
         queue.push_back(json_to_type(piece));
     }
     return queue;
@@ -109,31 +117,53 @@ auto json_to_queue(nlohmann::json json) -> std::vector<PieceType> {
 auto rotation_to_json(RotationDirection dir) -> nlohmann::json {
     if (dir == RotationDirection::North) {
         return "north";
-    } else if (dir == RotationDirection::East) {
+    }
+    else if (dir == RotationDirection::East) {
         return "east";
-    } else if (dir == RotationDirection::South) {
+    }
+    else if (dir == RotationDirection::South) {
         return "south";
-    } else if (dir == RotationDirection::West) {
+    }
+    else if (dir == RotationDirection::West) {
         return "west";
     }
     throw;
     return nullptr;
 }
+auto json_to_rotation(nlohmann::json json) -> RotationDirection {
+    std::string str = json.get<std::string>();
+    if (str == "north") {
+        return RotationDirection::North;
+    }
+    else if (str == "east") {
+        return RotationDirection::East;
+    }
+    else if (str == "south") {
+        return RotationDirection::South;
+    }
+    else if (str == "west") {
+        return RotationDirection::West;
+    }
+    throw std::runtime_error("invalid rotation");
+    return RotationDirection::North;
+}
 auto spin_to_json(spinType spin) -> nlohmann::json {
     if (spin == spinType::null) {
-        return nullptr;
-    } else if (spin == spinType::mini) {
-        return "mini";
-    } else if (spin == spinType::null) {
         return "none";
-    } else if (spin == spinType::normal) {
+    }
+    else if (spin == spinType::mini) {
+        return "mini";
+    }
+    else if (spin == spinType::null) {
+        return "none";
+    }
+    else if (spin == spinType::normal) {
         return "full";
     }
     throw;
     return nullptr;
 }
-
-auto move_to_json(Move &move) {
+auto move_to_json(Move& move) {
     nlohmann::json json;
     json["location"]["x"] = move.piece.position.x;
     json["location"]["y"] = move.piece.position.y;
@@ -142,102 +172,201 @@ auto move_to_json(Move &move) {
     json["spin"] = spin_to_json(move.piece.spin);
     return json;
 }
+auto json_to_spin(nlohmann::json json) -> spinType {
+    std::string str = json.get<std::string>();
+    if (str == "none") {
+        return spinType::null;
+    }
+    else if (str == "mini") {
+        return spinType::mini;
+    }
+    else if (str == "full") {
+        return spinType::normal;
+    }
+    throw std::runtime_error("invalid spin");
+    return spinType::null;
+}
+
+
+#define CHECK_ERR(code) try { code; } catch (std::exception e) { std::cerr << __LINE__ << e.what() << std::endl; return 1; }
 
 // TBP entry point
 int main() {
-    // send info state to the client
-    std::vector<PieceType> queue;
-    int queue_index = 0;
-    EmulationGame game;
+    try {
+        constexpr int CORE_COUNT = 3;
 
-    nlohmann::json message;
+        // send info state to the client
+        std::vector<PieceType> queue;
 
-    message["type"] = "info";
-    /*
-    name 	A string, the human-friendly name of the bot. Example: "Cold Clear"
-    version 	A string version identifier. Example: "Gen 14 proto 8"
-    author 	A string identifying the author of the bot. Example: "SoRA_X7"
-    features 	A list of supported features.*/
+        EmulationGame game;
 
-    message["name"] = "Nana";
-    message["version"] = "0.1";
-    message["author"] = "Shakkar + Awyzza";
+        nlohmann::json message;
 
-    // send just output to stdout
-    std::cout << message.dump() << std::endl;
+        message["type"] = "info";
+        /*
+        name 	A string, the human-friendly name of the bot. Example: "Cold Clear"
+        version 	A string version identifier. Example: "Gen 14 proto 8"
+        author 	A string identifying the author of the bot. Example: "SoRA_X7"
+        features 	A list of supported features.*/
 
-    // accept input from stdin
-    std::string str_input;
-    std::getline(std::cin, str_input);
+        message["name"] = "Nana";
+        message["version"] = "0.1";
+        message["author"] = "Shakkar + Awyzza";
 
-    // parse input which should be rules
-    message = nlohmann::json::parse(str_input);
+        // send just output to stdout
+        std::cout << message.dump() << std::endl;
 
-    // currently there really is no use for this because both the client and spec doesnt really use this
+        std::string str_input;
 
-    // send the ready message to the client
-    message.clear();
-    message["type"] = "ready";
-    std::cout << message.dump() << std::endl;
-
-    while (true) {
-        std::cin >> str_input;
-        message.clear();
-        message = nlohmann::json::parse(str_input);
-        std::string type = message["type"];
-        if (type == "quit") {
-            Search::endSearch();
-            break;
-        } else if (type == "start") {
-            /*
-            The `start` message tells the bot to begin calculating from the specified
-            position. This message must be sent before asking the bot for a move. This 
-            message must be an array of the specified attributes, each element in the 
-            array being a player. The player the bot will be acting on should be on index 
-            0.
-
-
-            Attribute       | Description
-            ---------       | -----------
-            `hold`          | Either a pieces if hold is filled or `null` if hold is empty.
-            `queue`         | A list of pieces. Example: `["S", "Z", "O"]`
-            `combo`         | The number of consecutive line clears that have been made.
-            `back_to_back`  | An integer indicating back to back status.
-            `board`         | A list of 40 lists of 10 board cells..*/
-
-            auto player_1 = message["states"].array()[0];
-            Board board = json_to_board(player_1["board"]);
-            queue = json_to_queue(player_1["queue"]);
-            PieceType hold = json_to_type(player_1["hold"]);
-            int combo = player_1["combo"];
-            int back_to_back = player_1["back_to_back"];
-
-            game.game.board = board;
-            game.game.current_piece = queue[0];
-            for (int i = 1; i < queue.size() && i < game.game.queue.size(); ++i) {
-                game.game.queue[i - 1] = queue[i];
-            }
-            game.game.hold = hold;
-            game.combo = combo;
-            game.game.b2b = back_to_back;
-
-            Search::startSearch(game, 4);
-        } else if (type == "new_piece") {
-            PieceType piece = json_to_type(message["piece"]);
-            queue.push_back(piece);
-        } else if (type == "suggest") {
-            // end search and give the best move
-            Search::endSearch();
-            Move best_move = Search::bestMove();
-            // create suggestion message
+        while (true) {
+            str_input.clear();
             message.clear();
-            message["type"] = "move";
-            message["move"] = move_to_json(best_move);
 
-            // play the move
-            game.game.place_piece(best_move.piece);
-            std::cout << message.dump() << std::endl;
+            std::cin >> str_input;
+            message = nlohmann::json::parse(str_input);
+            std::string type = message["type"];
+
+            if (type == "quit") {
+                Search::endSearch();
+                break;
+            }
+            else if (type == "rules") {
+
+                // currently there really is no use for this because both the client and spec doesnt really use this
+
+                // send the ready message to the client
+                message.clear();
+                message["type"] = "ready";
+                std::cout << message.dump() << std::endl;
+            }
+            else if (type == "start") {
+                /*
+                The `start` message tells the bot to begin calculating from the specified
+                position. This message must be sent before asking the bot for a move. This
+                message must be an array of the specified attributes, each element in the
+                array being a player. The player the bot will be acting on should be on index
+                0.
+
+
+                Attribute       | Description
+                ---------       | -----------
+                `hold`          | Either a pieces if hold is filled or `null` if hold is empty.
+                `queue`         | A list of pieces. Example: `["S", "Z", "O"]`
+                `combo`         | The number of consecutive line clears that have been made.
+                `back_to_back`  | An integer indicating back to back status.
+                `board`         | A list of 40 lists of 10 board cells..*/
+
+                nlohmann::json player_1;
+#ifdef TBP1
+                // tbp 1
+                CHECK_ERR(player_1 = message);
+#else
+                // tbp 2
+                CHECK_ERR(player_1 = message["states"].array()[0]);
+#endif
+
+
+                Board board;
+
+                CHECK_ERR(board = json_to_board(player_1["board"]));
+
+
+                CHECK_ERR(queue = json_to_queue(player_1["queue"]));
+
+                PieceType hold;
+
+                CHECK_ERR(hold = json_to_type(player_1["hold"]));
+
+                int back_to_back;
+#ifdef TBP1
+                CHECK_ERR(back_to_back = player_1["back_to_back"].get<bool>() ? 1 : 0);
+#else
+                CHECK_ERR(back_to_back = player_1["back_to_back"].get<int>());
+#endif
+
+                int combo;
+                CHECK_ERR(combo = player_1["combo"].get<int>());
+
+                game.game.board = board;
+                game.game.current_piece = queue.front();
+                queue.erase(queue.begin());
+
+                for (int i = 0; i < game.game.queue.size(); ++i) {
+                    game.game.queue[i] = PieceType::Empty;
+                }
+
+                for (int i = 0; i < game.game.queue.size(); ++i) {
+                    if (game.game.queue[i] == PieceType::Empty) {
+                        if (queue.size() > 0) {
+                            game.game.queue[i] = queue.front();
+                            queue.erase(queue.begin());
+                        }
+                    }
+                }
+
+                game.game.hold = hold;
+                game.combo = combo;
+                game.game.b2b = back_to_back;
+
+                Search::startSearch(game, CORE_COUNT);
+            }
+            else if (type == "new_piece") {
+                PieceType piece = json_to_type(message["piece"]);
+                queue.push_back(piece);
+            }
+            else if (type == "suggest") {
+                // end search and give the best move
+                Search::endSearch();
+                Move best_move = Search::bestMove();
+
+                // create suggestion message
+                message.clear();
+                message["type"] = "suggestion";
+                message["moves"] = nlohmann::json::array();
+                message["moves"][0] = move_to_json(best_move);
+                message["moves"][0]["inputs"] = nlohmann::json::array();
+
+                // TODO: add inputs
+
+                std::cout << message.dump() << std::endl;
+            }
+            else if (type == "play") {
+                // play the move
+                message = message["move"];
+                Move move;
+                move.null_move = false;
+                CHECK_ERR(move.piece = json_to_type(message["location"]["type"]));
+                CHECK_ERR(move.piece.position.x = message["location"]["x"].get<int>());
+                CHECK_ERR(move.piece.position.y = message["location"]["y"].get<int>());
+                CHECK_ERR(move.piece.spin = json_to_spin(message["spin"]));
+
+                RotationDirection rotation;
+                CHECK_ERR(rotation = json_to_rotation(message["location"]["orientation"]));
+
+                for(int i = 0; i < int(rotation); ++i) {
+					move.piece.calculate_rotate(TurnDirection::Right);
+				}
+
+                // play the move
+                game.set_move(move);
+                game.play_moves();
+
+                for (int i = 0; i < game.game.queue.size(); ++i) {
+                    if (game.game.queue[i] == PieceType::Empty) {
+                        game.game.queue[i] = queue.front();
+                        queue.erase(queue.begin());
+                    }
+                }
+
+                // start search
+                Search::startSearch(game, CORE_COUNT);
+
+            }
         }
+    }
+    catch (std::exception e) {
+        std::cerr << "exception thrown: " << e.what() << std::endl;
+        return 1;
     }
     return 0;
 }
