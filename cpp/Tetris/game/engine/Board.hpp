@@ -40,10 +40,10 @@ class Board {
     }
 
     void set(const Piece& piece) {
-        for (size_t i = 0; i < n_minos; ++i) {
+        for (const Coord& mino : piece.minos) {
             set(
-                (size_t)piece.x_minos[i] + piece.position.x,
-                (size_t)piece.y_minos[i] + piece.position.y);
+                (size_t)mino.x + piece.position.x,
+                (size_t)mino.y + piece.position.y);
         }
     }
 

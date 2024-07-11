@@ -10,16 +10,14 @@ public:
         this->type = type;
         rotation = RotationDirection::North;
         position = { 10 / 2 - 1, 20 - 2 };
-        x_minos = rot_piece_def_x[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
-        y_minos = rot_piece_def_y[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
+        minos = piece_definitions[static_cast<size_t>(type)];
         spin = spinType::null;
     }
     constexpr Piece(PieceType type, RotationDirection dir) noexcept {
         this->type = type;
         rotation = dir;
         position = { 10 / 2 - 1, 20 - 2 };
-        x_minos = rot_piece_def_x[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
-        y_minos = rot_piece_def_y[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
+        minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
         spin = spinType::null;
     }
 
@@ -39,8 +37,7 @@ public:
         else {
             rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + 1) % n_minos);
 		}
-        x_minos = rot_piece_def_x[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
-        y_minos = rot_piece_def_y[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
+        minos = rot_piece_def[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
 
         return;
 
@@ -50,28 +47,18 @@ public:
     constexpr inline void calculate_rotate(TurnDirection direction) {
         if (direction == TurnDirection::Left) {
             rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + (n_minos - 1)) % n_minos);
-            for (size_t i = 0; i < n_minos; ++i) {
-
-                Coord temp_mino = { x_minos[i], y_minos[i] };
+            for (auto& mino : minos) {
+                Coord temp_mino = mino;
                 temp_mino.y *= -1;
-                
-                std::swap(temp_mino.x, temp_mino.y);
-
-                x_minos[i] = temp_mino.x;
-                y_minos[i] = temp_mino.y;
+                mino = { temp_mino.y, temp_mino.x };
             }
         }
         else {
             rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + 1) % n_minos);
-            for (size_t i = 0; i < n_minos; ++i) {
-
-                Coord temp_mino = { x_minos[i], y_minos[i] };
+            for (auto& mino : minos) {
+                Coord temp_mino = mino;
                 temp_mino.x *= -1;
-
-                std::swap(temp_mino.x, temp_mino.y);
-
-                x_minos[i] = temp_mino.x;
-                y_minos[i] = temp_mino.y;
+                mino = { temp_mino.y, temp_mino.x };
             }
         }
     }
@@ -84,9 +71,8 @@ public:
         return rotation + position.x * n_minos + position.y * 10 * n_minos + (int)type * 10 * 20 * n_minos;
     }
 
-    std::array<int8_t, n_minos> x_minos;
-    std::array<int8_t, n_minos> y_minos;
-    alignas(16) Coord position;
+    std::array<Coord, n_minos> minos;
+    Coord position;
     RotationDirection rotation;
     PieceType type;
     spinType spin;
@@ -102,8 +88,8 @@ consteval bool piece_test_1() {
             Piece second(static_cast<PieceType>(type), static_cast<RotationDirection>(rot));
 
             for (size_t mino = 0; mino < n_minos; ++mino) {
-                if ((first.x_minos[mino] != second.x_minos[mino]) ||
-                    (first.y_minos[mino] != second.y_minos[mino]))
+                if ((first.minos[mino].x != second.minos[mino].x) ||
+                    (first.minos[mino].y != second.minos[mino].y))
                         return false;
 
             }

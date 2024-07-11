@@ -109,8 +109,8 @@ constexpr std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N> p
     }};
 
 
-consteval auto generate_rot_piece_def_x() {
-    std::array<std::array<std::array<int_fast8_t, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def{};
+consteval auto generate_rot_piece_def() {
+    std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def{};
 
     for (size_t type = 0; type < piece_definitions.size(); ++type) {
         auto minos = piece_definitions[type];
@@ -118,7 +118,7 @@ consteval auto generate_rot_piece_def_x() {
         for (size_t rot = 0; rot < RotationDirection::RotationDirections_N; ++rot) {
             // set the minos
             for (size_t mino = 0; mino < n_minos; ++mino) {
-                rot_piece_def[rot][type][mino] = minos[mino].x;
+                rot_piece_def[rot][type][mino] = minos[mino];
             }
 
             // rotate them to the right
@@ -134,32 +134,4 @@ consteval auto generate_rot_piece_def_x() {
     return rot_piece_def;
 }
 
-
-consteval auto generate_rot_piece_def_y() {
-    std::array<std::array<std::array<int_fast8_t, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def{};
-
-    for (size_t type = 0; type < piece_definitions.size(); ++type) {
-        auto minos = piece_definitions[type];
-        // this relies on the ordering of the directions to be: N E S W
-        for (size_t rot = 0; rot < RotationDirection::RotationDirections_N; ++rot) {
-            // set the minos
-            for (size_t mino = 0; mino < n_minos; ++mino) {
-                rot_piece_def[rot][type][mino] = minos[mino].y;
-            }
-
-            // rotate them to the right
-            for (auto& mino : minos) {
-                Coord temp_mino = mino;
-                temp_mino.x *= -1;
-                mino = { temp_mino.y, temp_mino.x };
-            }
-
-        }
-    }
-
-    return rot_piece_def;
-}
-
-
-constexpr std::array<std::array<std::array<int_fast8_t, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def_x = generate_rot_piece_def_x(); 
-constexpr std::array<std::array<std::array<int_fast8_t, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def_y = generate_rot_piece_def_y();
+constexpr std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def = generate_rot_piece_def();
