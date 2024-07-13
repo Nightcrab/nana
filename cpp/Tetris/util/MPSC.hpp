@@ -6,22 +6,25 @@
 template<class T>
 class mpsc {
 public:
-    mpsc(size_t _num_threads) {
-        size = _num_threads;
-        for (int i = 0; i < _num_threads; i++) {
-            queues.push_back(std::make_unique<rigtorp::SPSCQueue<T>>(256));
+    mpsc(size_t num_threads) {
+        size = num_threads;
+        for (int i = 0; i < num_threads; i++) {
+            queues.push_back(std::make_unique<rigtorp::SPSCQueue<T>>(1 << num_threads));
         }
     }
 
-    void enqueue(const T& _data, size_t _t_id) noexcept {
-        queues[_t_id]->push(_data);
+    // producer function
+    void enqueue(const T& data, size_t id) noexcept {
+        queues[id]->push(data);
     }
 
+    // consumer function
     T* peek(size_t id) noexcept {
         T* front = queues[id]->front();
         return front;
     }
 
+    // consumer function
     void pop(size_t id) noexcept {
         T* front = queues[id]->front();
         if (front != nullptr) {
@@ -29,6 +32,7 @@ public:
         }
     }
 
+    // consumer function
     T dequeue() noexcept {
         T* front = nullptr;
         size_t i = 0;
@@ -40,7 +44,7 @@ public:
 
         T ret = std::move(*front);
         pop(i);
-        return ret;
+        return std::move(ret);
     }
 private:
     std::vector<std::unique_ptr<rigtorp::SPSCQueue<T>>> queues;
