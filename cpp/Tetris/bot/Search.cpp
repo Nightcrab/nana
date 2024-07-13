@@ -21,7 +21,7 @@ UCT Search::uct;
 
 EmulationGame Search::root_state;
 
-std::vector<std::unique_ptr<zib::wait_mpsc_queue<Job>>> Search::queues;
+std::vector<std::unique_ptr<mpsc<Job>>> Search::queues;
 std::vector<int> core_indices;
 std::vector<std::jthread> worker_threads;
 
@@ -53,7 +53,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     queues.reserve(core_count);
 
     for (int i = 0; i < core_count; i++) {
-        queues.push_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
+        queues.push_back(std::make_unique<mpsc<Job>>(core_count + 1));
     }
 
     // Thread indices
@@ -100,7 +100,7 @@ void Search::continueSearch(EmulationGame state) {
     queues.reserve(core_count);
     // Initialise worker queues
     for (int i = 0; i < core_count; i++) {
-        queues.emplace_back(std::make_unique<zib::wait_mpsc_queue<Job>>(core_count + 1));
+        queues.emplace_back(std::make_unique<mpsc<Job>>(core_count + 1));
     }
 
     core_indices = std::vector<int>(core_count);

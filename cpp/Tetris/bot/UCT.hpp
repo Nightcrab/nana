@@ -79,7 +79,8 @@ class HashActionPair {
 enum JobType {
     SELECT,
     BACKPROP,
-    STOP
+    STOP,
+    PUT
 };
 
 class Job {

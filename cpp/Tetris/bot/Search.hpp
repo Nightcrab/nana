@@ -32,7 +32,7 @@ namespace Search {
 
     extern EmulationGame root_state;
 
-    extern std::vector<std::unique_ptr<zib::wait_mpsc_queue<Job>>> queues;
+    extern std::vector<std::unique_ptr<mpsc<Job>>> queues;
 
     void startSearch(const EmulationGame& state, int core_count);
 
