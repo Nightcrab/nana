@@ -1155,12 +1155,12 @@ namespace olc
 		// State of keyboard		
 		bool		pKeyNewState[256] = { 0 };
 		bool		pKeyOldState[256] = { 0 };
-		HWButton	pKeyboardState[256] = { 0 };
+		HWButton	pKeyboardState[256] = { { 0 } };
 
 		// State of mouse
 		bool		pMouseNewState[nMouseButtons] = { 0 };
 		bool		pMouseOldState[nMouseButtons] = { 0 };
-		HWButton	pMouseState[nMouseButtons] = { 0 };
+		HWButton	pMouseState[nMouseButtons] = { { 0 } };
 
 		// The main engine thread
 		void		EngineThread();
@@ -2023,7 +2023,7 @@ namespace olc
 
 	void PixelGameEngine::DrawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2, Pixel p, uint32_t pattern)
 	{
-		int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
+		[[maybe_unused]] int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 		dx = x2 - x1; dy = y2 - y1;
 
 		auto rol = [&](void) { pattern = (pattern << 1) | (pattern >> 31); return pattern & 1; };
@@ -3691,7 +3691,7 @@ namespace olc
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
 
-		void SetDecalMode(const olc::DecalMode& mode)
+		void SetDecalMode(const olc::DecalMode& mode) override
 		{
 			if (mode != nDecalMode)
 			{
