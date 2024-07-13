@@ -9,7 +9,7 @@ public:
     mpsc(size_t num_threads) {
         size = num_threads;
         for (int i = 0; i < num_threads; i++) {
-            queues.push_back(std::make_unique<rigtorp::SPSCQueue<T>>(1 << num_threads));
+            queues.push_back(std::make_unique<rigtorp::SPSCQueue<T>>(1024));
         }
     }
 
