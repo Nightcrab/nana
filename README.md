@@ -9,7 +9,7 @@
 
 Nana is a game searching program for multi-agent games based on tetrominoes. 
 
-Compared to other solvers, Nana is designed to handle:
+Features:
 
 * Zero-sum games
 * Large branching factors
