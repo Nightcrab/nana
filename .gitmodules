@@ -1,5 +1,3 @@
-
-[submodule "ShakTrisLib"]
+[submodule "cpp/Tetris/game/ShakTrisLib"]
 	path = cpp/Tetris/game/ShakTrisLib
 	url = https://github.com/shakkar23/ShakTrisLib
-
