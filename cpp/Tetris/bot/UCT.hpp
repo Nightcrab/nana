@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "EmulationGame.hpp"
-#include "MPSC.hpp"
+#include "util/MPSC.hpp"
 #include "Move.hpp"
-#include "rng.hpp"
+#include "util/rng.hpp"
 
 /*
         Data structures for performing multithreaded UCT search.

@@ -1,6 +1,6 @@
 #include "EmulationGame.hpp"
 
-#include "fasthash.h"
+#include "util/fasthash.h"
 #include <iostream>
 void EmulationGame::set_move(Move move) {
     this->move = move;

@@ -1,6 +1,6 @@
 #pragma once
 #include "Chance.hpp"
-#include "Game.hpp"
+#include "engine/Game.hpp"
 
 #include <queue>
 

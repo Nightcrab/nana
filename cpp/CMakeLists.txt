@@ -5,37 +5,20 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/game)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/game/engine)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/bot)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Tetris/util)
+
+add_subdirectory("Tetris/game/ShakTrisLib")
 
 
 set(TETRIS_SOURCES
-	"Tetris/game/engine/Board.hpp"
-    "Tetris/util/fasthash.h"
-    "Tetris/util/fasthash.cpp"
-	"Tetris/game/engine/Game.cpp"
-	"Tetris/game/engine/Game.hpp"
-	"Tetris/game/engine/Piece.hpp"
-	"Tetris/util/rng.cpp"
-	"Tetris/util/rng.hpp"
-	"Tetris/game/engine/TetrisConstants.hpp"
-	"Tetris/game/VersusGame.cpp"
-	"Tetris/game/VersusGame.hpp"
 	"Tetris/bot/Eval.cpp"
 	"Tetris/bot/Eval.hpp"
-	"Tetris/game/Move.cpp"
-	"Tetris/game/Move.hpp"
 	"Tetris/game/EmulationGame.cpp"
 	"Tetris/game/EmulationGame.hpp"
-	"Tetris/game/Chance.hpp"
 	"Tetris/bot/UCT.cpp"
 	"Tetris/bot/UCT.hpp"
 	"Tetris/bot/Search.cpp"
 	"Tetris/bot/Search.hpp"
-	"Tetris/util/Distribution.hpp"
-	"Tetris/util/MPSC.hpp"
- "Tetris/util/Distribution.cpp"
 )
  
 
@@ -59,6 +42,9 @@ if(UNIX AND NOT APPLE)
 
     target_link_libraries(cfr_tetris ${X11_LIBRARIES} ${OPENGL_LIBRARIES} ${PNG_LIBRARY})
 endif()
+
+target_link_libraries(cfr_tetris ShakTris)
+target_link_libraries(tbp_tetris ShakTris)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 20)

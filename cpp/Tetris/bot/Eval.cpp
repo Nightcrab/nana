@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Board.hpp"
-#include "Game.hpp"
+#include "engine/Board.hpp"
+#include "engine/Game.hpp"
 #include "Move.hpp"
 
 using lut_int = uint64_t;

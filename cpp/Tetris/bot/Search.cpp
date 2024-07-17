@@ -4,7 +4,7 @@
 #include <numeric>
 #include <ranges>
 
-#include "Distribution.hpp"
+#include "util/Distribution.hpp"
 #include "Eval.hpp"
 #include <iostream>
 #include <thread>
