@@ -1,6 +1,6 @@
 #include "EmulationGame.hpp"
 
-#include "util/fasthash.h"
+#include "Util/fasthash.h"
 #include <iostream>
 void EmulationGame::set_move(Move move) {
     this->move = move;
@@ -99,7 +99,7 @@ void EmulationGame::play_moves(){
 
     for (auto& piece : game.queue) {
         if (piece == PieceType::Empty) {
-            piece = chance.rng.getPiece();
+            piece = chance.rng_1.getPiece();
         }
     }
 
@@ -108,7 +108,7 @@ void EmulationGame::play_moves(){
         garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
     }
 
-    game.app = app();
+    //game.app = app();
 
     chance_move();
 };

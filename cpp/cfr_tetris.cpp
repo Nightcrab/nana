@@ -54,9 +54,10 @@ class Tetris : public olc::PixelGameEngine {
 
     void renderHold(Game& game, int x_offset) {
         if (game.hold.has_value()) {
+            Piece tmp = game.hold.value();
             for (int i = 0; i < 4; i++) {
-                int x = game.hold.value().minos[i].x;
-                int y = game.hold.value().minos[i].y;
+                int x = tmp.minos[i].x;
+                int y = tmp.minos[i].y;
                 const int size = 10;
                 FillRect(x * size + 250 + x_offset, (4 - y) * size, size, size, olc::RED);
             }
@@ -124,9 +125,11 @@ class Tetris : public olc::PixelGameEngine {
 
         if (hold) {
             if (game.p1_game.hold) {
-                std::swap(game.p1_game.hold.value(), game.p1_game.current_piece);
+                PieceType tmp = game.p1_game.current_piece.type;
+                game.p1_game.current_piece = game.p1_game.hold.value();
+                game.p1_game.hold = tmp;
             } else {
-                game.p1_game.hold = game.p1_game.current_piece;
+                game.p1_game.hold = game.p1_game.current_piece.type;
 
                 // shift queue
                 game.p1_game.current_piece = game.p1_game.queue.front();
@@ -197,10 +200,10 @@ private:
     bool OnUserCreate() override {
         game = EmulationGame();
 
-        game.game.current_piece = game.chance.rng.getPiece();
+        game.game.current_piece = game.chance.rng_1.getPiece();
 
         for (auto& piece_type : game.game.queue) {
-            piece_type = game.chance.rng.getPiece();
+            piece_type = game.chance.rng_1.getPiece();
         }
         return true;
     }
@@ -302,7 +305,7 @@ private:
 
             Distribution::normalise(SoR_policy);
 
-            Move sample = Distribution::sample(SoR_policy, game.chance.rng);
+            Move sample = Distribution::sample(SoR_policy, game.chance.rng_1);
             std::cout << "eval was:" << Eval::eval_CC(game.game, sample) << std::endl;
             game.set_move(sample);
             game.play_moves();
@@ -333,10 +336,10 @@ private:
         if (GetKey(olc::Key::R).bPressed) {
             game = EmulationGame();
 
-            game.game.current_piece = game.chance.rng.getPiece();
+            game.game.current_piece = game.chance.rng_1.getPiece();
 
             for (auto& piece_type : game.game.queue) {
-                piece_type = game.chance.rng.getPiece();
+                piece_type = game.chance.rng_1.getPiece();
             }
         }
 

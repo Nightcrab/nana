@@ -80,7 +80,6 @@ enum JobType {
     SELECT,
     BACKPROP,
     STOP,
-    PUT
 };
 
 class Job {
