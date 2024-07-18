@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "EmulationGame.hpp"
-#include "util/MPSC.hpp"
+#include "Util/MPSC.hpp"
 #include "Move.hpp"
 #include "UCT.hpp"
 

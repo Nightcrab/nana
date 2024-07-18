@@ -10,7 +10,7 @@
 #include "EmulationGame.hpp"
 #include "Search.hpp"
 #include "util/rng.hpp"
-#include "util/Distribution.hpp"
+#include "Util/Distribution.hpp"
 
 #define OLC_PGE_APPLICATION
 #include "OLC/olcPixelGameEngine.h"

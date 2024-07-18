@@ -1,6 +1,6 @@
 #include "UCT.hpp"
-#include "util/MPSC.hpp"
-#include "util/Distribution.hpp"
+#include "Util/MPSC.hpp"
+#include "Util/Distribution.hpp"
 #include "Eval.hpp"
 #include <iostream>
 

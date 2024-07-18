@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "EmulationGame.hpp"
-#include "util/MPSC.hpp"
+#include "Util/MPSC.hpp"
 #include "Move.hpp"
 #include "util/rng.hpp"
 
