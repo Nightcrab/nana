@@ -17,7 +17,7 @@
 #include <numeric>
 
 const int SCREEN_WIDTH = 600;
-const int SCREEN_HEIGHT = 25 * 32;
+const int SCREEN_HEIGHT = 25 * 26;
 
 class Tetris : public olc::PixelGameEngine {
    public:
@@ -30,15 +30,27 @@ class Tetris : public olc::PixelGameEngine {
     RNG player_1_rng;
     RNG player_2_rng;
 
+
+    // manually define orange
+    olc::Pixel colors[7] = {
+        olc::GREEN,
+        olc::RED,
+        olc::Pixel(0, 100, 255, 255),
+        olc::Pixel(255, 165, 0, 255),
+        olc::MAGENTA,
+        olc::YELLOW,
+        olc::CYAN
+    };
+
     void renderBoard(Game& game, int x_offset) {
         for (int i = 0; i < Board::width; i++) {
-            for (int j = 0; j < 32; j++) {
+            for (int j = 0; j < 24; j++) {
                 if (game.board.get(i, j)) {
                     const int size = 25;
-                    FillRect(i * size + x_offset, (31 - j) * size, size, size, olc::WHITE);
+                    FillRect(i * size + x_offset, (24 - j) * size, size, size, olc::WHITE);
                 } else {
                     const int size = 25;
-                    DrawRect(i * size + x_offset, (31 - j) * size, size, size, olc::BLACK);
+                    DrawRect(i * size + x_offset, (24 - j) * size, size, size, olc::Pixel(240, 240, 240, 255));
                 }
             }
         }
@@ -48,7 +60,7 @@ class Tetris : public olc::PixelGameEngine {
             int x = game.current_piece.position.x + game.current_piece.minos[i].x;
             int y = game.current_piece.position.y + game.current_piece.minos[i].y;
             const int size = 25;
-            FillRect(x * size + x_offset, (31 - y) * size, size, size, olc::RED);
+            FillRect(x * size + x_offset, (24 - y) * size, size + 1, size + 1, colors[(size_t)game.current_piece.type]);
         }
     }
 
@@ -58,26 +70,32 @@ class Tetris : public olc::PixelGameEngine {
             for (int i = 0; i < 4; i++) {
                 int x = tmp.minos[i].x;
                 int y = tmp.minos[i].y;
-                const int size = 10;
-                FillRect(x * size + 250 + x_offset, (4 - y) * size, size, size, olc::RED);
+                const int size = 25;
+                int offset = 0;
+                if ((size_t)tmp.type >= 5) {
+                    offset = -12;
+                }
+                FillRect(x * size + x_offset + offset, (3 - y) * size, size, size, colors[(size_t)tmp.type]);
             }
         }
     }
     void renderMeter(int meter, int x_offset) {
-        FillRect(x_offset, SCREEN_HEIGHT - meter * 25, 25, 25 * meter, olc::RED);
+        FillRect(x_offset, SCREEN_HEIGHT - (meter + 1) * 25, 25, 25 * meter, olc::Pixel(255, 50, 50, 255));
     }
 
-    void renderQueue(Game& game) {
+    void renderQueue(Game& game, int x_offset) {
         for (int i = 0; i < QUEUE_SIZE - 1; i++) {
             Piece piece = Piece(game.queue[i]);
 
             for (int j = 0; j < 4; j++) {
                 int x = piece.minos[j].x;
                 int y = piece.minos[j].y;
-                const int size = 10;
-                // manually define orange
-                olc::Pixel colors[] = {olc::GREEN, olc::RED, olc::DARK_BLUE, olc::Pixel(255, 165, 0, 255), olc::MAGENTA, olc::YELLOW, olc::CYAN};
-                FillRect(x * size + 250 + 25, (4 - y) * size + (i+1) * 25 * 2, size, size, colors[(size_t)game.queue[i]]);
+                const int size = 25;
+                int offset = 0;
+                if ((size_t)game.queue[i] >= 5) {
+                    offset = -12;
+                }
+                FillRect(x * size + 250 + 45 + x_offset + offset, (4 - y) * size + (i-1) * size * 3 + 25, size, size, colors[(size_t)game.queue[i]]);
             }
         }
     }
@@ -174,13 +192,13 @@ class Tetris : public olc::PixelGameEngine {
             game = VersusGame();
         }
 
-        renderPiece(game.p1_game, 0);
         renderBoard(game.p1_game, 0);
+        renderPiece(game.p1_game, 0);
         renderHold(game.p1_game, 0);
         renderMeter(game.p1_meter, 25 * 10);
 
-        renderPiece(game.p2_game, SCREEN_WIDTH - 25 * 10);
         renderBoard(game.p2_game, SCREEN_WIDTH - 25 * 10);
+        renderPiece(game.p2_game, SCREEN_WIDTH - 25 * 10);
         renderHold(game.p2_game, 40);
         renderMeter(game.p2_meter, SCREEN_WIDTH - 25 * 10 - 25);
 
@@ -191,7 +209,7 @@ class Tetris : public olc::PixelGameEngine {
 class Firetris : public Tetris {
 public:
     Firetris() {
-        sAppName = "Firetris";
+        sAppName = "Nana";
     }
 private:
     EmulationGame game;
@@ -209,7 +227,7 @@ private:
     }
     bool OnUserUpdate(float fElapsedTime) override {
         // fill the screen with black
-        Clear(olc::BLUE);
+        Clear(olc::Pixel(20, 20, 20, 255));
         // for manually playing as player 1
 #define SHAK_CONTROLS
 #ifdef SHAK_CONTROLS
@@ -345,11 +363,11 @@ private:
 
         time++;
 
-        renderPiece(game.game, 0);
-        renderBoard(game.game, 0);
-        renderHold(game.game, 25);
-        renderQueue(game.game);
-        renderMeter(std::accumulate(game.garbage_meter.begin(), game.garbage_meter.end(), 0), 25 * 10);
+        renderBoard(game.game, 125);
+        renderPiece(game.game, 125);
+        renderHold(game.game, 50);
+        renderQueue(game.game, 137);
+        renderMeter(std::accumulate(game.garbage_meter.begin(), game.garbage_meter.end(), 0), 100);
         return true;
     }
     bool OnUserDestroy() override {

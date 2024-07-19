@@ -22,6 +22,8 @@ set(TETRIS_SOURCES
 
 	"Util/Distribution.cpp"
 	"Util/fasthash.cpp"
+
+	"icon.rc"
 )
  
 
