@@ -50,7 +50,7 @@ class Tetris : public olc::PixelGameEngine {
                     FillRect(i * size + x_offset, (24 - j) * size, size, size, olc::WHITE);
                 } else {
                     const int size = 25;
-                    DrawRect(i * size + x_offset, (24 - j) * size, size, size, olc::Pixel(240, 240, 240, 255));
+                    DrawRect(i * size + x_offset, (24 - j) * size, size, size, olc::Pixel(250, 80, 140, 255));
                 }
             }
         }
@@ -60,7 +60,7 @@ class Tetris : public olc::PixelGameEngine {
             int x = game.current_piece.position.x + game.current_piece.minos[i].x;
             int y = game.current_piece.position.y + game.current_piece.minos[i].y;
             const int size = 25;
-            FillRect(x * size + x_offset, (24 - y) * size, size + 1, size + 1, colors[(size_t)game.current_piece.type]);
+            FillRect(x * size + x_offset, (24 - y) * size + 1, size + 1, size, colors[(size_t)game.current_piece.type]);
         }
     }
 
@@ -227,7 +227,7 @@ private:
     }
     bool OnUserUpdate(float fElapsedTime) override {
         // fill the screen with black
-        Clear(olc::Pixel(20, 20, 20, 255));
+        Clear(olc::Pixel(32, 4, 89, 255));
         // for manually playing as player 1
 #define SHAK_CONTROLS
 #ifdef SHAK_CONTROLS
