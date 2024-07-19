@@ -227,7 +227,7 @@ private:
     }
     bool OnUserUpdate(float fElapsedTime) override {
         // fill the screen with black
-        Clear(olc::Pixel(32, 4, 89, 255));
+        Clear(olc::Pixel(22, 4, 59, 255));
         // for manually playing as player 1
 #define SHAK_CONTROLS
 #ifdef SHAK_CONTROLS
