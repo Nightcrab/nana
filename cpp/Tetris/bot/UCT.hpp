@@ -3,6 +3,7 @@
 #include <stack>
 #include <unordered_map>
 #include <vector>
+#include <shared_mutex>
 
 #include "EmulationGame.hpp"
 #include "Util/MPSC.hpp"
@@ -80,6 +81,7 @@ enum JobType {
     SELECT,
     BACKPROP,
     STOP,
+    PUT,
 };
 
 class Job {
@@ -96,9 +98,14 @@ class Job {
     Job(float R, const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
         : R(R), state(state), type(type), path(path){};
 
+    // PUT job
+    Job(UCTNode& node, JobType type)
+        : R(0.0), node(node), type(type){};
+
     float R;
     EmulationGame state;
     JobType type;
+    UCTNode node;
 
     // for going backwards
 
@@ -120,6 +127,7 @@ class UCT {
         this->workers = workers;
         this->nodes_left = std::vector<std::unordered_map<int, UCTNode>>(workers);
         this->nodes_right = std::vector<std::unordered_map<int, UCTNode>>(workers);
+        this->mutexes = std::vector<std::shared_mutex>(workers);
         this->rng = std::vector<RNG>(workers);
         this->stats = std::vector<WorkerStatistics>(workers);
 
@@ -130,11 +138,21 @@ class UCT {
     }
     ~UCT() = default;
 
+    // Delete copy constructor and copy assignment operator
+    UCT(const UCT&) = delete;
+    UCT& operator=(const UCT&) = delete;
+
+    // Allow move construction and move assignment
+    UCT(UCT&&) noexcept = default;
+    UCT& operator=(UCT&&) noexcept = default;
+
+
     int workers = 0;
     int size = 0;
 
     std::vector<std::unordered_map<int, UCTNode>> nodes_left;
     std::vector<std::unordered_map<int, UCTNode>> nodes_right;
+    std::vector<std::shared_mutex> mutexes;
 
     std::vector<RNG> rng;
     std::vector<WorkerStatistics> stats;

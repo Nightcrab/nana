@@ -11,3 +11,7 @@
 - Implement Deep [CFR](https://arxiv.org/pdf/1811.00164) for training purposes
 - Generalize into other tetrominoes game variants
 - Achieve Nash Equilibrium
+
+
+## TODOs
+- Have jobs pass references of states instead of copying, and copy only at the root

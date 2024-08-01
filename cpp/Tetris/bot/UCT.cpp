@@ -136,13 +136,15 @@ Action& UCTNode::select_SOR(RNG &rng) {
 
 	Action &action = actions[id];
 
-	//std::cout << action.id << std::endl;
-
 	return action;
 }
 
 bool UCT::nodeExists(uint32_t nodeID) {
 	// node could be on left or right side
+
+	// read lock
+	std::shared_lock<std::shared_mutex> lock(mutexes[nodeID % workers]);
+
 	bool exists = nodes_left[nodeID % workers].find(nodeID) != nodes_left[nodeID % workers].end();
 	exists = exists || (nodes_right[nodeID % workers].find(nodeID) != nodes_right[nodeID % workers].end());
 	return exists;
@@ -152,7 +154,11 @@ bool UCT::nodeExists(uint32_t nodeID) {
 UCTNode& UCT::getNode(uint32_t nodeID, int threadIdx) {
 	// if we're here, the node exists somewhere
 
-	if (!nodes_right[nodeID % workers].count(nodeID)) {
+	mutexes[nodeID % workers].lock();
+	bool on_left_side = !nodes_right[nodeID % workers].count(nodeID);
+	mutexes[nodeID % workers].unlock();
+
+	if (on_left_side) {
 		// node is on the left side
 
 		if ((nodeID % workers) != threadIdx) {
@@ -183,6 +189,10 @@ UCTNode& UCT::getNode(uint32_t nodeID) {
 void UCT::insertNode(const UCTNode &node) {
 	// insertions always done on right side
 	stats[node.id % workers].nodes++;
+
+	// write lock
+	std::unique_lock<std::shared_mutex> lock(mutexes[node.id % workers]);
+
 	nodes_right[node.id % workers].insert({ node.id, node });
 };
 

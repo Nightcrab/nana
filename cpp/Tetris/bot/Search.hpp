@@ -40,7 +40,13 @@ namespace Search {
 
     void endSearch();
 
+    void maybeSteal(int threadIdx, int targetThread, Job job);
+
     void search(int threadIdx);
+
+    void processJob(const int threadIdx, Job job);
+
+    void maybeInsertNode(UCTNode node, const int threadIdx);
 
     float rollout(EmulationGame& state, int threadIdx);
 

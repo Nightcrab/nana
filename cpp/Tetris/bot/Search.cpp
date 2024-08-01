@@ -11,8 +11,6 @@
 
 std::atomic_bool Search::searching = false;
 
-
-
 int Search::core_count = 0;
 
 int Search::monte_carlo_depth = 1;
@@ -30,7 +28,6 @@ std::chrono::steady_clock::time_point search_start_time;
 constexpr int LOAD_FACTOR = 6;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
-
     //std::cout << "started searching, root hash is: " <<  (int) (state.hash() % 1000) << std::endl;
 
     search_start_time = std::chrono::steady_clock::now();
@@ -157,6 +154,208 @@ void Search::printStatistics() {
     std::cout << "tree depth: " << depth << std::endl;
 }
 
+void Search::maybeSteal(int threadIdx, int targetThread, Job job) {
+    bool is_empty = true;
+    for (int i = 0; i < queues[threadIdx]->size; i++) {
+        Job* job = queues[threadIdx]->peek();
+        if (job != nullptr) {
+            if ((*job).type != STOP) {
+                is_empty = false;
+                break;
+            }
+        }
+    }
+    if (is_empty) {
+        // steal
+        queues[threadIdx]->enqueue(job, threadIdx);
+    }
+    else {
+        // don't steal
+        queues[targetThread]->enqueue(job, threadIdx);
+    }
+}
+
+void Search::processJob(const int threadIdx, Job job) {
+
+    if (job.type == PUT) {
+        uct.insertNode(job.node);
+        return;
+    }
+
+    if (job.type == SELECT) {
+
+        uct.stats[threadIdx].nodes++;
+
+        EmulationGame& state = job.state;
+
+        uint32_t hash = state.hash();
+
+        if (state.game_over) {
+
+            float reward = rollout(state, threadIdx);
+
+            Job backprop_job(reward, state, BACKPROP, job.path);
+
+            if (job.path.empty()) {
+                return;
+            }
+
+            uint32_t parent_hash = job.path.back().hash;
+
+            uint32_t parentIdx = uct.getOwner(parent_hash);
+
+            // send this one back to our parent
+
+            maybeSteal(threadIdx, parentIdx, backprop_job);
+
+            return;
+        }
+
+        if (uct.nodeExists(hash)) {
+
+            UCTNode& node = uct.getNode(hash, threadIdx);
+            Action* action = &node.actions[0];
+
+            if constexpr (search_style == NANA) {
+
+                action = &node.select();
+            }
+            if constexpr (search_style == CC) {
+
+                //action = &node.select_r_max();
+                action = &node.select_SOR(uct.rng[threadIdx]);
+            }
+
+            // Virtual Loss by setting N := N+1
+            node.N += 1;
+
+            action->N += 1;
+
+            state.set_move(action->move);
+
+            state.play_moves();
+
+            uint32_t new_hash = state.hash();
+
+            // Get the owner of the updated state based on the hash
+            uint32_t ownerIdx = uct.getOwner(new_hash);
+
+            Job select_job(state, SELECT, job.path);
+
+            select_job.path.push_back(HashActionPair(hash, action->id));
+
+            uct.stats[threadIdx].deepest_node = std::max(uct.stats[threadIdx].deepest_node, (int)select_job.path.size());
+
+            maybeSteal(threadIdx, ownerIdx, select_job);
+        }
+        else {
+
+            UCTNode node(state);
+            maybeInsertNode(node, threadIdx);
+
+            Action* action = &node.actions[0];
+            if constexpr (search_style == NANA) {
+
+                action = &node.select();
+            }
+            if constexpr (search_style == CC) {
+
+                action = &node.select_SOR(uct.rng[threadIdx]);
+            }
+
+            node.N += 1;
+            action->N += 1;
+
+
+            state.set_move(action->move);
+            state.play_moves();
+
+            float reward = rollout(state, threadIdx);
+
+            uint32_t parent_hash = job.path.back().hash;
+
+            uint32_t parentIdx = uct.getOwner(parent_hash);
+
+            Job backprop_job(reward, state, BACKPROP, job.path);
+
+
+            // send rollout reward to parent, who also owns the arm that got here
+
+            maybeSteal(threadIdx, parentIdx, backprop_job);
+        }
+    }
+    else if (job.type == BACKPROP) {
+
+        uct.stats[threadIdx].backprop_messages++;
+        UCTNode& node = uct.getNode(job.path.back().hash, threadIdx);
+
+        float reward = job.R;
+
+        // Undo Virtual Loss by adding R
+        if constexpr (search_style == NANA) {
+            float& R = node.actions[job.path.back().actionID].R;
+            //int& N = node.actions[job.path.back().actionID].N;
+            R = R + reward;
+        }
+        if constexpr (search_style == CC) {
+            if (reward > node.actions[job.path.back().actionID].R) {
+                node.actions[job.path.back().actionID].R = reward;
+            }
+        }
+
+        job.path.pop_back();
+
+        if (job.path.empty()) {
+            Job select_job(root_state, SELECT);
+
+            // give ourself this job
+            queues[threadIdx]->enqueue(select_job, threadIdx);
+
+            return;
+        }
+
+        bool should_backprop = true;
+
+        if (should_backprop) {
+
+            uint32_t parent_hash = job.path.back().hash;
+
+            uint32_t parentIdx = uct.getOwner(parent_hash);
+
+            // drain stashed rewards
+
+            reward += node.R_buffer;
+            node.R_buffer = 0;
+
+            Job backprop_job(reward, job.state, BACKPROP, job.path);
+
+            maybeSteal(threadIdx, parentIdx, backprop_job);
+        }
+        else {
+
+            // stash reward and start a new rollout
+
+            node.R_buffer += reward;
+
+            Job select_job(root_state, SELECT);
+
+            // give ourself this job
+            queues[threadIdx]->enqueue(select_job, threadIdx);
+        }
+    }
+}
+
+void Search::maybeInsertNode(UCTNode node, const int threadIdx) {
+    int owner = uct.getOwner(node.id);
+    if (threadIdx == owner) {
+        uct.insertNode(node);
+    }
+    else {
+        Job put_job(node, PUT);
+        queues[owner]->enqueue(put_job, threadIdx);
+    }
+}
+
 void Search::search(const int threadIdx) {
     while (true) {
         if (!searching) {
@@ -164,203 +363,13 @@ void Search::search(const int threadIdx) {
         }
 
         // Thread waits here until something is in the queue
-        // Master thread is required to spawn SELECT and STOP jobs from the root
-        // otherwise we have deadlock
         Job job = queues[threadIdx]->dequeue();
 
         if (job.type == STOP) {
             return;
         }
 
-        if (job.type == SELECT) {
-
-            uct.stats[threadIdx].nodes++;
-
-            EmulationGame& state = job.state;
-
-            uint32_t hash = state.hash();
-
-            if (state.game_over) {
-
-                float reward = rollout(state, threadIdx);
-
-                Job backprop_job(reward, state, BACKPROP, job.path);
-
-                if (job.path.empty()) {
-                    continue;
-                }
-
-                uint32_t parent_hash = job.path.back().hash;
-
-                uint32_t parentIdx = uct.getOwner(parent_hash);
-
-                // send this one back to our parent
-
-                queues[parentIdx]->enqueue(backprop_job, threadIdx);
-
-                continue;
-            }
-
-            if (uct.nodeExists(hash)) {
-
-                UCTNode& node = uct.getNode(hash, threadIdx);
-                Action* action = &node.actions[0];
-
-                if constexpr (search_style == NANA) {
-
-                    action = &node.select();
-                }
-                if constexpr (search_style == CC) {
-
-                    //action = &node.select_r_max();
-                    action = &node.select_SOR(uct.rng[threadIdx]);
-                }
-
-                // Virtual Loss by setting N := N+1
-                node.N += 1;
-
-                action->N += 1;
-
-
-                state.set_move(action->move);
-
-                state.play_moves();
-
-                uint32_t new_hash = state.hash();
-
-                // Get the owner of the updated state based on the hash
-                uint32_t ownerIdx = uct.getOwner(new_hash);
-
-                Job select_job(state, SELECT, job.path);
-
-                select_job.path.push_back(HashActionPair(hash, action->id));
-
-                uct.stats[threadIdx].deepest_node = std::max(uct.stats[threadIdx].deepest_node, (int) select_job.path.size());
-
-                queues[ownerIdx]->enqueue(select_job, threadIdx);
-
-            } 
-            else {
-
-                UCTNode node(state);
-
-                uct.insertNode(node);
-
-                Action* action = &node.actions[0];
-                if constexpr (search_style == NANA) {
-
-                    action = &node.select();
-                }
-                if constexpr (search_style == CC) {
-
-                    action = &node.select_SOR(uct.rng[threadIdx]);
-                }
-
-                node.N += 1;
-                action->N += 1;
-
-                state.set_move(action->move);
-                state.play_moves();
-
-                float reward = rollout(state, threadIdx);
-
-                uint32_t parent_hash = job.path.back().hash;
-
-                uint32_t parentIdx = uct.getOwner(parent_hash);
-
-                Job backprop_job(reward, state, BACKPROP, job.path);
-
-                // send rollout reward to parent, who also owns the arm that got here
-
-                queues[parentIdx]->enqueue(backprop_job, threadIdx);
-            }
-        } 
-        else if (job.type == BACKPROP) {
-
-            uct.stats[threadIdx].backprop_messages++;
-            UCTNode& node = uct.getNode(job.path.back().hash, threadIdx);
-
-            float reward = job.R;
-
-            // Undo Virtual Loss by adding R
-            if constexpr (search_style == NANA) {
-                float& R = node.actions[job.path.back().actionID].R;
-                //int& N = node.actions[job.path.back().actionID].N;
-                R = R + reward;
-            }
-            if constexpr (search_style == CC) {
-                if (reward > node.actions[job.path.back().actionID].R) {
-                    node.actions[job.path.back().actionID].R = reward;
-                }
-            }
-
-            job.path.pop_back();
-
-            if (job.path.empty()) {
-                Job select_job(root_state, SELECT);
-
-                queues[threadIdx]->enqueue(select_job, threadIdx);
-
-                continue;
-            }
-
-            bool should_backprop = true;
-
-            // check if backpropagating would change the outcome at higher nodes
-            /*
-            for (HashActionPair ha : job.path) {
-
-                if ((ha.hash % core_count) != threadIdx) {
-                    continue;
-                }
-
-                UCTNode& higher_node = uct.getNode(ha.hash, threadIdx);
-                Action* action = &node.actions[0];
-
-                if (search_style == NANA) {
-
-                    action = &node.select();
-                }
-                if (search_style == CC) {
-
-                    action = &node.select_r_max();
-                }
-
-                if (action->id != ha.actionID) {
-                    // a sibling is better right now, so backpropagating may change the outcome
-                    should_backprop = true;
-                    break;
-                }
-            }
-            */
-
-            if (should_backprop) {
-
-                uint32_t parent_hash = job.path.back().hash;
-
-                uint32_t parentIdx = uct.getOwner(parent_hash);
-
-                // drain stashed rewards
-
-                reward += node.R_buffer;
-                node.R_buffer = 0;
-
-                Job backprop_job(reward, job.state, BACKPROP, job.path);
-
-                queues[parentIdx]->enqueue(backprop_job, threadIdx);
-            }
-            else {
-
-                // stash reward and start a new rollout
-
-                node.R_buffer += reward;
-
-                Job select_job(root_state, SELECT);
-
-                queues[threadIdx]->enqueue(select_job, threadIdx);
-            }
-
-        }
+        processJob(threadIdx, job);
     }
 }
 
@@ -379,48 +388,14 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
 
         float max_eval = -1;
         Move move;
+        UCTNode node = UCTNode(state);
+        move = node.select_SOR(uct.rng[threadIdx]).move;
 
-        if (threadIdx == uct.getOwner(state.hash())) {
-
-            UCTNode node = UCTNode(state);
-
-            uct.insertNode(node);
-
-            move = node.select_SOR(uct.rng[threadIdx]).move;
-
-            for (auto& action : node.actions) {
-                max_eval = std::max(max_eval, action.eval);
-            }
+        for (auto& action : node.actions) {
+            max_eval = std::max(max_eval, action.eval);
         }
-        else {
-            std::vector<Move> moves = state.legal_moves();
 
-            std::vector<Stochastic<Move>> policy;
-            std::vector<Stochastic<Move>> SoR_policy;
-            std::vector<Stochastic<float>> cc_dist;
-
-            policy.reserve(moves.size());
-
-            for (auto& move : moves) {
-                // raw scores
-                policy.push_back(Stochastic<Move>(move, Eval::eval_CC(state.game, move)));
-            }
-
-            // sort in descending order
-            std::ranges::sort(policy, [](const Stochastic<Move>& a, const Stochastic<Move>& b) {
-                return a.probability > b.probability;
-                });
-
-            // rank
-
-            for (int rank = 1; rank <= policy.size(); rank++) {
-                float prob = 1.0 / (rank * rank);
-                SoR_policy.push_back(Stochastic<Move>(policy[rank - 1].value, prob));
-                cc_dist.push_back(Stochastic<float>(policy[rank - 1].probability, prob));
-            }
-
-            max_eval = Distribution::max_value(cc_dist);
-        }
+        maybeInsertNode(node, threadIdx);
 
         if constexpr (search_style == NANA) {
             //float r = max_eval;

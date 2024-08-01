@@ -23,9 +23,26 @@ public:
     }
 
     // consumer function
-    inline T* peek(size_t id) noexcept {
+    inline T* single_peek(size_t id) noexcept {
         T* front = queues[id]->front();
         return front;
+    }
+
+    inline T* peek() noexcept {
+        T* front = nullptr;
+
+        for (int i = 0; i < size; i++) {
+            front = queues[i]->front();
+            if (front) {
+                break;
+            }
+        }
+
+        return front;
+    }
+
+    inline bool isempty() noexcept {
+        return peek() == nullptr;
     }
 
     // consumer function
@@ -40,9 +57,11 @@ public:
     inline T dequeue() noexcept {
         T* front = nullptr;
         size_t i = 0;
+        int j = 0;
 
-        while(!(front = peek(i))) {
+        while(!(front = single_peek(i))) {
 			++i;
+            ++j;
             i %= size;
 		}
 
@@ -50,7 +69,7 @@ public:
         pop(i);
         return std::move(ret);
     }
+    size_t size;
 private:
     std::vector<std::unique_ptr<rigtorp::SPSCQueue<T>>> queues;
-    size_t size;
 };
