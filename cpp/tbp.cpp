@@ -289,6 +289,9 @@ int main() {
                 int combo;
                 CHECK_ERR(combo = player_1["combo"].get<int>());
 
+                // create new emulation game rooted at this state
+                game = EmulationGame();
+
                 game.game.board = board;
                 game.game.current_piece = queue.front();
                 queue.erase(queue.begin());
@@ -310,7 +313,13 @@ int main() {
                 game.combo = combo;
                 game.game.b2b = back_to_back;
 
-                Search::startSearch(game, CORE_COUNT);
+                if (Search::initialised) {
+                    // reuse existing search tree
+                    Search::continueSearch(game);
+                }
+                else {
+                    Search::startSearch(game, CORE_COUNT);
+                }
             }
             else if (type == "new_piece") {
                 PieceType piece = json_to_type(message["piece"]);

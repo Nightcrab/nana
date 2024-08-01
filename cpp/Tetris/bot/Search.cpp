@@ -25,6 +25,8 @@ std::vector<std::jthread> worker_threads;
 
 std::chrono::steady_clock::time_point search_start_time;
 
+bool Search::initialised = false;
+
 constexpr int LOAD_FACTOR = 6;
 
 void Search::startSearch(const EmulationGame &state, int core_count) {
@@ -71,6 +73,8 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     for (auto& idx : core_indices) {
         worker_threads[idx] = std::jthread(search, idx);
     }
+
+    initialised = true;
 };
 
 void Search::continueSearch(EmulationGame state) {

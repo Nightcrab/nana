@@ -34,6 +34,8 @@ namespace Search {
 
     extern std::vector<std::unique_ptr<mpsc<Job>>> queues;
 
+    extern bool initialised;
+
     void startSearch(const EmulationGame& state, int core_count);
 
     void continueSearch(EmulationGame state);
@@ -42,11 +44,11 @@ namespace Search {
 
     void maybeSteal(int threadIdx, int targetThread, Job job);
 
+    void maybeInsertNode(UCTNode node, const int threadIdx);
+
     void search(int threadIdx);
 
     void processJob(const int threadIdx, Job job);
-
-    void maybeInsertNode(UCTNode node, const int threadIdx);
 
     float rollout(EmulationGame& state, int threadIdx);
 

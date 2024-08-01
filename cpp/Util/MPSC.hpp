@@ -57,11 +57,9 @@ public:
     inline T dequeue() noexcept {
         T* front = nullptr;
         size_t i = 0;
-        int j = 0;
 
         while(!(front = single_peek(i))) {
 			++i;
-            ++j;
             i %= size;
 		}
 
