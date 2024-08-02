@@ -100,7 +100,7 @@ class Job {
 
     // PUT job
     Job(UCTNode& node, JobType type)
-        : R(0.0), node(node), type(type){};
+        : R(0.0), type(type), node(node){};
 
     float R;
     EmulationGame state;
