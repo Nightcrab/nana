@@ -313,13 +313,11 @@ int main() {
                 game.combo = combo;
                 game.game.b2b = back_to_back;
 
-                if (Search::initialised) {
-                    // reuse existing search tree
-                    Search::continueSearch(game);
+                // end previous search this can happen if damage was sent and immediately after the game is over
+                if (Search::searching) {
+                    Search::endSearch();
                 }
-                else {
                     Search::startSearch(game, CORE_COUNT);
-                }
             }
             else if (type == "new_piece") {
                 PieceType piece = json_to_type(message["piece"]);
@@ -360,6 +358,9 @@ int main() {
 
                 // play the move
                 game.set_move(move);
+
+                // prevent garbage from being added from the chance move because this is the real game and not in search
+                game.chance.garbage_amount = 0;
                 game.play_moves();
 
                 for (int i = 0; i < game.game.queue.size(); ++i) {
@@ -369,13 +370,15 @@ int main() {
                     }
                 }
 
-                // start search
+                
+                    
                 Search::startSearch(game, CORE_COUNT);
 
             }
         }
     }
-    catch (std::exception e) {
+    catch (const std::exception &e) {
+        std::cout << "exception thrown: " << e.what() << std::endl;
         std::cerr << "exception thrown: " << e.what() << std::endl;
         return 1;
     }
