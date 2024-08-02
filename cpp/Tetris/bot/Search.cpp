@@ -361,6 +361,9 @@ void Search::maybeInsertNode(UCTNode node, const int threadIdx) {
 }
 
 void Search::search(const int threadIdx) {
+#ifdef BENCH
+    std::vector<u64> times;
+#endif
     while (true) {
         if (!searching) {
             return;
@@ -369,12 +372,34 @@ void Search::search(const int threadIdx) {
         // Thread waits here until something is in the queue
         Job job = queues[threadIdx]->dequeue();
 
+#if BENCH
+        struct bench{
+            std::vector<u64> &times;
+        
+            bench(std::vector<u64>& times) : times(times) {
+                times.push_back(std::chrono::steady_clock::now().time_since_epoch().count());
+            }
+            ~bench() {
+                auto end = std::chrono::steady_clock::now();
+                times.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end.time_since_epoch()).count());
+            }
+			
+        } b(times);
+#endif
         if (job.type == STOP) {
             return;
         }
 
         processJob(threadIdx, job);
     }
+
+    // write times to file with thread index in the name
+#ifdef BENCH
+    std::ofstream file("bench_" + std::to_string(threadIdx) + ".txt");
+    for (int i = 0; i < times.size(); i += 2) {
+		file << times[i] << " " << times[i + 1] << std::endl;
+	}
+#endif
 }
 
 
