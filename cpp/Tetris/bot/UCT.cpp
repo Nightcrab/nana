@@ -163,7 +163,11 @@ UCTNode& UCT::getNode(uint32_t nodeID, int threadIdx) {
 
 		if ((nodeID % workers) != threadIdx) {
 			// not the owner, so we're not allowed to write
-			return nodes_left[nodeID % workers].at(nodeID);
+
+			mutexes[nodeID % workers].lock();
+			UCTNode& node = nodes_left[nodeID % workers].at(nodeID);
+			mutexes[nodeID % workers].unlock();
+			return node;
 		}
 		else {
 			// copy from left side to right side
