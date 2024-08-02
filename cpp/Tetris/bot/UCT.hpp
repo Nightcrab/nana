@@ -86,15 +86,19 @@ enum JobType {
 
 class Job {
    public:
+    // STOP job
     Job()
         : R(0.0), state(EmulationGame()), type(STOP){};
 
+    // SELECT job
     Job(const EmulationGame& state, JobType type)
         : R(0.0), state(state), type(type){};
 
+    // SELECT job
     Job(const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
         : R(0.0), state(state), type(type), path(path){};
 
+    // BACKPROP job
     Job(float R, const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
         : R(R), state(state), type(type), path(path){};
 

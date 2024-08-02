@@ -490,11 +490,11 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr auto bumpiness_sq = -7.0;
     constexpr auto height = -37.0;
     constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
-    constexpr float clears[5] = { 40, -120, -140, -170, 490 };
-    constexpr float tspins[4] = { 0, 231, 320, 728 };
-    constexpr float perfect_clear = 1000.0;
+    constexpr float clears[5] = { 40, -160, -140, -170, 490 };
+    constexpr float tspins[4] = { 0, 231, 520, 728 };
+    constexpr float perfect_clear = 300.0;
     constexpr float wasted_t = -152.0;
-    constexpr float tsd_shape = 180.0;
+    constexpr float tsd_shape = 220.0;
     constexpr float v_shape = 70.0;
     constexpr float counting = 80.0;
 
