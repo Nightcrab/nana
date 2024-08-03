@@ -238,6 +238,7 @@ void Search::processJob(const int threadIdx, Job job) {
             state.set_move(action->move);
 
             state.play_moves();
+            state.chance_move();
 
             uint32_t new_hash = state.hash();
 
@@ -273,6 +274,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             state.set_move(action->move);
             state.play_moves();
+            state.chance_move();
 
             float reward = rollout(state, threadIdx);
 
@@ -437,6 +439,7 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
 
         state.set_move(move);
         state.play_moves();
+        state.chance_move();
     }
 
     return reward;

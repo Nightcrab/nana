@@ -273,7 +273,7 @@ private:
             game.set_move(Move(game.game.current_piece, false));
 
             game.play_moves();
-
+            game.chance_move();
             std::cout << "APP:" << game.app() << std::endl;
             std::pair<int, int> values = Eval::height_features(game.game.board);
             std::cout << "min height: " << values.first << std::endl;
@@ -327,6 +327,7 @@ private:
             std::cout << "eval was:" << Eval::eval_CC(game.game, sample) << std::endl;
             game.set_move(sample);
             game.play_moves();
+            game.chance_move();
             std::cout << "covered cells: " << Eval::n_covered_cells(game.game.board).first << std::endl;
             std::cout << "cavities: " << Eval::cavities_overhangs(game.game.board).first << std::endl;
             std::cout << "overhangs: " << Eval::cavities_overhangs(game.game.board).second << std::endl;
@@ -338,6 +339,7 @@ private:
             game.set_move(Search::bestMove());
 
             game.play_moves();
+            game.chance_move();
 
             Search::printStatistics();
 

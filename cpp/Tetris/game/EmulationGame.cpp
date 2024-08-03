@@ -7,6 +7,17 @@ void EmulationGame::set_move(Move move) {
 };
 
 void EmulationGame::chance_move() {
+    for (auto& piece : game.queue) {
+        if (piece == PieceType::Empty) {
+            piece = chance.rng_1.getPiece();
+        }
+    }
+
+    // garbage delay
+    if (chance.garbage_amount > 0) {
+        garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
+    }
+
     chance.new_move(false, false);
 };
 
@@ -74,7 +85,7 @@ void EmulationGame::play_moves(){
 
         int garbage_used = 0;
 
-        // place garbage
+        // place garbage 
         while (garbage_meter.size() > 0) {
             int& incoming = garbage_meter.back();
 
@@ -97,20 +108,8 @@ void EmulationGame::play_moves(){
 
     true_attack += damage;
 
-    for (auto& piece : game.queue) {
-        if (piece == PieceType::Empty) {
-            piece = chance.rng_1.getPiece();
-        }
-    }
-
-    // garbage delay
-    if (chance.garbage_amount > 0) {
-        garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
-    }
-
     //game.app = app();
 
-    chance_move();
 };
 
 void EmulationGame::objectively_play_moves() {
