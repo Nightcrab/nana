@@ -359,9 +359,6 @@ int main() {
                 // play the move
                 game.set_move(move);
 
-                // prevent garbage from being added from the chance move because this is the real game and not in search
-                game.chance.garbage_amount = 0;
-                game.play_moves();
 
                 for (int i = 0; i < game.game.queue.size(); ++i) {
                     if (game.game.queue[i] == PieceType::Empty) {
@@ -370,9 +367,11 @@ int main() {
                     }
                 }
 
+                // prevent garbage from being added from the chance move because this is the real game and not in search
+                game.play_moves();
                 
                     
-                Search::startSearch(game, CORE_COUNT);
+                Search::continueSearch(game);
 
             }
         }
