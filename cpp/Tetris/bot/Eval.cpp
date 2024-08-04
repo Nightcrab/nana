@@ -414,6 +414,126 @@ bool has_v(const Board& board, int min_height, int max_height) {
     return ret;
 }
 
+bool has_s(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b001;
+    uint32_t col2 = 0b000;
+    uint32_t col3 = 0b010;
+
+    uint32_t mask = 0b111;
+
+    bool ret = false;
+
+    for (int m = 0; m < 2; m++) {
+        for (int y = min_height; y < max_height - 3; y++) {
+            for (int i = 0; i < Board::width - 3; ++i) {
+                auto& b_col1 = board.board[i];
+                auto& b_col2 = board.board[i + 1];
+                auto& b_col3 = board.board[i + 2];
+                bool tsd = true;
+                tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
+                tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
+                tsd = tsd && (((b_col3 & (mask << y)) >> y) == col3);
+                if (tsd) {
+                    return true;
+                }
+            }
+        }
+        std::swap(col1, col3);
+    }
+
+    return ret;
+}
+
+bool has_z(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b010;
+    uint32_t col2 = 0b000;
+    uint32_t col3 = 0b001;
+
+    uint32_t mask = 0b111;
+
+    bool ret = false;
+
+    for (int m = 0; m < 2; m++) {
+        for (int y = min_height; y < max_height - 3; y++) {
+            for (int i = 0; i < Board::width - 3; ++i) {
+                auto& b_col1 = board.board[i];
+                auto& b_col2 = board.board[i + 1];
+                auto& b_col3 = board.board[i + 2];
+                bool tsd = true;
+                tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
+                tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
+                tsd = tsd && (((b_col3 & (mask << y)) >> y) == col3);
+                if (tsd) {
+                    return true;
+                }
+            }
+        }
+        std::swap(col1, col3);
+    }
+
+    return ret;
+}
+
+bool has_j(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b010;
+    uint32_t col2 = 0b010;
+    uint32_t col3 = 0b000;
+
+    uint32_t mask = 0b111;
+
+    bool ret = false;
+
+    for (int m = 0; m < 2; m++) {
+        for (int y = min_height; y < max_height - 3; y++) {
+            for (int i = 0; i < Board::width - 3; ++i) {
+                auto& b_col1 = board.board[i];
+                auto& b_col2 = board.board[i + 1];
+                auto& b_col3 = board.board[i + 2];
+                bool tsd = true;
+                tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
+                tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
+                tsd = tsd && (((b_col3 & (mask << y)) >> y) == col3);
+                if (tsd) {
+                    return true;
+                }
+            }
+        }
+        std::swap(col1, col3);
+    }
+
+    return ret;
+}
+
+bool has_l(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b000;
+    uint32_t col2 = 0b010;
+    uint32_t col3 = 0b010;
+
+    uint32_t mask = 0b111;
+
+    bool ret = false;
+
+    for (int m = 0; m < 2; m++) {
+        for (int y = min_height; y < max_height - 3; y++) {
+            for (int i = 0; i < Board::width - 3; ++i) {
+                auto& b_col1 = board.board[i];
+                auto& b_col2 = board.board[i + 1];
+                auto& b_col3 = board.board[i + 2];
+                bool tsd = true;
+                tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
+                tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
+                tsd = tsd && (((b_col3 & (mask << y)) >> y) == col3);
+                if (tsd) {
+                    return true;
+                }
+            }
+        }
+        std::swap(col1, col3);
+    }
+
+    return ret;
+}
+
 bool Eval::has_tsd(const Board& board, int min_height, int max_height) {
     uint32_t col1 = 0b101;
     uint32_t col2 = 0b000;
@@ -496,6 +616,10 @@ namespace eval_constants {
     constexpr float wasted_t = -152.0;
     constexpr float tsd_shape = 120.0;
     constexpr float v_shape = 70.0;
+    constexpr float s_shape = 70.0;
+    constexpr float z_shape = 70.0;
+    constexpr float l_shape = 70.0;
+    constexpr float j_shape = 70.0;
     constexpr float counting = 80.0;
 }
 
@@ -539,6 +663,18 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     }
     else if (has_v(board, values.first, values.second)) {
         score += v_shape;
+    }
+    if (has_s(board, values.first, values.second)) {
+        score += s_shape;
+    }
+    if (has_z(board, values.first, values.second)) {
+        score += z_shape;
+    }
+    if (has_l(board, values.first, values.second)) {
+        score += s_shape;
+    }
+    if (has_j(board, values.first, values.second)) {
+        score += z_shape;
     }
     
     if (ct4(board)) {

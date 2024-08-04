@@ -433,11 +433,11 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         maybeInsertNode(node, threadIdx);
 
         if constexpr (search_style == NANA) {
-            float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
+            float r = state.true_app() / 2 + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
         }
         if constexpr (search_style == CC) {
-            float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
+            float r = state.true_app() / 2 + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
         }
 

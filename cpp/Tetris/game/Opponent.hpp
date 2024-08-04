@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/Board.hpp"
+#include "engine/Game.hpp"
 #include "util/rng.hpp"
 
 #include <iostream>
@@ -39,20 +40,22 @@ const double MISTAKE_PROB_CLEAN = 20;
 const double MISTAKE_PROB_COMBO = 5;
 const double MISTAKE_PROB_SPIN = 10;
 
-const double MISTAKE_DOWNSTACK_PROB = 20;
+const double MISTAKE_DOWNSTACK_PROB = 10;
 
-const double WASTE_I_PROB = 40;
+const double WASTE_I_PROB = 20;
 
 const double COMBO_GARBAGE_PROB = 20;
 
 // Probability the opponent will attack, if it can.
-const double ATTACK_PROB = 50;
+const double ATTACK_PROB = 10;
 
 // Probability of a spin exposing the lower garbage well
 const double OPEN_SPIN_PROB = 20;
 
 class Opponent {
 public:
+    Opponent fromGame(Game& game);
+
     RNG rng;
 
     // Abstraction of the board.
@@ -515,9 +518,10 @@ public:
     // Advances internal state and returns outgoing damage this turn
     double play() {
 
+        // disable death for noww
         if (stack_height() > 20) {
-            dead = true;
-            return 0;
+            //dead = true;
+            //return 0;
         }
 
         nextState();
