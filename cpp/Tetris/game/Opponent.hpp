@@ -36,21 +36,21 @@ public:
 constexpr std::array<double, 10> comboTable = { 0, 0, 1, 2, 2, 3, 3, 3, 4, 5 };
 
 // Probability of layers behaving as MESSY during attack, expressed as percentages.
-const double MISTAKE_PROB_CLEAN = 20;
+const double MISTAKE_PROB_CLEAN = 5;
 const double MISTAKE_PROB_COMBO = 5;
-const double MISTAKE_PROB_SPIN = 10;
+const double MISTAKE_PROB_SPIN = 5;
 
-const double MISTAKE_DOWNSTACK_PROB = 10;
+const double MISTAKE_DOWNSTACK_PROB = 5;
 
-const double WASTE_I_PROB = 20;
+const double WASTE_I_PROB = 10;
 
-const double COMBO_GARBAGE_PROB = 20;
+const double COMBO_GARBAGE_PROB = 40;
 
 // Probability the opponent will attack, if it can.
-const double ATTACK_PROB = 10;
+const double ATTACK_PROB = 50;
 
 // Probability of a spin exposing the lower garbage well
-const double OPEN_SPIN_PROB = 20;
+const double OPEN_SPIN_PROB = 40;
 
 class Opponent {
 public:
@@ -68,6 +68,7 @@ public:
     bool hasSpinPiece = true;
 
     bool dead = false;
+    double deaths = 0;
 
     double nextI = rng.getRand(7);;
     double nextSpinPiece = rng.getRand(7);
@@ -94,6 +95,9 @@ public:
         out << "\n";
         out << "State: ";
         out << state;
+        out << "\n";
+        out << "Deaths: ";
+        out << deaths;
         out << "\n";
         for (StackLayer layer : stack) {
             out << layer.type << ", " << layer.height << "\n";
@@ -349,10 +353,10 @@ public:
         }
         damage = 0;
         if (topLayer.height > 4) {
-            reduceLayerHeight(topLayer, 0.35);
+            reduceLayerHeight(topLayer, 0.55);
         }
         else {
-            reduceLayerHeight(topLayer, 0.45);
+            reduceLayerHeight(topLayer, 0.75);
         }
     }
 
@@ -518,10 +522,17 @@ public:
     // Advances internal state and returns outgoing damage this turn
     double play() {
 
+        if (dead) {
+            // revive
+            stack.clear();
+            dead = false;
+        }
+
         // disable death for noww
         if (stack_height() > 20) {
-            //dead = true;
-            //return 0;
+            dead = true;
+            deaths++;
+            return 0;
         }
 
         nextState();

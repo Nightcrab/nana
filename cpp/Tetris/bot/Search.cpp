@@ -90,6 +90,7 @@ void Search::continueSearch(EmulationGame state) {
     root_state.attack = state.app() * 10;
     root_state.true_attack = state.true_app() * 10;
     root_state.pieces = 10;
+    root_state.opponent.deaths = 0;
 
     if (!uct.nodeExists(state.hash())) {
         uct.insertNode(UCTNode(state));
@@ -433,17 +434,19 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         maybeInsertNode(node, threadIdx);
 
         if constexpr (search_style == NANA) {
-            float r = state.true_app() / 2 + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
+            float r = state.true_app() / 2 + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 6;
             reward = std::max(reward, r);
         }
         if constexpr (search_style == CC) {
-            float r = state.true_app() / 2 + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
+            float r = state.true_app() / 2 + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 6;
             reward = std::max(reward, r);
         }
 
         if (state.opponent.garbage_height() > 15) {
             reward += state.opponent.garbage_height() / 20;
         }
+
+        reward += state.opponent.deaths / 3;
 
         if (state.opponent.is_dead()) {
             // gottem
