@@ -32,16 +32,18 @@ public:
     StackLayer(LayerType type, double height, bool open) : type(type), height(height), open(open) {}
 };
 
-constexpr std::array<double, 10> comboTable = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 5 };
+constexpr std::array<double, 10> comboTable = { 0, 0, 1, 2, 2, 3, 3, 3, 4, 5 };
 
 // Probability of layers behaving as MESSY during attack, expressed as percentages.
 const double MISTAKE_PROB_CLEAN = 20;
 const double MISTAKE_PROB_COMBO = 5;
 const double MISTAKE_PROB_SPIN = 10;
 
-const double MISTAKE_DOWNSTACK_PROB = 50;
+const double MISTAKE_DOWNSTACK_PROB = 20;
 
-const double WASTE_I_PROB = 30;
+const double WASTE_I_PROB = 40;
+
+const double COMBO_GARBAGE_PROB = 20;
 
 // Probability the opponent will attack, if it can.
 const double ATTACK_PROB = 50;
@@ -342,11 +344,13 @@ public:
             stack.pop_back();
             return;
         }
-        damage = 1;
+        damage = 0;
         if (topLayer.height > 4) {
             reduceLayerHeight(topLayer, 0.35);
         }
-        reduceLayerHeight(topLayer, 0.7);
+        else {
+            reduceLayerHeight(topLayer, 0.45);
+        }
     }
 
     void attackCombo(double& damage, StackLayer& topLayer) {
