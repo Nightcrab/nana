@@ -322,6 +322,8 @@ int main() {
             else if (type == "new_piece") {
                 PieceType piece = json_to_type(message["piece"]);
                 queue.push_back(piece);
+
+                game.chance.rng_1.bagiterator = queue.size() % 7;
             }
             else if (type == "suggest") {
                 // end search and give the best move
