@@ -86,9 +86,9 @@ void Search::continueSearch(EmulationGame state) {
 
     root_state = state;
 
-    state.attack = state.app() * 10;
-    state.true_attack = state.true_app() * 10;
-    state.pieces = 10;
+    root_state.attack = state.app() * 10;
+    root_state.true_attack = state.true_app() * 10;
+    root_state.pieces = 10;
 
     if (!uct.nodeExists(state.hash())) {
         uct.insertNode(UCTNode(state));

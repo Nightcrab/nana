@@ -476,7 +476,7 @@ static bool Eval::ct4(const Board& board) {
     return true;
 }
 
-double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
+namespace eval_constants {
     constexpr auto top_half = -0.0;
     constexpr auto top_quarter = -120.0;
     constexpr auto low = -5.0;
@@ -490,13 +490,18 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     constexpr auto bumpiness_sq = -7.0;
     constexpr auto height = -37.0;
     constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
-    constexpr float clears[5] = { 40, -160, -140, -170, 490 };
+    constexpr float clears[5] = { 40, -110, -100, -150, 490 };
     constexpr float tspins[4] = { 0, 231, 520, 728 };
     constexpr float perfect_clear = 300.0;
     constexpr float wasted_t = -152.0;
-    constexpr float tsd_shape = 220.0;
+    constexpr float tsd_shape = 120.0;
     constexpr float v_shape = 70.0;
     constexpr float counting = 80.0;
+}
+
+double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
+
+    using namespace eval_constants;
 
     double score = 0.0;
 
@@ -528,14 +533,14 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     values = height_features(board);
 
     score += values.second * height;
-    /*
+    
     if (has_tsd(board, values.first, values.second)) {
         score += tsd_shape;
     }
     else if (has_v(board, values.first, values.second)) {
         score += v_shape;
     }
-    */
+    
     if (ct4(board)) {
         score += counting;
     }
