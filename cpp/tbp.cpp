@@ -317,7 +317,13 @@ int main() {
                 if (Search::searching) {
                     Search::endSearch();
                 }
+
+                if (!Search::initialised) {
                     Search::startSearch(game, CORE_COUNT);
+                }
+                else {
+                    Search::continueSearch(game);
+                }
             }
             else if (type == "new_piece") {
                 PieceType piece = json_to_type(message["piece"]);
@@ -369,12 +375,9 @@ int main() {
                     }
                 }
 
-                // prevent garbage from being added from the chance move because this is the real game and not in search
                 game.play_moves();
                 
-                    
                 Search::continueSearch(game);
-
             }
         }
     }
