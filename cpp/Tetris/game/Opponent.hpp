@@ -22,8 +22,11 @@ class StackLayer {
 public:
     LayerType type;
     double height;
+    // whether clean below can be accessed
+    bool open = false;
 
     StackLayer(LayerType type, int height) : type(type), height(height) {}
+    StackLayer(LayerType type, int height, bool open) : type(type), height(height), open(open) {}
 };
 
 constexpr std::array<int> comboTable = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 5 };
@@ -35,12 +38,25 @@ public:
 
     RNG rng;
 
+    // Probability of layers behaving as MESSY during attack, expressed as percentages.
+    const MISTAKE_PROB_CLEAN = 5;
+    const MISTAKE_PROB_COMBO = 5;
+    const MISTAKE_PROB_SPIN = 10;
+
+    // Probability of a spin exposing the lower garbage well
+    const OPEN_SPIN_PROB = 20;
+
     // Abstraction of the board.
     std::vector<StackLayer> stack;
 
     // Represents the incoming garbage meter.
     std::vector<StackLayer> garbage;
 
+    bool hasI = false;
+    bool hasSpinPiece = false;
+
+    int nextI;
+    int nextSpinPiece;
 
     int combo = 0;
     TacticState state;
@@ -104,8 +120,11 @@ public:
             // Round off the current layer
             stack.back().height = std::ceil(stack.back().height);
 
+            // Whether this spin exposes clean below it
+            bool open = rng.getRand(100) < OPEN_SPIN_PROB;
+
             // Start building spin
-            stack.push_back({ SPIN, 0.45 });
+            stack.push_back({ SPIN, 0.45, open });
         }
 
     }

@@ -133,11 +133,16 @@ std::vector<Move> EmulationGame::legal_moves() {
 
 uint32_t EmulationGame::hash() const {
     uint32_t hash = fasthash32(&game.board, sizeof(Board), 0x9012'3456);
-    hash = fasthash32(&move.piece, sizeof(Piece), hash);
+    hash = fasthash32(&game.current_piece.type, sizeof(PieceType), hash);
+    hash = fasthash32(&game.b2b, sizeof(u16), hash);
+    hash = fasthash32(&game.combo, sizeof(u16), hash);
     if (game.hold)
         hash = fasthash32(&*game.hold, sizeof(*game.hold), hash);
     for (int garbage : garbage_meter) {
         hash = fasthash32(&garbage, sizeof(garbage), hash);
+    }
+    for (PieceType piece : game.queue) {
+        hash = fasthash32(&piece, sizeof(piece), hash);
     }
     return hash;
 }
