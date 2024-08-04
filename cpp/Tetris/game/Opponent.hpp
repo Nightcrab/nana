@@ -2,13 +2,16 @@
 #include "engine/Board.hpp"
 #include "util/rng.hpp"
 
+#include <iostream>
 #include <vector>
+#include <string>
+#include <sstream>
 
 enum LayerType {
     SPIN,
     COMBO,
-    MESSY,
     CLEAN,
+    MESSY,
 };
 
 enum TacticState {
@@ -25,26 +28,30 @@ public:
     // whether clean below can be accessed
     bool open = false;
 
-    StackLayer(LayerType type, int height) : type(type), height(height) {}
-    StackLayer(LayerType type, int height, bool open) : type(type), height(height), open(open) {}
+    StackLayer(LayerType type, double height) : type(type), height(height) {}
+    StackLayer(LayerType type, double height, bool open) : type(type), height(height), open(open) {}
 };
 
-constexpr std::array<int> comboTable = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 5 };
+constexpr std::array<double, 10> comboTable = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 5 };
+
+// Probability of layers behaving as MESSY during attack, expressed as percentages.
+const double MISTAKE_PROB_CLEAN = 20;
+const double MISTAKE_PROB_COMBO = 5;
+const double MISTAKE_PROB_SPIN = 10;
+
+const double MISTAKE_DOWNSTACK_PROB = 50;
+
+const double WASTE_I_PROB = 30;
+
+// Probability the opponent will attack, if it can.
+const double ATTACK_PROB = 50;
+
+// Probability of a spin exposing the lower garbage well
+const double OPEN_SPIN_PROB = 20;
 
 class Opponent {
 public:
-    Opponent() : combo(0) {
-    }
-
     RNG rng;
-
-    // Probability of layers behaving as MESSY during attack, expressed as percentages.
-    const MISTAKE_PROB_CLEAN = 5;
-    const MISTAKE_PROB_COMBO = 5;
-    const MISTAKE_PROB_SPIN = 10;
-
-    // Probability of a spin exposing the lower garbage well
-    const OPEN_SPIN_PROB = 20;
 
     // Abstraction of the board.
     std::vector<StackLayer> stack;
@@ -52,47 +59,144 @@ public:
     // Represents the incoming garbage meter.
     std::vector<StackLayer> garbage;
 
-    bool hasI = false;
-    bool hasSpinPiece = false;
+    bool hasI = true;
+    bool hasSpinPiece = true;
 
-    int nextI;
-    int nextSpinPiece;
+    bool dead = false;
 
-    int combo = 0;
+    double nextI = rng.getRand(7);;
+    double nextSpinPiece = rng.getRand(7);
+
+    double combo = 0;
     TacticState state;
+
+    std::stringstream stateString() {
+        std::stringstream out;
+        out << "Stack Height: ";
+        out << stack_height();
+        out << "\n";
+        out << "hasI: ";
+        out << hasI;
+        out << "\n";
+        out << "hasSpinPiece: ";
+        out << hasSpinPiece;
+        out << "\n";
+        out << "nextI: ";
+        out << nextI;
+        out << "\n";
+        out << "nextSpinPiece: ";
+        out << nextSpinPiece;
+        out << "\n";
+        out << "State: ";
+        out << state;
+        out << "\n";
+        for (StackLayer layer : stack) {
+            out << layer.type << ", " << layer.height << "\n";
+        }
+        return out;
+    }
 
     void reset_rng() {
         rng.new_seed();
     }
 
     void nextBuild() {
-        state = (TacticState)rng.getRand(4);
+        state = (TacticState)rng.getRand(3);
+    }
+
+    bool can_attack() {
+        if (stack.empty()) {
+            return false;
+        }
+        double height = stack.back().height;
+        switch (stack.back().type) {
+        case SPIN:
+            if (height >= 2) {
+                return true;
+            }
+            break;
+        case CLEAN:
+            if (height >= 4) {
+                return true;
+            }
+            break;
+        case COMBO:
+            if (height >= 1) {
+                return true;
+            }
+            break;
+        case MESSY:
+            if (height >= 1) {
+                return true;
+            }
+            break;
+        default:
+            break;
+        }
+        return false;
+    }
+
+    bool should_cancel() {
+        if (can_attack()) {
+            return true;
+        }
+        if (garbage_height() + stack_height() > 15) {
+            return true;
+        }
     }
 
     void nextState() {
         // Markovian state transitions
-        if (rng.getRand(5) == 0)) {
+        if (stack.empty()) {
+            nextBuild();
+            return;
+        }
+        else if (should_cancel()) {
+            // cancel
+            state = ATTACK;
+            return;
+        }
+        else if (stack_height() > 10) {
+            // downstack
+            state = ATTACK;
+            return;
+        }
+        else if (stack.back().type == MESSY) {
+            // downstack
+            state = ATTACK;
+            return;
+        }
+        else if (state == ATTACK && can_attack()) {
+            // keep attacking
+            return;
+        }
+        else if (rng.getRand(100) < ATTACK_PROB && can_attack()) {
             if (state != ATTACK) {
                 state = ATTACK;
             }
-            else {
-                double height = stack.back().height;
-                switch (stack.back().type) {
-                case SPIN:
-                    if (height >= 2) {
-                        nextBuild();
-                    }
-                case CLEAN:
-                    if (height >= 4) {
-                        nextBuild();
-                    }
-                case COMBO:
-                    if (rng.getRand(5) == 0) {
-                        nextBuild();
-                    }
-                }
-                default:
+        }
+        else {
+            double height = stack.back().height;
+
+            // change build only if the current one is done
+            switch (stack.back().type) {
+            case SPIN:
+                if (height >= 2) {
                     nextBuild();
+                }
+                break;
+            case CLEAN:
+                if (height >= 4) {
+                    nextBuild();
+                }
+                break;
+            case COMBO:
+                if (rng.getRand(5) == 0) {
+                    nextBuild();
+                }
+                break;
+            default:
+                nextBuild();
             }
         }
     }
@@ -111,92 +215,190 @@ public:
     }
 
     void buildSpin() {
-
-        if (stack.back().type == SPIN) {
-            // Continue current build
-            stack.back().height += 0.45;
-        }
-        else {
-            // Round off the current layer
-            stack.back().height = std::ceil(stack.back().height);
-
-            // Whether this spin exposes clean below it
-            bool open = rng.getRand(100) < OPEN_SPIN_PROB;
+        if (stack.empty()) {
 
             // Start building spin
+            bool open = rng.getRand(100) < OPEN_SPIN_PROB;
+            stack.push_back({ SPIN, 0.45, open });
+            return;
+
+        }
+
+        if (stack.back().type == SPIN) {
+
+            // Continue current build
+            stack.back().height += 0.45;
+
+        } else {
+
+            // Round off the current layer
+            stack.back().height = std::floor(stack.back().height);
+
+            // Start building spin
+            bool open = rng.getRand(100) < OPEN_SPIN_PROB;
             stack.push_back({ SPIN, 0.45, open });
         }
 
     }
 
     void buildCombo() {
+        if (stack.empty()) {
+
+            stack.push_back({ COMBO, 0.5 });
+            return;
+
+        }
 
         if (stack.back().type == COMBO) {
+
             // Continue current build
             stack.back().height += 0.5;
-        }
-        else {
+
+        } else {
+
+            // Round off the current layer
+            stack.back().height = std::floor(stack.back().height);
+
+            double leftover = 0;
 
             double height = stack.back().height;
 
             // Combo stack can borrow excess minos from the layer underneath
-            double leftover = height - (int)height;
-
-            // Round off the current layer
-            stack.back().height = std::ceil(stack.back().height);
+            leftover = height - (double)height;
 
             // Start building combo
-            stack.push_back({ COMBO, leftover + 0.5 });
+            stack.push_back({ COMBO, 0.5 + leftover });
+
         }
     }
 
     void buildClean() {
+        if (stack.empty()) {
+            stack.push_back({ CLEAN, 0.4 });
+            return;
+
+        }
+
         if (stack.back().type == CLEAN) {
+
             // Continue current build
             stack.back().height += 0.4;
+
         }
         else {
+
             // Round off the current layer
-            stack.back().height = std::ceil(stack.back().height);
+            stack.back().height = std::floor(stack.back().height);
 
             // Start building combo
-            stack.push_back({ COMBO, 0.5 });
+            stack.push_back({ CLEAN, 0.4 });
+
         }
     }
 
-    double attack() {
+    void attackSpin(double& damage, StackLayer& topLayer) {
+        if (topLayer.height < 2) {
+            topLayer.type = COMBO;
+            attackCombo(damage, topLayer);
+            return;
+        }
+        if (!hasSpinPiece) {
+            // required piece not available
+            damage = 0;
+
+            // we may be able to attack using the clean layer underneath
+            if (topLayer.open && hasI) {
+                if (stack.size() > 1) {
+                    StackLayer secondTopLayer = stack[stack.size() - 2];
+                    attackClean(damage, secondTopLayer);
+                }
+            }
+
+            return;
+        }
+        damage = 4;
+        stack.pop_back();
+
+        hasSpinPiece = false;
+    }
+
+    void attackClean(double& damage, StackLayer& topLayer) {
+        if (topLayer.height < 4) {
+            topLayer.type = COMBO;
+            attackCombo(damage, topLayer);
+            return;
+        }
+        if (!hasI) {
+            return;
+        }
+        damage = 4;
+        reduceLayerHeight(topLayer, 4);
+
+        hasI = false;
+    }
+
+    void attackMessy(double& damage, StackLayer& topLayer) {
+        if (topLayer.height < 1) {
+            stack.pop_back();
+            return;
+        }
+        damage = 1;
+        if (topLayer.height > 4) {
+            reduceLayerHeight(topLayer, 0.35);
+        }
+        reduceLayerHeight(topLayer, 0.7);
+    }
+
+    void attackCombo(double& damage, StackLayer& topLayer) {
+        if (topLayer.height < 1) {
+            stack.pop_back();
+            return;
+        }
+        if (combo >= comboTable.size()) {
+            damage = 5;
+        }
+        else {
+            damage = comboTable[combo];
+        }
+        reduceLayerHeight(topLayer, 1);
+        combo++;
+    }
+
+    double make_attack() {
         if (stack.empty()) return 0;
 
         StackLayer& topLayer = stack.back();
 
-        int damage = 0;
+        double damage = 0;
 
-        switch (topLayer.type) {
+        LayerType attackType = topLayer.type;
+
+        double random_double = rng.getRand(100);
+        bool failed_attack = false;
+        failed_attack = failed_attack || ((attackType == SPIN) && (random_double < MISTAKE_PROB_SPIN));
+        failed_attack = failed_attack || ((attackType == CLEAN) && (random_double < MISTAKE_PROB_CLEAN));
+        failed_attack = failed_attack || ((attackType == COMBO) && (random_double < MISTAKE_PROB_COMBO));
+
+        if (!can_attack()) {
+            random_double = rng.getRand(100);
+            if (random_double < MISTAKE_DOWNSTACK_PROB) {
+                failed_attack = true;
+            }
+        }
+
+        if (failed_attack) {
+            attackType = MESSY;
+        }
+
+        switch (attackType) {
         case SPIN:
-            damage = 4;
-            reduceLayerHeight(topLayer, 2);
-            break;
+            attackSpin(damage, topLayer); break;
         case CLEAN:
-            damage = 4;
-            reduceLayerHeight(topLayer, 4);
-            break;
+            attackClean(damage, topLayer); break;
         case MESSY:
-            damage = 0;
-            if (topLayer.height > 4) {
-                reduceLayerHeight(topLayer, 0.35);
-            }
-            reduceLayerHeight(topLayer, 0.7);
-            break;
+            attackMessy(damage, topLayer); break;
         case COMBO:
-            if (combo >= comboTable.size()) {
-                damage = 5;
-            }
-            else {
-                damage = comboTable[combo];
-            }
-            reduceLayerHeight(topLayer, 1);
-            combo++;
-            break;
+            attackCombo(damage, topLayer); break;
         default:
             break;
         }
@@ -211,30 +413,133 @@ public:
         }
     }
 
-    void convertGarbage() {
-        while (!garbage.empty()) {
-            StackLayer& garbageLayer = garbage.back();
-            stack.insert(stack.begin(), garbageLayer); // Add garbage layer to the bottom of the stack
-            garbage.pop_back();
+    void receiveAttack(double amount) {
+        if (amount == 0) {
+            return;
+        }
+        // Add garbage layers to the garbage meter
+        if (amount < 4) {
+            garbage.push_back({ MESSY, (double) amount });
+        }
+        else {
+            garbage.push_back({ CLEAN, (double) amount });
         }
     }
 
-    void receiveAttack(int amount) {
-        // Add garbage layers to the garbage meter
-        if (amount < 4) {
-            garbage.push_back({ MESSY, amount });
+    double stack_height() {
+        double height = 0;
+        for (StackLayer& layer : stack) {
+            height += layer.height;
         }
-        else {
-            garbage.push_back({ CLEAN, amount });
+        return height;
+    }
+    double garbage_height() {
+        double height = 0;
+        for (StackLayer& layer : garbage) {
+            height += layer.height;
         }
+        return height;
+    }
+
+    double process_meter(double attack) {
+
+        double initial_attack = attack;
+
+        // cancelling
+
+        while (attack > 0 && !garbage.empty()) {
+            double& incoming = garbage.back().height;
+
+            if (incoming >= attack) {
+                incoming -= attack;
+                attack = 0;
+            }
+            else {
+                attack -= incoming;
+                incoming = 0;
+            }
+
+            if (incoming == 0) {
+                garbage.pop_back();
+            }
+        }
+
+        if (initial_attack > 0) {
+            return attack;
+        }
+
+        // 8 garbage cap
+
+        double garbage_used = 0;
+
+        while (!garbage.empty()) {
+            double& incoming = garbage.back().height;
+
+            double garbage_amount = std::min(incoming, 8 - garbage_used);
+
+            StackLayer& garbageLayer = garbage.back();
+            stack.insert(stack.begin(), garbageLayer);
+
+            incoming -= garbage_amount;
+            garbage_used += garbage_amount;
+
+            if (incoming == 0) {
+                garbage.pop_back();
+            }
+
+            if (garbage_used == 8) {
+                break;
+            }
+        }
+
+        return attack;
+    }
+
+    void advance_queue() {
+        if (nextI == 0) {
+            hasI = true;
+            nextI = rng.getRand(7) + 1;
+        }
+        if (nextSpinPiece == 0) {
+            hasSpinPiece = true;
+            nextSpinPiece = rng.getRand(7) + 1;
+        }
+        nextI--;
+        nextSpinPiece--;
     }
 
     // Advances internal state and returns outgoing damage this turn
-    double playMove() {
-        nextState();
-        build();
-        if (state == ATTACK) {
-            return attack();
+    double play() {
+
+        if (stack_height() > 20) {
+            dead = true;
+            return 0;
         }
+
+        nextState();
+
+        double attack = 0;
+
+        if (state == ATTACK) {
+            attack = make_attack();
+        }
+        else {
+            build();
+        }
+
+        // cancelling logic
+        attack = process_meter((double) attack);
+
+        advance_queue();
+
+        if (rng.getRand(100) < WASTE_I_PROB) {
+            hasI = false;
+        }
+
+        return attack;
+    }
+    
+    bool is_dead() {
+        return dead;
     }
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "Chance.hpp"
+#include "Opponent.hpp"
 #include "engine/Game.hpp"
 
 #include <queue>
@@ -23,6 +24,7 @@ class EmulationGame {
 
     Move move;
     Chance chance;
+    Opponent opponent;
 
     int pieces = 0;
     int attack = 0;

@@ -13,9 +13,14 @@ void EmulationGame::chance_move() {
         }
     }
 
-    // garbage delay
-    if (chance.garbage_amount > 0) {
-        garbage_meter.insert(garbage_meter.begin(), chance.garbage_amount);
+    int garbage_amount = 0;
+
+    // simulate opponent
+
+    garbage_amount = opponent.play();
+
+    if (garbage_amount > 0) {
+        garbage_meter.insert(garbage_meter.begin(), garbage_amount);
     }
 
     chance.new_move(false, false);
@@ -36,7 +41,6 @@ void EmulationGame::play_moves(){
         return;
     }
 
-    // no damage to be dealt against opponent
     // but we need to keep track of combo and b2b because cancelling
 
     spinType spin = move.piece.spin;
@@ -63,7 +67,7 @@ void EmulationGame::play_moves(){
 
     attack += damage;
 
-    // cancel damage but never send cause the opponent doesnt exist
+    // cancel damage
     while (damage > 0 && garbage_meter.size() > 0) {
         int &incoming = garbage_meter.back();
 
@@ -79,6 +83,9 @@ void EmulationGame::play_moves(){
             garbage_meter.pop_back();
         }
     }
+
+    // send damage
+    opponent.receiveAttack(damage);
 
     // combo block
     if (cleared_lines == 0) {

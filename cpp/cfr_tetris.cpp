@@ -348,9 +348,10 @@ private:
             std::cout << "APP:" << game.app() << std::endl;
             std::cout << "True APP:" << game.true_app() << std::endl;
 
-            for (int garbage : game.garbage_meter) {
+            std::cout << game.opponent.stateString().str() << std::endl;
 
-                std::cout << "garbage meter:" << garbage << std::endl;
+            for (int garbage : game.garbage_meter) {
+                //std::cout << "garbage meter:" << garbage << std::endl;
             }
         }
         

@@ -66,6 +66,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     // Spawn jobs
     for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
         root_state.chance.reset_rng();
+        root_state.opponent.reset_rng();
         queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
 
@@ -109,11 +110,14 @@ void Search::continueSearch(EmulationGame state) {
     std::iota(core_indices.begin(), core_indices.end(), 0);
 
     int rootOwnerIdx = uct.getOwner(state.hash());
+    for (int j = 0; j < LOAD_FACTOR; j++) {
+        root_state.chance.reset_rng();
+        root_state.opponent.reset_rng();
+        for (int i = 0; i < core_count; i++) {
+            queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
+        }
 
-    for (int i = 0; i < LOAD_FACTOR * core_count; i++) {
-        queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
     }
-
     for (auto& idx : core_indices) {
         worker_threads[idx] = std::jthread(search, idx);
     }
@@ -435,6 +439,15 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
         if constexpr (search_style == CC) {
             float r = state.true_app() + max_eval / 2 + std::min(state.b2b(), (float) 2.0) / 10;
             reward = std::max(reward, r);
+        }
+
+        if (state.opponent.garbage_height() > 15) {
+            reward += state.opponent.garbage_height() / 20;
+        }
+
+        if (state.opponent.is_dead()) {
+            // gottem
+            reward = 1;
         }
 
         state.set_move(move);
