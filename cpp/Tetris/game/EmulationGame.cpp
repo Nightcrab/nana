@@ -148,9 +148,6 @@ uint32_t EmulationGame::hash() const {
     for (int garbage : garbage_meter) {
         hash = fasthash32(&garbage, sizeof(garbage), hash);
     }
-    for (PieceType piece : game.queue) {
-        hash = fasthash32(&piece, sizeof(piece), hash);
-    }
     return hash;
 }
 
