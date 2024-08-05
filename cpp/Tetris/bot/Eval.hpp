@@ -24,6 +24,7 @@ std::pair<int, int> height_features(const Board& board);
 
 std::pair<int, int> n_covered_cells(Board board);
 
+int get_row_transitions(const Board& board);
 
 [[maybe_unused]] static std::pair<int, int> get_bumpiness(const Board& board);
 // Identify clean count to 4

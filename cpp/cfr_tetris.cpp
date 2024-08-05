@@ -332,6 +332,7 @@ private:
             std::cout << "cavities: " << Eval::cavities_overhangs(game.game.board).first << std::endl;
             std::cout << "overhangs: " << Eval::cavities_overhangs(game.game.board).second << std::endl;
             std::cout << "well position: " << Eval::well_position(game.game.board) << std::endl;
+            std::cout << "row transitions: " << Eval::get_row_transitions(game.game.board) << std::endl;
         }
 
         if ((GetKey(olc::Key::Q).bPressed || time % 20 == 21) && Search::searching) {

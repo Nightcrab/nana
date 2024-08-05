@@ -574,6 +574,16 @@ static bool Eval::ct4(const Board& board) {
     return true;
 }
 
+int Eval::get_row_transitions(const Board& board) {
+    int transitions = 0;
+    for (int i = 0; i < Board::width - 1; i+=2) {
+        auto& col1 = board.board[i];
+        auto& col2 = board.board[i + 1];
+        transitions += std::popcount(col1 ^ col2);
+    }
+    return transitions;
+}
+
 namespace eval_constants {
     constexpr auto top_half = -130.0;
     constexpr auto top_quarter = -499.0;
@@ -588,14 +598,14 @@ namespace eval_constants {
     constexpr auto bumpiness_sq = -28.0;
     constexpr auto height = -46.0;
     constexpr float well_columns[10] = { 31, 16, -41, 37, 49, 30, 56, 48, -27, 22 };
-    constexpr float clears[5] = { 0, -110, -100, -50, 490 };
+    constexpr float clears[5] = { 0, -1700, -100, -50, 490 };
     constexpr float tspins[4] = { 0, 126, 434, 620 };
     constexpr float perfect_clear = 200.0;
     constexpr float wasted_t = -52.0;
     constexpr float tsd_shape = 80.0;
     constexpr float well_depth = 91.0; // todo
     constexpr float max_well_depth = 17.0; // todo
-    constexpr float row_transitions = -5.0; // todo
+    constexpr float row_transitions = -5.0;
     constexpr float v_shape = 50.0;
     constexpr float s_shape = 80.0;
     constexpr float l_shape = 80.0;
@@ -671,6 +681,8 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
 
     score += well_columns[well_position(board)];
     score += clears[lines];
+
+    score += get_row_transitions(board) * row_transitions;
 
     if (tspin) {
         score += tspins[lines];

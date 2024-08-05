@@ -260,27 +260,6 @@ void Search::processJob(const int threadIdx, Job job) {
         }
         else {
 
-            UCTNode node(state);
-            maybeInsertNode(node, threadIdx);
-
-            Action* action = &node.actions[0];
-            if constexpr (search_style == NANA) {
-
-                action = &node.select();
-            }
-            if constexpr (search_style == CC) {
-
-                action = &node.select_SOR(uct.rng[threadIdx]);
-            }
-
-            node.N += 1;
-            action->N += 1;
-
-
-            state.set_move(action->move);
-            state.play_moves();
-            state.chance_move();
-
             float reward = rollout(state, threadIdx);
 
             uint32_t parent_hash = job.path.back().hash;
@@ -288,7 +267,6 @@ void Search::processJob(const int threadIdx, Job job) {
             uint32_t parentIdx = uct.getOwner(parent_hash);
 
             Job backprop_job(reward, state, BACKPROP, job.path);
-
 
             // send rollout reward to parent, who also owns the arm that got here
 
@@ -411,53 +389,47 @@ void Search::search(const int threadIdx) {
 
 
 float Search::rollout(EmulationGame& state, int threadIdx) {
-    // Rollout using a square-of-rank policy distribution.
+    // Rollout using eval.
 
     float reward = 0;
-    for (int i = 0; i < monte_carlo_depth; i++) {
-        
-        uct.stats[threadIdx].nodes++;
 
-        if (state.game_over) {
-            return 0.0;
-        }
+    uct.stats[threadIdx].nodes++;
 
-        float max_eval = -1;
-        Move move;
-        UCTNode node = UCTNode(state);
-        move = node.select_SOR(uct.rng[threadIdx]).move;
-
-        for (auto& action : node.actions) {
-            max_eval = std::max(max_eval, action.eval);
-        }
-
-        maybeInsertNode(node, threadIdx);
-
-        if constexpr (search_style == NANA) {
-            float r = state.app() / 3 + max_eval / 2;
-            reward = std::max(reward, r);
-        }
-        if constexpr (search_style == CC) {
-            float r = state.app() / 3 + max_eval / 2;
-            reward = std::max(reward, r);
-        }
-
-        if (state.opponent.garbage_height() > 15) {
-            reward += state.opponent.garbage_height() / 20;
-        }
-
-        reward += state.opponent.deaths / 3;
-
-        if (state.opponent.is_dead()) {
-            // gottem
-            reward = 1;
-        }
-
-        state.set_move(move);
-        state.play_moves();
-        state.chance_move();
+    if (state.game_over) {
+        return 0.0;
     }
 
+    UCTNode node(state);
+
+    maybeInsertNode(node, threadIdx);
+
+    float max_eval = 0;
+
+    for (auto& action : node.actions) {
+        max_eval = std::max(max_eval, action.eval);
+    }
+
+    maybeInsertNode(node, threadIdx);
+
+    if constexpr (search_style == NANA) {
+        float r = state.app() / 3 + max_eval / 2;
+        reward = std::max(reward, r);
+    }
+    if constexpr (search_style == CC) {
+        float r = state.app() / 3 + max_eval / 2;
+        reward = std::max(reward, r);
+    }
+
+    if (state.opponent.garbage_height() > 15) {
+        reward += state.opponent.garbage_height() / 20;
+    }
+
+    reward += state.opponent.deaths / 3;
+
+    if (state.opponent.is_dead()) {
+        // gottem
+        reward = 1;
+    }
     return reward;
 }
 
