@@ -575,24 +575,27 @@ static bool Eval::ct4(const Board& board) {
 }
 
 namespace eval_constants {
-    constexpr auto top_half = -0.0;
-    constexpr auto top_quarter = -120.0;
-    constexpr auto low = -5.0;
-    constexpr auto cavity_cells = -173.0;
-    constexpr auto cavity_cells_sq = -3.0;
+    constexpr auto top_half = -130.0;
+    constexpr auto top_quarter = -499.0;
+    constexpr auto low = -50.0;
+    constexpr auto cavity_cells = -176.0;
+    constexpr auto cavity_cells_sq = -6.0;
     constexpr auto overhangs = -47.0;
     constexpr auto overhangs_sq = -9.0;
-    constexpr auto covered_cells = -17.0;
-    constexpr auto covered_cells_sq = -1.0;
-    constexpr auto bumpiness = -24.0;
-    constexpr auto bumpiness_sq = -7.0;
-    constexpr auto height = -37.0;
-    constexpr float well_columns[10] = { 20, 23, 20, 50, 59, 21, 59, 10, -10, 24 };
-    constexpr float clears[5] = { 40, -110, -100, -150, 490 };
-    constexpr float tspins[4] = { 0, 331, 420, 728 };
-    constexpr float perfect_clear = 300.0;
-    constexpr float wasted_t = -152.0;
+    constexpr auto covered_cells = -26.0;
+    constexpr auto covered_cells_sq = 1.0;
+    constexpr auto bumpiness = -7.0;
+    constexpr auto bumpiness_sq = -28.0;
+    constexpr auto height = -46.0;
+    constexpr float well_columns[10] = { 31, 16, -41, 37, 49, 30, 56, 48, -27, 22 };
+    constexpr float clears[5] = { 0, -110, -100, -50, 490 };
+    constexpr float tspins[4] = { 0, 126, 434, 620 };
+    constexpr float perfect_clear = 200.0;
+    constexpr float wasted_t = -52.0;
     constexpr float tsd_shape = 80.0;
+    constexpr float well_depth = 91.0; // todo
+    constexpr float max_well_depth = 17.0; // todo
+    constexpr float row_transitions = -5.0; // todo
     constexpr float v_shape = 50.0;
     constexpr float s_shape = 80.0;
     constexpr float l_shape = 80.0;

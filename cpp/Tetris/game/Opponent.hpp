@@ -33,7 +33,7 @@ public:
     StackLayer(LayerType type, double height, bool open) : type(type), height(height), open(open) {}
 };
 
-constexpr std::array<double, 20> comboTable = { 1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+constexpr std::array<double, 20> comboTable = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
 
 // Probability of layers behaving as MESSY during attack, expressed as percentages.
 const double MISTAKE_PROB_CLEAN = 5;
@@ -42,12 +42,12 @@ const double MISTAKE_PROB_SPIN = 5;
 
 const double MISTAKE_DOWNSTACK_PROB = 5;
 
-const double WASTE_I_PROB = 10;
+const double WASTE_I_PROB = 20;
 
-const double COMBO_GARBAGE_PROB = 80;
+const double COMBO_GARBAGE_PROB = 30;
 
 // Probability the opponent will attack, if it can.
-const double ATTACK_PROB = 100;
+const double ATTACK_PROB = 80;
 
 // Probability of a spin exposing the lower garbage well
 const double OPEN_SPIN_PROB = 40;
@@ -59,7 +59,7 @@ public:
     RNG rng;
 
     // Abstraction of the board.
-    std::vector<StackLayer> stack = { { COMBO, 0 } };
+    std::vector<StackLayer> stack;
 
     // Represents the incoming garbage meter.
     std::vector<StackLayer> garbage;
@@ -74,7 +74,7 @@ public:
     double nextSpinPiece = rng.getRand(7);
 
     double combo = 0;
-    TacticState state = BUILD_COMBO;
+    TacticState state;
 
     std::stringstream stateString() {
         std::stringstream out;
@@ -159,7 +159,7 @@ public:
             }
             break;
         case COMBO:
-            if (height + combo >= 15) {
+            if (height + combo >= 8) {
                 return true;
             }
             break;
