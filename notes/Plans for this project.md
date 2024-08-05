@@ -15,3 +15,4 @@
 
 ## TODOs
 - Have jobs pass references of states instead of copying, and copy only at the root
+- Sample widening; the more nodes we explore, generate additional RNG seeds
