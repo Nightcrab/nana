@@ -112,8 +112,8 @@ void Search::continueSearch(EmulationGame state) {
 
     int rootOwnerIdx = uct.getOwner(state.hash());
     for (int j = 0; j < core_count; j++) {
-        root_state.chance.reset_rng();
-        root_state.opponent.reset_rng();
+        //root_state.chance.reset_rng();
+        //root_state.opponent.reset_rng();
         for (int i = 0; i < LOAD_FACTOR; i++) {
             queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
         }
