@@ -308,8 +308,12 @@ int main() {
                         }
                     }
                 }
-
-                game.game.hold = hold;
+                if (hold == PieceType::Empty) {
+                    game.game.hold = std::nullopt;
+                }
+                else {
+                    game.game.hold = hold;
+                }
                 game.combo = combo;
                 game.game.b2b = back_to_back;
 
