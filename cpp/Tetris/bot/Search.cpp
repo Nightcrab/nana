@@ -9,7 +9,11 @@
 #include <iostream>
 #include <thread>
 
-std::atomic_bool Search::searching = false;
+// used to be an atomic for stopping the threads
+bool Search::searching = false;
+
+// stop source for stopping the threads
+std::stop_source thread_stopper;
 
 int Search::core_count = 0;
 
@@ -18,6 +22,11 @@ int Search::monte_carlo_depth = 1;
 UCT Search::uct;
 
 EmulationGame Search::root_state;
+
+// stuff for notifying the main thread that the worker threads have at least a minimum amount of work done
+std::mutex stop_mutex;
+std::condition_variable stop_cv;
+std::atomic_bool stop_bool;
 
 std::vector<std::unique_ptr<mpsc<Job>>> Search::queues;
 std::vector<int> core_indices;
@@ -35,6 +44,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     search_start_time = std::chrono::steady_clock::now();
 
     searching = true;
+    stop_bool = false;
 
     Search::core_count = core_count;
 
@@ -72,7 +82,7 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
 
     // Spawn worker threads
     for (auto& idx : core_indices) {
-        worker_threads[idx] = std::jthread(search, idx);
+        worker_threads[idx] = std::jthread(search, thread_stopper.get_token(), idx);
     }
 
     initialised = true;
@@ -127,7 +137,13 @@ void Search::continueSearch(EmulationGame state) {
 }
 
 void Search::endSearch() {
+    if (!stop_bool) {
+        std::unique_lock<std::mutex> lock(stop_mutex);
+        stop_cv.wait(lock, [] { return stop_bool.load(); });
+    }
+
     searching = false;
+    thread_stopper.request_stop();
 
     for (int i = 0; i < core_count; i++) {
         queues[i]->enqueue(Job(), core_count);
@@ -137,6 +153,12 @@ void Search::endSearch() {
     for (auto& thread : worker_threads) {
 		thread.join();
 	}
+
+    // reset stop bool for min wait time
+    stop_bool = false;
+    // reset the thread stopper
+    thread_stopper = std::stop_source();
+
 
     uct.collect();
     queues.clear();
@@ -299,6 +321,17 @@ void Search::processJob(const int threadIdx, Job job) {
         if (job.path.empty()) {
             Job select_job(root_state, SELECT);
 
+            if (threadIdx == uct.getOwner(root_state.hash())) {
+                // extra scope to prevent notifying the main thread while holding the lock
+                // this is to prevent the main thread from waiting on the condition variable while we're holding the lock
+                {
+                    std::scoped_lock lock(stop_mutex);
+                    stop_bool = true;
+                }
+                stop_cv.notify_one();
+                // notify the main thread that we're done
+            }
+
             // give ourself this job
             queues[threadIdx]->enqueue(select_job, threadIdx);
 
@@ -347,12 +380,12 @@ void Search::maybeInsertNode(UCTNode node, const int threadIdx) {
     }
 }
 
-void Search::search(const int threadIdx) {
+void Search::search(std::stop_token stop, const int threadIdx) {
 #ifdef BENCH
     std::vector<u64> times;
 #endif
     while (true) {
-        if (!searching) {
+        if (stop.stop_requested()) {
             return;
         }
 

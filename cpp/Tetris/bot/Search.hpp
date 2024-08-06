@@ -20,7 +20,7 @@ enum SearchType {
 
 namespace Search {
 
-    extern std::atomic_bool searching;
+    extern bool searching;
 
     constexpr SearchType search_style = NANA;
 
@@ -46,7 +46,7 @@ namespace Search {
 
     void maybeInsertNode(UCTNode node, const int threadIdx);
 
-    void search(int threadIdx);
+    void search(std::stop_token stop, int threadIdx);
 
     void processJob(const int threadIdx, Job job);
 
