@@ -22,6 +22,7 @@ enum TacticState {
     ATTACK,
 };
 
+
 class StackLayer {
 public:
     LayerType type;
@@ -29,6 +30,10 @@ public:
     // whether clean below can be accessed
     bool open = false;
 
+    StackLayer() {
+        type = MESSY;
+        height = 0;
+    }
     StackLayer(LayerType type, double height) : type(type), height(height) {}
     StackLayer(LayerType type, double height, bool open) : type(type), height(height), open(open) {}
 };
@@ -54,7 +59,15 @@ const double OPEN_SPIN_PROB = 40;
 
 class Opponent {
 public:
-    Opponent fromGame(Game& game);
+    Opponent (Game& game);
+
+    Opponent() = default;
+    // Copy constructor
+    Opponent(const Opponent& other) noexcept = default;
+    // Move constructor
+    Opponent(Opponent&& other) noexcept = default;
+    ~Opponent() noexcept = default;
+    Opponent& operator=(const Opponent& other) noexcept = default;
 
     RNG rng;
 
@@ -76,6 +89,27 @@ public:
     double combo = 0;
     TacticState state;
 
+    // these are in here because otherwise the linker has a fit
+    std::string toString(LayerType layer) {
+        switch (layer) {
+        case SPIN: return "SPIN";
+        case COMBO: return "COMBO";
+        case CLEAN: return "CLEAN";
+        case MESSY: return "MESSY";
+        default: return "UNKNOWN";
+        }
+    }
+
+    std::string toString(TacticState state) {
+        switch (state) {
+        case BUILD_SPIN: return "BUILD_SPIN";
+        case BUILD_COMBO: return "BUILD_COMBO";
+        case BUILD_CLEAN: return "BUILD_CLEAN";
+        case ATTACK: return "ATTACK";
+        default: return "UNKNOWN";
+        }
+    }
+
     std::stringstream stateString() {
         std::stringstream out;
         out << "Stack Height: ";
@@ -94,13 +128,13 @@ public:
         out << nextSpinPiece;
         out << "\n";
         out << "State: ";
-        out << state;
+        out << toString(state);
         out << "\n";
         out << "Deaths: ";
         out << deaths;
         out << "\n";
         for (StackLayer layer : stack) {
-            out << layer.type << ", " << layer.height << "\n";
+            out << toString(layer.type) << ", " << layer.height << "\n";
         }
         return out;
     }

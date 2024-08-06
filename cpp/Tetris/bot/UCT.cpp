@@ -175,6 +175,7 @@ UCTNode& UCT::getNode(uint32_t nodeID, int threadIdx) {
 		}
 	}
 
+	std::shared_lock<std::shared_mutex> lock(mutexes[nodeID % workers]);
 	return nodes_right[nodeID % workers].at(nodeID);
 };
 

@@ -599,10 +599,10 @@ namespace eval_constants {
     constexpr auto height = -46.0;
     constexpr float well_columns[10] = { 31, 16, -41, 37, 49, 30, 56, 48, -27, 22 };
     constexpr float clears[5] = { 0, -1700, -100, -50, 490 };
-    constexpr float tspins[4] = { 0, 126, 434, 620 };
+    constexpr float tspins[4] = { 0, 126, 434, 320 };
     constexpr float perfect_clear = 200.0;
     constexpr float wasted_t = -52.0;
-    constexpr float tsd_shape = 80.0;
+    constexpr float tsd_shape = 180.0;
     constexpr float well_depth = 91.0; // todo
     constexpr float max_well_depth = 17.0; // todo
     constexpr float row_transitions = -5.0;
@@ -647,14 +647,14 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     values = height_features(board);
 
     score += values.second * height;
+
     /*
     if (has_tsd(board, values.first, values.second)) {
         score += tsd_shape;
     }
-    //else if (has_v(board, values.first, values.second)) {
-        //score += v_shape;
-    //}
-    
+    else if (has_v(board, values.first, values.second)) {
+        score += v_shape;
+    }
     if (has_s(board, values.first, values.second)) {
         score += s_shape;
     }
