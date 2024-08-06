@@ -59,7 +59,7 @@ public:
     RNG rng;
 
     // Abstraction of the board.
-    std::vector<StackLayer> stack;
+    std::vector<StackLayer> stack = { { CLEAN, 4 } };
 
     // Represents the incoming garbage meter.
     std::vector<StackLayer> garbage;

@@ -20,12 +20,12 @@ public:
 #define __DIST_HPP
 namespace Distribution {
 
-	std::vector<float> normalise(std::vector<float> vec);
+	std::vector<float> normalise(std::vector<float> &vec);
 
 	float sigmoid(float x);
 
 	template <typename T>
-	std::vector<Stochastic<T>> normalise(std::vector<Stochastic<T>> vec) {
+	std::vector<Stochastic<T>> normalise(std::vector<Stochastic<T>> &vec) {
 		float sum = 0;
 		for (auto el : vec) {
 			sum += el.probability;
@@ -38,7 +38,7 @@ namespace Distribution {
 	}
 
 	template <typename T>
-	float expectation(std::vector<Stochastic<T>> vec) {
+	float expectation(std::vector<Stochastic<T>> &vec) {
 		float sum = 0;
 		for (auto el : vec) {
 			sum += el.probability * el.value;
@@ -47,7 +47,7 @@ namespace Distribution {
 	}
 
 	template <typename T>
-	float max_value(std::vector<Stochastic<T>> vec) {
+	float max_value(std::vector<Stochastic<T>> &vec) {
 		float mx = 0;
 		for (auto el : vec) {
 			mx = std::max(mx, el.value);

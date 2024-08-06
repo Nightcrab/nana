@@ -1,6 +1,6 @@
 #include "Distribution.hpp"
 
-std::vector<float> Distribution::normalise(std::vector<float> vec) {
+std::vector<float> Distribution::normalise(std::vector<float> &vec) {
 	float sum = 0;
 	for (auto el : vec) {
 		sum += el;
