@@ -31,7 +31,7 @@ public:
     bool open = false;
 
     StackLayer() {
-        type = MESSY;
+        type = COMBO;
         height = 0;
     }
     StackLayer(LayerType type, double height) : type(type), height(height) {}
@@ -512,7 +512,7 @@ public:
             return;
         }
         // Add garbage layers to the garbage meter
-        if (amount < 4) {
+        if (amount < 3) {
             if (rng.getRand(100) < COMBO_GARBAGE_PROB) {
                 garbage.push_back({ COMBO, (double)amount });
             }

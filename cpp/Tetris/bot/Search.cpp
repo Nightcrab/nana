@@ -91,7 +91,8 @@ void Search::continueSearch(EmulationGame state) {
     root_state.true_attack = state.true_app() * 10;
     root_state.pieces = 10;
     root_state.opponent.deaths = 0;
-    root_state.opponent = Opponent();
+    // mirror ourselves
+    root_state.opponent = Opponent(state.game);
 
     if (!uct.nodeExists(state.hash())) {
         uct.insertNode(UCTNode(state));
@@ -413,11 +414,11 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
     maybeInsertNode(node, threadIdx);
 
     if constexpr (search_style == NANA) {
-        float r = state.app() / 3 + max_eval / 2;
+        float r = state.app() / 2 + max_eval / 2;
         reward = std::max(reward, r);
     }
     if constexpr (search_style == CC) {
-        float r = state.app() / 3 + max_eval / 2;
+        float r = state.app() / 2 + max_eval / 2;
         reward = std::max(reward, r);
     }
 
