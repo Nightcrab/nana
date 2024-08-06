@@ -110,8 +110,7 @@ void Search::continueSearch(EmulationGame state) {
     root_state.pieces = 10;
     root_state.lines = 2;
     root_state.opponent.deaths = 0;
-    // mirror ourselves
-    root_state.opponent = Opponent(state.game);
+    root_state.opponent = Opponent();
 
     if (!uct.nodeExists(state.hash())) {
         uct.insertNode(UCTNode(state));
