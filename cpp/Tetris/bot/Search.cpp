@@ -13,6 +13,7 @@
 bool Search::searching = false;
 
 // stop source for stopping the threads
+// this is used to stop the threads when the main thread wants to stop searching
 std::stop_source thread_stopper;
 
 int Search::core_count = 0;
@@ -24,9 +25,9 @@ UCT Search::uct;
 EmulationGame Search::root_state;
 
 // stuff for notifying the main thread that the worker threads have at least a minimum amount of work done
-std::mutex stop_mutex;
-std::condition_variable stop_cv;
-std::atomic_bool stop_bool;
+std::mutex min_work_mutex;
+std::condition_variable min_work_cv;
+std::atomic_bool min_work_bool;
 
 std::vector<std::unique_ptr<mpsc<Job>>> Search::queues;
 std::vector<int> core_indices;
@@ -44,7 +45,10 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     search_start_time = std::chrono::steady_clock::now();
 
     searching = true;
-    stop_bool = false;
+    // reset stop bool for min wait time
+    min_work_bool = false;
+    // reset the thread stopper
+    thread_stopper = std::stop_source();
 
     Search::core_count = core_count;
 
@@ -94,6 +98,10 @@ void Search::continueSearch(EmulationGame state) {
     search_start_time = std::chrono::steady_clock::now();
 
     searching = true;
+    // reset stop bool for min wait time
+    min_work_bool = false;
+    // reset the thread stopper
+    thread_stopper = std::stop_source();
 
     root_state = state;
 
@@ -133,14 +141,14 @@ void Search::continueSearch(EmulationGame state) {
 
     }
     for (auto& idx : core_indices) {
-        worker_threads[idx] = std::jthread(search, idx);
+        worker_threads[idx] = std::jthread(search, thread_stopper.get_token(), idx);
     }
 }
 
 void Search::endSearch() {
-    if (!stop_bool) {
-        std::unique_lock<std::mutex> lock(stop_mutex);
-        stop_cv.wait(lock, [] { return stop_bool.load(); });
+    if (!min_work_bool) {
+        std::unique_lock<std::mutex> lock(min_work_mutex);
+        min_work_cv.wait(lock, [] { return min_work_bool.load(); });
     }
 
     searching = false;
@@ -156,7 +164,7 @@ void Search::endSearch() {
 	}
 
     // reset stop bool for min wait time
-    stop_bool = false;
+    min_work_bool = false;
     // reset the thread stopper
     thread_stopper = std::stop_source();
 
@@ -326,10 +334,10 @@ void Search::processJob(const int threadIdx, Job job) {
                 // extra scope to prevent notifying the main thread while holding the lock
                 // this is to prevent the main thread from waiting on the condition variable while we're holding the lock
                 {
-                    std::scoped_lock lock(stop_mutex);
-                    stop_bool = true;
+                    std::scoped_lock lock(min_work_mutex);
+                    min_work_bool = true;
                 }
-                stop_cv.notify_one();
+                min_work_cv.notify_one();
                 // notify the main thread that we're done
             }
 
