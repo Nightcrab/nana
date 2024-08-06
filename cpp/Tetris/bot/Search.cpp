@@ -100,6 +100,7 @@ void Search::continueSearch(EmulationGame state) {
     root_state.attack = state.app() * 10;
     root_state.true_attack = state.true_app() * 10;
     root_state.pieces = 10;
+    root_state.lines = 2;
     root_state.opponent.deaths = 0;
     // mirror ourselves
     root_state.opponent = Opponent(state.game);
@@ -489,7 +490,7 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
 #ifndef TBP
-            //std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
+           //std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
 #endif
         }
         if constexpr (search_style == CC) {

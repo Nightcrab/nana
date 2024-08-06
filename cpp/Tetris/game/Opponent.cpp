@@ -25,12 +25,10 @@ Opponent::Opponent (Game& game) {
 
     StackLayer currentLayer = { COMBO, 0 };
     for (int i = 0; i < 16;i++) {
-        std::cout << std::popcount(rows[i]) << std::endl;
         if (rows[i] == 0) {
             break;
         }
         else if ((rows[i + 1] & rows[i + 2] & rows[i + 3]) == rows[i]) {
-            std::cout << "clean" << std::endl;
             stack.push_back(currentLayer);
             currentLayer = StackLayer();
             currentLayer.type = CLEAN;
@@ -38,7 +36,6 @@ Opponent::Opponent (Game& game) {
             i += 3;
         }
         else if ((rows[i + 1] & rows[i + 2]) == rows[i]) {
-            std::cout << "clean" << std::endl;
             stack.push_back(currentLayer);
             currentLayer = StackLayer();
             currentLayer.type = CLEAN;
@@ -57,7 +54,6 @@ Opponent::Opponent (Game& game) {
             currentLayer.height += 1;
         }
         else if (std::popcount(rows[i]) <= 8 || std::popcount(rows[i + 1]) <= 8) {
-            std::cout << "spin" << std::endl;
             if (currentLayer.type != SPIN) {
                 stack.push_back(currentLayer);
                 currentLayer = StackLayer({ MESSY, 0 });

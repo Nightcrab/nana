@@ -50,6 +50,8 @@ void EmulationGame::play_moves(){
     }
     int cleared_lines = game.board.clearLines();
 
+    lines += cleared_lines;
+
     bool pc = true;
     for (int i = 0; i < Board::width; i++) {
         if (game.board.get_column(i) != 0) {
@@ -158,6 +160,10 @@ float EmulationGame::app() {
 
 float EmulationGame::true_app() {
     return (float)true_attack / (float)pieces;
+}
+
+float EmulationGame::apl() {
+    return (float)attack / (float)lines;
 }
 
 float EmulationGame::b2b() {

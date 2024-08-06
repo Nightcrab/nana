@@ -27,6 +27,7 @@ class EmulationGame {
     Opponent opponent;
 
     int pieces = 0;
+    int lines = 0;
     int attack = 0;
 
     // does not count cancelling
@@ -36,6 +37,7 @@ class EmulationGame {
 
     float app();
     float true_app();
+    float apl();
 
     float b2b();
 
