@@ -438,7 +438,7 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
     uct.stats[threadIdx].nodes++;
 
     if (state.game_over) {
-        return -1.0;
+        return -0.5;
     }
 
     UCTNode node(state);
@@ -496,7 +496,7 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
 #ifndef TBP
-           std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
+           //std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
 #endif
         }
         if constexpr (search_style == CC) {
