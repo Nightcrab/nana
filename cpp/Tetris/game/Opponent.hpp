@@ -15,12 +15,61 @@ enum LayerType {
     MESSY,
 };
 
+inline std::ostream& operator<<(std::ostream& os, const LayerType& _Val) {
+    std::string out;
+    switch (_Val) {
+    case SPIN:
+        out = "SPIN";
+        break;
+    case COMBO:
+        out = "COMBO";
+        break;
+    case CLEAN:
+        out = "CLEAN";
+        break;
+    case MESSY:
+        out = "MESSY";
+        break;
+    default:
+        out = "UNKNOWN";
+        break;
+    }
+
+    os << out;
+    return os;
+}
+
+
 enum TacticState {
     BUILD_SPIN,
     BUILD_COMBO,
     BUILD_CLEAN,
     ATTACK,
 };
+
+inline std::ostream& operator<<(std::ostream& os, const TacticState& _Val) {
+    std::string out;
+    switch (_Val) {
+    case BUILD_SPIN:
+        out = "BUILD_SPIN";
+        break;
+    case BUILD_COMBO:
+        out = "BUILD_COMBO";
+        break;
+    case BUILD_CLEAN:
+        out = "BUILD_CLEAN";
+        break;
+    case ATTACK:
+        out = "ATTACK";
+        break;
+    default:
+        out = "UNKNOWN";
+        break;
+    }
+
+    os << out;
+    return os;
+}
 
 
 class StackLayer {
@@ -59,7 +108,7 @@ const double OPEN_SPIN_PROB = 40;
 
 class Opponent {
 public:
-    Opponent (Game& game);
+    Opponent (const Game& game);
 
     Opponent() = default;
     // Copy constructor
