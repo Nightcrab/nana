@@ -62,7 +62,7 @@ UCTNode::UCTNode(const EmulationGame &state) {
 	sort_des(prior);
 
 	for (int rank = 1; rank <= prior.size(); rank++) {
-		float prob = 1.0 / quick_sqrt(rank) + 0.5;
+		float prob = 1.0 / quick_sqrt(rank);
 		prior[rank - 1].probability = prob;
 	}
 

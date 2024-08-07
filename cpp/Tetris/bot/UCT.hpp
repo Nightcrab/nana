@@ -105,14 +105,15 @@ class Job {
         : R(0.0), state(state), type(type), path(path){};
 
     // BACKPROP job
-    Job(float R, const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
-        : R(R), state(state), type(type), path(path){};
+    Job(float R, int depth, const EmulationGame& state, JobType type, const std::vector<HashActionPair> &path)
+        : R(R), depth(depth), state(state), type(type), path(path){};
 
     // PUT job
     Job(UCTNode& node, JobType type)
         : R(0.0), type(type), node(node){};
 
     float R;
+    int depth;
     EmulationGame state;
     JobType type;
     UCTNode node;

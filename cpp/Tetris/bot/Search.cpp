@@ -235,7 +235,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             float reward = rollout(state, threadIdx);
 
-            Job backprop_job(reward, state, BACKPROP, job.path);
+            Job backprop_job(reward, state.pieces-10, state, BACKPROP, job.path);
 
             if (job.path.empty()) {
                 return;
@@ -297,7 +297,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             uint32_t parentIdx = uct.getOwner(parent_hash);
 
-            Job backprop_job(reward, state, BACKPROP, job.path);
+            Job backprop_job(reward, state.pieces-10, state, BACKPROP, job.path);
 
             // send rollout reward to parent, who also owns the arm that got here
 
@@ -358,7 +358,7 @@ void Search::processJob(const int threadIdx, Job job) {
             reward += node.R_buffer;
             node.R_buffer = 0;
 
-            Job backprop_job(reward, job.state, BACKPROP, job.path);
+            Job backprop_job(reward, job.depth, job.state, BACKPROP, job.path);
 
             maybeSteal(threadIdx, parentIdx, backprop_job);
         }
@@ -438,7 +438,7 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
     uct.stats[threadIdx].nodes++;
 
     if (state.game_over) {
-        return -0.5;
+        return -0.0;
     }
 
     UCTNode node(state);
