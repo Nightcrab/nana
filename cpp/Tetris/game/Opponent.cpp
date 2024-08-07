@@ -7,7 +7,7 @@ int get_row_transitions(uint32_t row) {
     // use row transitions to detect messy layer
 }
 
-Opponent::Opponent (Game& game) {
+Opponent::Opponent (const Game& game) {
 
     // scan through the rows of the board and create a matching Opponent model
 
