@@ -95,6 +95,10 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
 void Search::continueSearch(EmulationGame state) {
     //std::cout << "started searching, root hash is: " << (int)(state.hash() % 1000) << std::endl;
 
+    if (state.game_over) {
+        return;
+    }
+
     search_start_time = std::chrono::steady_clock::now();
 
     searching = true;
@@ -454,11 +458,11 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
     maybeInsertNode(node, threadIdx);
 
     if constexpr (search_style == NANA) {
-        float r = state.app() / 2 + max_eval / 2;
+        float r = state.true_app() / 2 + max_eval / 2;
         reward = std::max(reward, r);
     }
     if constexpr (search_style == CC) {
-        float r = state.app() / 2 + max_eval / 2;
+        float r = state.true_app() / 2 + max_eval / 2;
         reward = std::max(reward, r);
     }
 
@@ -496,7 +500,7 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
 #ifndef TBP
-           //std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
+           std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
 #endif
         }
         if constexpr (search_style == CC) {

@@ -99,7 +99,7 @@ Action& UCTNode::select() {
 	float highest_priority = -2.0;
 
 	/*
-		Modified version of D. Silver's PUCT formula.
+		D. Silver's PUCT formula.
 
 		Dynamically selects actions based on both policy prior and pull statistics.
 	*/

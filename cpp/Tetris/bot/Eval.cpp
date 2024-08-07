@@ -648,13 +648,14 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
 
     score += values.second * height;
 
-    /*
     if (has_tsd(board, values.first, values.second)) {
         score += tsd_shape;
     }
     else if (has_v(board, values.first, values.second)) {
         score += v_shape;
     }
+
+    
     if (has_s(board, values.first, values.second)) {
         score += s_shape;
     }
@@ -664,7 +665,7 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     if (has_l2(board, values.first, values.second)) {
         score += l2_shape;
     }
-    */
+    
     if (ct4(board)) {
         score += counting;
     }

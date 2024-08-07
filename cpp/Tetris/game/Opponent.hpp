@@ -101,7 +101,7 @@ const double WASTE_I_PROB = 20;
 const double COMBO_GARBAGE_PROB = 30;
 
 // Probability the opponent will attack, if it can.
-const double ATTACK_PROB = 80;
+const double ATTACK_PROB = 40;
 
 // Probability of a spin exposing the lower garbage well
 const double OPEN_SPIN_PROB = 40;
@@ -194,7 +194,7 @@ public:
 
     void nextBuild() {
         int rand_int = rng.getRand(100);
-        if (rand_int < 80) {
+        if (rand_int < 50) {
             state = BUILD_SPIN;
             return;
         }
@@ -242,7 +242,7 @@ public:
             }
             break;
         case COMBO:
-            if (height + combo >= 8) {
+            if (height + combo >= 5) {
                 return true;
             }
             break;
