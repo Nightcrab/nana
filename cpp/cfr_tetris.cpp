@@ -2,15 +2,17 @@
 //
 #include "cfr_tetris.h"
 
+#include "EmulationGame.hpp"
 #include "engine/Board.hpp"
-#include "Eval.hpp"
 #include "engine/Game.hpp"
 #include "engine/Piece.hpp"
-#include "VersusGame.hpp"
-#include "EmulationGame.hpp"
+#include "engine/Utility.hpp"
+#include "engine/RotationSystems.hpp"
+#include "Eval.hpp"
 #include "Search.hpp"
-#include "util/rng.hpp"
 #include "Util/Distribution.hpp"
+#include "util/rng.hpp"
+#include "VersusGame.hpp"
 
 #define OLC_PGE_APPLICATION
 #include "OLC/olcPixelGameEngine.h"
@@ -130,16 +132,16 @@ class Tetris : public olc::PixelGameEngine {
         bool hold = GetKey(olc::Key::UP).bPressed;
 
         if (move_left)
-            game.p1_game.shift(game.p1_game.current_piece, -1);
+            Shaktris::Utility::shift(game.p1_game.board, game.p1_game.current_piece, -1);
 
         if (move_right)
-            game.p1_game.shift(game.p1_game.current_piece, 1);
+            Shaktris::Utility::shift(game.p1_game.board, game.p1_game.current_piece, 1);
 
         if (rotate_right)
-            game.p1_game.rotate(game.p1_game.current_piece, TurnDirection::Right);
+            srs_rotate(game.p1_game.board, game.p1_game.current_piece, TurnDirection::Right);
 
         if (rotate_left)
-            game.p1_game.rotate(game.p1_game.current_piece, TurnDirection::Left);
+            srs_rotate(game.p1_game.board, game.p1_game.current_piece, TurnDirection::Left);
 
         if (hold) {
             if (game.p1_game.hold) {
@@ -159,13 +161,13 @@ class Tetris : public olc::PixelGameEngine {
         }
 
         if (sonic_drop) {
-            game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
+            Shaktris::Utility::sonic_drop(game.p1_game.board, game.p1_game.current_piece);
             game.p1_move = {game.p1_game.current_piece, false};
         }
 
         if (hard_drop) {
-            game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
-            game.p2_game.sonic_drop(game.p2_game.board, game.p2_game.current_piece);
+            Shaktris::Utility::sonic_drop(game.p1_game.board, game.p1_game.current_piece);
+            Shaktris::Utility::sonic_drop(game.p2_game.board, game.p2_game.current_piece);
             game.p1_move = {game.p1_game.current_piece, false};
             game.p2_move = {game.p2_game.current_piece, false};
 
@@ -174,7 +176,7 @@ class Tetris : public olc::PixelGameEngine {
         }
 
         if (GetKey(olc::Key::Q).bPressed) {
-            game.p1_game.sonic_drop(game.p1_game.board, game.p1_game.current_piece);
+            Shaktris::Utility::sonic_drop(game.p1_game.board, game.p1_game.current_piece);
             game.p1_move = {game.p1_game.current_piece, true};
 
             game.play_moves();
@@ -279,7 +281,7 @@ private:
             std::cout << "min height: " << values.first << std::endl;
             std::cout << "max height: " << values.second << std::endl;
             std::cout << "has TSD: " << Eval::has_tsd(game.game.board, values.first, values.second) << std::endl;
-            std::cout << "is convex: " << game.game.is_convex() << std::endl;
+            //std::cout << "is convex: " << game.game.is_convex() << std::endl;
         }
 
         if (GetKey(olc::Key::P).bPressed) {
@@ -404,8 +406,8 @@ int main() {
     while (true) {
         game.play_moves();
 
-        if (game.p1_game.collides(game.p1_game.board, game.p1_game.current_piece) ||
-            game.p2_game.collides(game.p2_game.board, game.p2_game.current_piece)) {
+        if (Shaktris::Utility::collides(game.p1_game.board, game.p1_game.current_piece) ||
+            Shaktris::Utility::collides(game.p2_game.board, game.p2_game.current_piece)) {
             games_played++;
             game = VersusGame();
         }

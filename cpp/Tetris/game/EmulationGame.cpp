@@ -1,4 +1,5 @@
 #include "EmulationGame.hpp"
+#include "engine/Utility.hpp"
 
 #include "Util/fasthash.h"
 #include <iostream>
@@ -31,7 +32,7 @@ void EmulationGame::play_moves(){
         return;
     }
 
-    if (game.collides(game.board, game.current_piece)) {
+    if (Shaktris::Utility::collides(game.board, game.current_piece)) {
         game_over = true;
         return;
     }
