@@ -352,6 +352,8 @@ private:
             //std::cout << Opponent(game.game).stateString().str() << std::endl;
 
             for (int garbage : game.garbage_meter) {
+                // do this to get rid of unused variable warning
+                (void)garbage;
                 //std::cout << "garbage meter:" << garbage << std::endl;
             }
         }
