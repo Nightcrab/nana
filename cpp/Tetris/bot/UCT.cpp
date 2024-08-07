@@ -30,6 +30,18 @@ static float quick_sqrt(const float x)
 	return x * u.x * (1.5f - xhalf * u.x * u.x);// Newton step, repeating increases accuracy 
 }
 
+void Action::addN() {
+	N = N + 1;
+}
+void Action::addReward(float reward) {
+	R = R + reward;
+}
+
+// Q, the average return
+float Action::Q() {
+	return R / N;
+}
+
 UCTNode::UCTNode(const EmulationGame &state) {
 	std::vector<Piece> raw_actions = state.game.get_possible_piece_placements();
 
@@ -50,7 +62,7 @@ UCTNode::UCTNode(const EmulationGame &state) {
 	sort_des(prior);
 
 	for (int rank = 1; rank <= prior.size(); rank++) {
-		float prob = 1.0 / quick_sqrt(rank);
+		float prob = 1.0 / quick_sqrt(rank) + 0.5;
 		prior[rank - 1].probability = prob;
 	}
 
@@ -87,7 +99,7 @@ Action& UCTNode::select() {
 	float highest_priority = -2.0;
 
 	/*
-		D. Silver's PUCT formula.
+		Modified version of D. Silver's PUCT formula.
 
 		Dynamically selects actions based on both policy prior and pull statistics.
 	*/
@@ -98,7 +110,7 @@ Action& UCTNode::select() {
 	float c_puct = ln((N + c_base + 1.0) / c_base) + c_init;
 
 	for (Action& edge : actions) {
-		float Q = edge.R / edge.N;
+		float Q = edge.Q();
 		if (edge.N == 0) {
 			Q = 0.0;
 		}

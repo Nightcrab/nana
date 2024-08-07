@@ -289,7 +289,7 @@ private:
                 Search::endSearch();
             }
             else {
-                Search::startSearch(game, 4);
+                Search::startSearch(game, 3);
             }
             
         }

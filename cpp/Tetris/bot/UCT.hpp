@@ -34,11 +34,17 @@ class Action {
         this->eval = eval;
         this->id = id;
     }
+
+    void addReward(float reward);
+    void addN();
+    float Q();
+
+    static const int WINDOW_SIZE = 1000;
     Move move;
     float R;
     float prior;
     float eval;
-    int N;
+    float N;
     uint32_t id;
 };
 

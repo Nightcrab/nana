@@ -110,7 +110,7 @@ void Search::continueSearch(EmulationGame state) {
     root_state.pieces = 10;
     root_state.lines = 2;
     root_state.opponent.deaths = 0;
-    root_state.opponent = Opponent();
+    //root_state.opponent = Opponent();
 
     if (!uct.nodeExists(state.hash())) {
         uct.insertNode(UCTNode(state));
@@ -263,14 +263,13 @@ void Search::processJob(const int threadIdx, Job job) {
             }
             if constexpr (search_style == CC) {
 
-                //action = &node.select_r_max();
                 action = &node.select_SOR(uct.rng[threadIdx]);
             }
 
             // Virtual Loss by setting N := N+1
             node.N += 1;
 
-            action->N += 1;
+            action->addN();
 
             state.set_move(action->move);
 
@@ -314,9 +313,9 @@ void Search::processJob(const int threadIdx, Job job) {
 
         // Undo Virtual Loss by adding R
         if constexpr (search_style == NANA) {
-            float& R = node.actions[job.path.back().actionID].R;
-            //int& N = node.actions[job.path.back().actionID].N;
-            R = R + reward;
+
+            node.actions[job.path.back().actionID].addReward(reward);
+            
         }
         if constexpr (search_style == CC) {
             if (reward > node.actions[job.path.back().actionID].R) {
@@ -439,14 +438,14 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
     uct.stats[threadIdx].nodes++;
 
     if (state.game_over) {
-        return 0.0;
+        return -1.0;
     }
 
     UCTNode node(state);
 
     maybeInsertNode(node, threadIdx);
 
-    float max_eval = 0;
+    float max_eval = 0.0;
 
     for (auto& action : node.actions) {
         max_eval = std::max(max_eval, action.eval);
@@ -497,7 +496,7 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
 #ifndef TBP
-           //std::cout << "N:" << action.N << " R_avg:" << action.R / action.N << std::endl;
+           std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
 #endif
         }
         if constexpr (search_style == CC) {
