@@ -31,10 +31,10 @@ static float quick_sqrt(const float x)
 }
 
 void Action::addN() {
-	N = N + 1;
+	N = N * 0.9999 + 1;
 }
 void Action::addReward(float reward) {
-	R = R + reward;
+	R = R * 0.9999 + reward;
 }
 
 // Q, the average return
