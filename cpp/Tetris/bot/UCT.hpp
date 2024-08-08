@@ -68,7 +68,7 @@ class UCTNode {
 
     std::vector<Action> actions;
 
-    Action& select();
+    Action& select(int depth);
     Action& select_r_max();
     Action& select_SOR(RNG& rng);
 };

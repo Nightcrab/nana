@@ -2,6 +2,8 @@
 #include "Util/MPSC.hpp"
 #include "Util/Distribution.hpp"
 #include "Eval.hpp"
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 
 using namespace Distribution;
@@ -94,7 +96,7 @@ Action& UCTNode::select_r_max() {
 	return *best_action;
 }
 
-Action& UCTNode::select() {
+Action& UCTNode::select(int depth) {
 	Action* best_action = &actions[0];
 	float highest_priority = -2.0;
 
@@ -102,9 +104,12 @@ Action& UCTNode::select() {
 		D. Silver's PUCT formula.
 
 		Dynamically selects actions based on both policy prior and pull statistics.
+
+		We modify the formula to explore more at shallow depths and exploit more
+		at deeper parts of the tree.
 	*/
 
-	constexpr float c_init = 2.5;
+	constexpr float c_init = 1.25;
 	constexpr float c_base = 19652;
 
 	float c_puct = ln((N + c_base + 1.0) / c_base) + c_init;
@@ -114,8 +119,9 @@ Action& UCTNode::select() {
 		if (edge.N == 0) {
 			Q = 0.0;
 		}
+		float D = 1;
 		float U = c_puct * edge.prior * quick_sqrt(N) / (1 + edge.N);
-		float priority = Q + U;
+		float priority = Q * D + U;
 
 		if (priority > highest_priority) {
 			best_action = &edge;

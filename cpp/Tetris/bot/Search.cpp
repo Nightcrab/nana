@@ -233,6 +233,8 @@ void Search::processJob(const int threadIdx, Job job) {
 
         EmulationGame& state = job.state;
 
+        int depth = state.pieces - 10;
+
         uint32_t hash = state.hash();
 
         if (state.game_over) {
@@ -263,7 +265,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             if constexpr (search_style == NANA) {
 
-                action = &node.select();
+                action = &node.select(depth);
             }
             if constexpr (search_style == CC) {
 
