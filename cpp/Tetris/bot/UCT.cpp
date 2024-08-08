@@ -112,16 +112,18 @@ Action& UCTNode::select(int depth) {
 	constexpr float c_init = 1.25;
 	constexpr float c_base = 19652;
 
-	float c_puct = ln((N + c_base + 1.0) / c_base) + c_init;
+	float D = 1 + depth/3;
+
+	float c_puct = ln((N + c_base + 1.0) / c_base) + c_init * D;
+
 
 	for (Action& edge : actions) {
 		float Q = edge.Q();
 		if (edge.N == 0) {
 			Q = 0.0;
 		}
-		float D = 1;
 		float U = c_puct * edge.prior * quick_sqrt(N) / (1 + edge.N);
-		float priority = Q * D + U;
+		float priority = Q + U;
 
 		if (priority > highest_priority) {
 			best_action = &edge;
