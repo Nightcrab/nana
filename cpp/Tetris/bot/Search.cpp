@@ -109,9 +109,9 @@ void Search::continueSearch(EmulationGame state) {
 
     root_state = state;
 
-    root_state.attack = state.app() * 10;
-    root_state.true_attack = state.true_app() * 10;
-    root_state.pieces = 10;
+    root_state.attack = state.app() * 0;
+    root_state.true_attack = state.true_app() * 0;
+    root_state.pieces = 0;
     root_state.lines = 2;
     root_state.opponent.deaths = 0;
     //root_state.opponent = Opponent();
@@ -136,9 +136,9 @@ void Search::continueSearch(EmulationGame state) {
 
     int rootOwnerIdx = uct.getOwner(state.hash());
     for (int j = 0; j < core_count; j++) {
-        root_state.chance.reset_rng();
         root_state.opponent.reset_rng();
         for (int i = 0; i < LOAD_FACTOR; i++) {
+            root_state.chance.reset_rng();
             queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
         }
 
@@ -233,7 +233,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
         EmulationGame& state = job.state;
 
-        int depth = state.pieces - 10;
+        int depth = state.pieces;
 
         uint32_t hash = state.hash();
 
@@ -241,7 +241,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             float reward = rollout(state, threadIdx);
 
-            Job backprop_job(reward, state.pieces-10, state, BACKPROP, job.path);
+            Job backprop_job(reward, state.pieces, state, BACKPROP, job.path);
 
             if (job.path.empty()) {
                 return;
@@ -303,7 +303,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             uint32_t parentIdx = uct.getOwner(parent_hash);
 
-            Job backprop_job(reward, state.pieces-10, state, BACKPROP, job.path);
+            Job backprop_job(reward, state.pieces, state, BACKPROP, job.path);
 
             // send rollout reward to parent, who also owns the arm that got here
 
@@ -460,11 +460,11 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
     maybeInsertNode(node, threadIdx);
 
     if constexpr (search_style == NANA) {
-        float r = state.true_app() / 2 + max_eval / 2;
+        float r = state.true_app() / 3 + max_eval / 2;
         reward = std::max(reward, r);
     }
     if constexpr (search_style == CC) {
-        float r = state.true_app() / 2 + max_eval / 2;
+        float r = state.true_app() / 3 + max_eval / 2;
         reward = std::max(reward, r);
     }
 
