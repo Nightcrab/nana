@@ -14,6 +14,12 @@ void EmulationGame::chance_move() {
         }
     }
 
+    for (int& garbage : buffered_garbage) {
+        garbage_meter.insert(garbage_meter.begin(), garbage);
+    }
+
+    buffered_garbage.clear();
+
     int garbage_amount = 0;
 
     // simulate opponent
@@ -21,7 +27,7 @@ void EmulationGame::chance_move() {
     garbage_amount = opponent.play();
 
     if (garbage_amount > 0) {
-        garbage_meter.insert(garbage_meter.begin(), garbage_amount);
+        buffered_garbage.insert(buffered_garbage.begin(), garbage_amount);
     }
 
     chance.new_move(false, false);

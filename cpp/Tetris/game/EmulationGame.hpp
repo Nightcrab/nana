@@ -11,6 +11,7 @@ class EmulationGame {
    public:
     Game game;
 
+    std::vector<int> buffered_garbage;
     std::vector<int> garbage_meter;
 
     // can be set if the opponent already has some B2B
