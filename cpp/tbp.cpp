@@ -200,6 +200,9 @@ int main() {
         // send info state to the client
         std::vector<PieceType> queue;
 
+        // generated pieces that we know about
+        int total_pieces = 0;
+
         EmulationGame game;
 
         nlohmann::json message;
@@ -291,6 +294,21 @@ int main() {
 
                 // create new emulation game rooted at this state
                 game = EmulationGame();
+#ifdef TBP1
+#else
+                // create opponent model from other board
+                nlohmann::json player_2;
+
+                // tbp 2
+                CHECK_ERR(player_2 = message["states"].array()[1]);
+                Board board2;
+
+                CHECK_ERR(board2 = json_to_board(player_2["board"]));
+
+                Game game2 = Game();
+                game2.board = board2;
+                game.opponent = Opponent(game2);
+#endif
 
                 game.game.board = board;
                 game.game.current_piece = queue.front();
@@ -308,6 +326,11 @@ int main() {
                         }
                     }
                 }
+
+                if (total_pieces == 0) {
+                    total_pieces = queue.size();
+                }
+
                 if (hold == PieceType::Empty) {
                     game.game.hold = std::nullopt;
                 }
@@ -333,7 +356,9 @@ int main() {
                 PieceType piece = json_to_type(message["piece"]);
                 queue.push_back(piece);
 
-                game.chance.rng_1.bagiterator = queue.size() % 7;
+                total_pieces += 1;
+
+                game.chance.rng_1.bagiterator = total_pieces % 7;
             }
             else if (type == "suggest") {
                 // end search and give the best move

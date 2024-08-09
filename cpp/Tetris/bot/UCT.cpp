@@ -96,6 +96,40 @@ Action& UCTNode::select_r_max() {
 	return *best_action;
 }
 
+
+
+Action& UCTNode::select_uct(int depth) {
+	Action* best_action = &actions[0];
+	float highest_priority = -2.0;
+
+	/*
+		UCT formula, ignores policy.
+	*/
+
+	float C = 1.507;
+
+	for (Action& edge : actions) {
+		if (edge.N == 0) {
+			best_action = &edge;
+			break;
+		}
+		float Q = edge.Q();
+		if (edge.N == 0) {
+			Q = 0.0;
+		}
+		float U = 2 * C * quick_sqrt(ln(N) / edge.N);
+		float priority = Q + U;
+
+		if (priority > highest_priority) {
+			best_action = &edge;
+			highest_priority = priority;
+		}
+	}
+
+	return *best_action;
+}
+
+
 Action& UCTNode::select(int depth) {
 	Action* best_action = &actions[0];
 	float highest_priority = -2.0;

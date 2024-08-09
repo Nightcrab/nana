@@ -264,8 +264,14 @@ void Search::processJob(const int threadIdx, Job job) {
             Action* action = &node.actions[0];
 
             if constexpr (search_style == NANA) {
+                if (hash == root_state.hash()) {
 
-                action = &node.select(depth);
+                    action = &node.select(depth);
+                }
+                else {
+
+                    action = &node.select(depth);
+                }
             }
             if constexpr (search_style == CC) {
 
