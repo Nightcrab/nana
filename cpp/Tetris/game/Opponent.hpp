@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 
-enum LayerType :uint8_t{
+enum LayerType :uint8_t {
     SPIN,
     COMBO,
     CLEAN,
@@ -83,28 +83,28 @@ public:
         height = 0;
         type = COMBO;
     }
-    StackLayer(LayerType type, double height) : type(type), height(height) {}
-    StackLayer(LayerType type, double height, bool open) : type(type), height(height), open(open) {}
+    StackLayer(LayerType type, double height) : height(height), type(type) {}
+    StackLayer(LayerType type, double height, bool open) : height(height), type(type), open(open) {}
 };
 
 constexpr std::array<double, 20> comboTable = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
 
 // Probability of layers behaving as MESSY during attack, expressed as percentages.
-const double MISTAKE_PROB_CLEAN = 5;
-const double MISTAKE_PROB_COMBO = 5;
-const double MISTAKE_PROB_SPIN = 5;
+constexpr double MISTAKE_PROB_CLEAN = 5;
+constexpr double MISTAKE_PROB_COMBO = 5;
+constexpr double MISTAKE_PROB_SPIN = 5;
 
-const double MISTAKE_DOWNSTACK_PROB = 5;
+constexpr double MISTAKE_DOWNSTACK_PROB = 5;
 
-const double WASTE_I_PROB = 20;
+constexpr double WASTE_I_PROB = 20;
 
-const double COMBO_GARBAGE_PROB = 30;
+constexpr double COMBO_GARBAGE_PROB = 30;
 
 // Probability the opponent will attack, if it can.
-const double ATTACK_PROB = 40;
+constexpr double ATTACK_PROB = 40;
 
 // Probability of a spin exposing the lower garbage well
-const double OPEN_SPIN_PROB = 40;
+constexpr double OPEN_SPIN_PROB = 40;
 
 class Opponent {
 public:
