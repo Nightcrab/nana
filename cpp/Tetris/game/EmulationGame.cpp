@@ -10,7 +10,7 @@ void EmulationGame::set_move(Move move) {
 void EmulationGame::chance_move() {
     for (auto& piece : game.queue) {
         if (piece == PieceType::Empty) {
-            piece = chance.rng_1.getPiece();
+            piece = rng.getPiece();
         }
     }
 
@@ -29,8 +29,6 @@ void EmulationGame::chance_move() {
     if (garbage_amount > 0) {
         buffered_garbage.insert(buffered_garbage.begin(), garbage_amount);
     }
-
-    chance.new_move(false, false);
 };
 
 void EmulationGame::play_moves(){
@@ -107,7 +105,7 @@ void EmulationGame::play_moves(){
 
             int garbage = std::min(incoming, 8 - garbage_used);
 
-            game.add_garbage(garbage, chance.get_garbage_column());
+            game.add_garbage(garbage, rng.getRand(Board::width));
 
             incoming -= garbage;
             garbage_used += garbage;

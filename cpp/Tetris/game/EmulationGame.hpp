@@ -1,5 +1,4 @@
 #pragma once
-#include "Chance.hpp"
 #include "Opponent.hpp"
 #include "engine/Game.hpp"
 
@@ -24,7 +23,7 @@ class EmulationGame {
     int combo_length = 0;
 
     Move move;
-    Chance chance;
+    RNG rng;
     Opponent opponent;
 
     int pieces = 0;
