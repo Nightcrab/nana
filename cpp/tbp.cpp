@@ -1,4 +1,3 @@
-#define TBP
 #include <iostream>
 #include <string>
 
