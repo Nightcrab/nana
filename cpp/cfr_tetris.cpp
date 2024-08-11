@@ -220,10 +220,10 @@ private:
     bool OnUserCreate() override {
         game = EmulationGame();
 
-        game.game.current_piece = game.chance.rng_1.getPiece();
+        game.game.current_piece = game.rng.getPiece();
 
         for (auto& piece_type : game.game.queue) {
-            piece_type = game.chance.rng_1.getPiece();
+            piece_type = game.rng.getPiece();
         }
         return true;
     }
@@ -325,7 +325,7 @@ private:
 
             Distribution::normalise(SoR_policy);
 
-            Move sample = Distribution::sample(SoR_policy, game.chance.rng_1);
+            Move sample = Distribution::sample(SoR_policy, game.rng);
             std::cout << "eval was:" << Eval::eval_CC(game.game, sample) << std::endl;
             game.set_move(sample);
             game.play_moves();
@@ -362,11 +362,10 @@ private:
         
         if (GetKey(olc::Key::R).bPressed) {
             game = EmulationGame();
-
-            game.game.current_piece = game.chance.rng_1.getPiece();
+            game.game.current_piece = game.rng.getPiece();
 
             for (auto& piece_type : game.game.queue) {
-                piece_type = game.chance.rng_1.getPiece();
+                piece_type = game.rng.getPiece();
             }
         }
 
