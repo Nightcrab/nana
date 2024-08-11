@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 
-enum LayerType {
+enum LayerType :uint8_t{
     SPIN,
     COMBO,
     CLEAN,
@@ -40,7 +40,7 @@ inline std::ostream& operator<<(std::ostream& os, const LayerType& _Val) {
 }
 
 
-enum TacticState {
+enum TacticState :uint8_t {
     BUILD_SPIN,
     BUILD_COMBO,
     BUILD_CLEAN,
@@ -74,14 +74,14 @@ inline std::ostream& operator<<(std::ostream& os, const TacticState& _Val) {
 
 class StackLayer {
 public:
-    LayerType type;
     double height;
+    LayerType type;
     // whether clean below can be accessed
     bool open = false;
 
     StackLayer() {
-        type = COMBO;
         height = 0;
+        type = COMBO;
     }
     StackLayer(LayerType type, double height) : type(type), height(height) {}
     StackLayer(LayerType type, double height, bool open) : type(type), height(height), open(open) {}

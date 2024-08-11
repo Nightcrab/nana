@@ -494,7 +494,7 @@ bool has_l2(const Board& board, int min_height, int max_height) {
                 auto& b_col1 = board.board[i];
                 auto& b_col2 = board.board[i + 1];
                 auto& b_col3 = board.board[i + 2];
-                auto& b_col4 = board.board[i + 3];
+                //auto& b_col4 = board.board[i + 3];
                 bool tsd = true;
                 tsd = tsd && (((b_col2 & (mask << y)) >> y) == col2);
                 tsd = tsd && (((b_col1 & (mask << y)) >> y) == col1);
@@ -585,32 +585,32 @@ int Eval::get_row_transitions(const Board& board) {
 }
 
 namespace eval_constants {
-    constexpr auto top_half = -130.0;
-    constexpr auto top_quarter = -499.0;
-    constexpr auto low = -50.0;
-    constexpr auto cavity_cells = -176.0;
-    constexpr auto cavity_cells_sq = -6.0;
-    constexpr auto overhangs = -47.0;
-    constexpr auto overhangs_sq = -9.0;
-    constexpr auto covered_cells = -26.0;
-    constexpr auto covered_cells_sq = 1.0;
-    constexpr auto bumpiness = -7.0;
-    constexpr auto bumpiness_sq = -28.0;
-    constexpr auto height = -46.0;
-    constexpr float well_columns[10] = { 31, 16, -41, 37, 49, 30, 56, 48, -27, 22 };
-    constexpr float clears[5] = { 0, -1700, -100, -50, 490 };
-    constexpr float tspins[4] = { 0, 126, 434, 320 };
-    constexpr float perfect_clear = 200.0;
-    constexpr float wasted_t = -52.0;
-    constexpr float tsd_shape = 180.0;
-    constexpr float well_depth = 91.0; // todo
-    constexpr float max_well_depth = 17.0; // todo
-    constexpr float row_transitions = -5.0;
-    constexpr float v_shape = 50.0;
-    constexpr float s_shape = 80.0;
-    constexpr float l_shape = 80.0;
-    constexpr float l2_shape = 80.0;
-    constexpr float counting = 50.0;
+    [[maybe_unused]]constexpr auto top_half = -130.0;
+    [[maybe_unused]]constexpr auto top_quarter = -499.0;
+    [[maybe_unused]]constexpr auto low = -50.0;
+    [[maybe_unused]]constexpr auto cavity_cells = -176.0;
+    [[maybe_unused]]constexpr auto cavity_cells_sq = -6.0;
+    [[maybe_unused]]constexpr auto overhangs = -47.0;
+    [[maybe_unused]]constexpr auto overhangs_sq = -9.0;
+    [[maybe_unused]]constexpr auto covered_cells = -26.0;
+    [[maybe_unused]]constexpr auto covered_cells_sq = 1.0;
+    [[maybe_unused]]constexpr auto bumpiness = -7.0;
+    [[maybe_unused]]constexpr auto bumpiness_sq = -28.0;
+    [[maybe_unused]]constexpr auto height = -46.0;
+    [[maybe_unused]]constexpr float well_columns[10] = { 31, 16, -41, 37, 49, 30, 56, 48, -27, 22 };
+    [[maybe_unused]]constexpr float clears[5] = { 0, -1700, -100, -50, 490 };
+    [[maybe_unused]]constexpr float tspins[4] = { 0, 126, 434, 320 };
+    [[maybe_unused]]constexpr float perfect_clear = 200.0;
+    [[maybe_unused]]constexpr float wasted_t = -52.0;
+    [[maybe_unused]]constexpr float tsd_shape = 180.0;
+    [[maybe_unused]]constexpr float well_depth = 91.0; // todo
+    [[maybe_unused]]constexpr float max_well_depth = 17.0; // todo
+    [[maybe_unused]]constexpr float row_transitions = -5.0;
+    [[maybe_unused]]constexpr float v_shape = 50.0;
+    [[maybe_unused]]constexpr float s_shape = 80.0;
+    [[maybe_unused]]constexpr float l_shape = 80.0;
+    [[maybe_unused]]constexpr float l2_shape = 80.0;
+    [[maybe_unused]]constexpr float counting = 50.0;
 }
 
 double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
