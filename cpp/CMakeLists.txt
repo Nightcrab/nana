@@ -41,7 +41,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 add_executable (cfr_tetris "cfr_tetris.cpp" "cfr_tetris.h" ${TETRIS_SOURCES})
 add_executable (tbp_tetris "tbp.cpp" ${TETRIS_SOURCES})
 
-target_compile_definitions(tbp_tetris PRIVATE TBP1)
+target_compile_definitions(tbp_tetris PRIVATE TBP TBP2)
 
 if(UNIX AND NOT APPLE)
     target_include_directories(cfr_tetris PRIVATE ${X11_INCLUDE_DIR} ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR})

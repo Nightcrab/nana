@@ -261,14 +261,7 @@ int main() {
                 `board`         | A list of 40 lists of 10 board cells..*/
 
                 nlohmann::json player_1;
-#ifdef TBP1
-                // tbp 1
                 CHECK_ERR(player_1 = message);
-#else
-                // tbp 2
-                CHECK_ERR(player_1 = message["states"].array()[0]);
-#endif
-
 
                 Board board;
 
@@ -282,11 +275,7 @@ int main() {
                 CHECK_ERR(hold = json_to_type(player_1["hold"]));
 
                 int back_to_back;
-#ifdef TBP1
                 CHECK_ERR(back_to_back = player_1["back_to_back"].get<bool>() ? 1 : 0);
-#else
-                CHECK_ERR(back_to_back = player_1["back_to_back"].get<int>());
-#endif
 
                 int combo;
                 CHECK_ERR(combo = player_1["combo"].get<int>());
@@ -295,18 +284,22 @@ int main() {
                 game = EmulationGame();
 #ifdef TBP1
 #else
-                // create opponent model from other board
-                nlohmann::json player_2;
+                {
+                    // create opponent model from other board
+                    nlohmann::json player_2;
 
-                // tbp 2
-                CHECK_ERR(player_2 = message["states"].array()[1]);
-                Board board2;
+                    // tbp 2
+                    CHECK_ERR(player_2 = message["opponents"][0]);
+                    Board board2;
 
-                CHECK_ERR(board2 = json_to_board(player_2["board"]));
+                    CHECK_ERR(board2 = json_to_board(player_2["board"]));
+                    // there is more information that isnt just the board, such as hold, queue, combo, b2b
+                    // but the opponent constructor only needs the board so thats all im going to pull
 
-                Game game2 = Game();
-                game2.board = board2;
-                game.opponent = Opponent(game2);
+                    Game game2;
+                    game2.board = board2;
+                    game.opponent = Opponent(game2);
+                }
 #endif
 
                 game.game.board = board;
@@ -357,7 +350,7 @@ int main() {
 
                 total_pieces += 1;
 
-                game.chance.rng_1.bagiterator = total_pieces % 7;
+                game.rng.bagiterator = total_pieces % 7;
             }
             else if (type == "suggest") {
                 // end search and give the best move
@@ -387,6 +380,29 @@ int main() {
 
                 RotationDirection rotation;
                 CHECK_ERR(rotation = json_to_rotation(message["location"]["orientation"]));
+
+
+#ifdef TBP1
+#else
+                {
+                    // create opponent model from other board
+                    nlohmann::json player_2;
+
+                    // tbp 2
+                    CHECK_ERR(player_2 = message["opponents"][0]);
+                    Board board2;
+
+                    CHECK_ERR(board2 = json_to_board(player_2["board"]));
+                    // there is more information that isnt just the board, such as hold, queue, combo, b2b
+                    // but the opponent constructor only needs the board so thats all im going to pull
+
+                    Game game2;
+                    game2.board = board2;
+                    game.opponent = Opponent(game2);
+                }
+#endif
+
+
 
                 for(int i = 0; i < int(rotation); ++i) {
 					move.piece.calculate_rotate(TurnDirection::Right);
