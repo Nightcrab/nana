@@ -599,7 +599,7 @@ namespace eval_constants {
     [[maybe_unused]]constexpr auto height = -46.0;
     [[maybe_unused]]constexpr float well_columns[10] = { 31, 16, -41, 37, 49, 30, 56, 48, -27, 22 };
     [[maybe_unused]]constexpr float clears[5] = { 0, -1700, -100, -50, 490 };
-    [[maybe_unused]]constexpr float tspins[4] = { 0, 126, 434, 320 };
+    [[maybe_unused]]constexpr float tspins[4] = { 0, 126, 434, 220 };
     [[maybe_unused]]constexpr float perfect_clear = 200.0;
     [[maybe_unused]]constexpr float wasted_t = -52.0;
     [[maybe_unused]]constexpr float tsd_shape = 180.0;

@@ -54,8 +54,12 @@ UCTNode::UCTNode(const EmulationGame &state) {
 
 	int idx = 0;
 
+	int gheight = state.game.board.get_garbage_height();
+
 	for (auto& raw_action : raw_actions) {
 		float eval = Eval::eval_CC(state.game, Move(raw_action, false));
+		// Surface abstraction step
+		raw_action.position.y -= gheight;
 		actions.emplace_back(Move(raw_action, false), idx, eval);
 		prior.push_back(Stochastic<int>(idx, eval));
 		idx++;

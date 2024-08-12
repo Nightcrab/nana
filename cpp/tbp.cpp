@@ -355,7 +355,7 @@ int main() {
             else if (type == "suggest") {
                 // end search and give the best move
                 Search::endSearch();
-                Move best_move = Search::bestMove();
+                Move best_move = game.specific_move(Search::bestMove());
 
                 // create suggestion message
                 message.clear();

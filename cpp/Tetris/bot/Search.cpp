@@ -283,7 +283,7 @@ void Search::processJob(const int threadIdx, Job job) {
 
             action->addN();
 
-            state.set_move(action->move);
+            state.set_move(state.specific_move(action->move));
 
             state.play_moves();
             state.chance_move();

@@ -96,12 +96,12 @@ constexpr double MISTAKE_PROB_SPIN = 5;
 
 constexpr double MISTAKE_DOWNSTACK_PROB = 5;
 
-constexpr double WASTE_I_PROB = 20;
+constexpr double WASTE_I_PROB = 10;
 
-constexpr double COMBO_GARBAGE_PROB = 30;
+constexpr double COMBO_GARBAGE_PROB = 40;
 
 // Probability the opponent will attack, if it can.
-constexpr double ATTACK_PROB = 40;
+constexpr double ATTACK_PROB = 80;
 
 // Probability of a spin exposing the lower garbage well
 constexpr double OPEN_SPIN_PROB = 40;
@@ -131,6 +131,9 @@ public:
 
     bool dead = false;
     double deaths = 0;
+
+    float pieces = 0;
+    float total_damage = 0;
 
     double nextI = rng.getRand(7);;
     double nextSpinPiece = rng.getRand(7);
@@ -181,6 +184,9 @@ public:
         out << "\n";
         out << "Deaths: ";
         out << deaths;
+        out << "\n";
+        out << "Opponent APP: ";
+        out << total_damage / pieces;
         out << "\n";
         for (StackLayer layer : stack) {
             out << toString(layer.type) << ", " << layer.height << "\n";
@@ -653,7 +659,7 @@ public:
         }
         if (nextSpinPiece == 0) {
             hasSpinPiece = true;
-            nextSpinPiece = rng.getRand(4) + 1;
+            nextSpinPiece = rng.getRand(2) + 1;
         }
         nextI--;
         nextSpinPiece--;
@@ -675,6 +681,8 @@ public:
             return 0;
         }
 
+        pieces++;
+
         nextState();
 
         double attack = 0;
@@ -694,6 +702,8 @@ public:
         if (rng.getRand(100) < WASTE_I_PROB) {
             hasI = false;
         }
+
+        total_damage += attack;
 
         return attack;
     }

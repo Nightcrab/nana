@@ -3,8 +3,14 @@
 
 #include "Util/fasthash.h"
 #include <iostream>
+
 void EmulationGame::set_move(Move move) {
     this->move = move;
+};
+
+Move EmulationGame::specific_move(Move move) {
+    move.piece.position.y += game.board.get_garbage_height();
+    return move;
 };
 
 void EmulationGame::chance_move() {
@@ -146,7 +152,12 @@ std::vector<Move> EmulationGame::legal_moves() {
 }
 
 uint32_t EmulationGame::hash() const {
-    uint32_t hash = fasthash32(&game.board, sizeof(Board), 0x9012'3456);
+    Board board = game.board;
+    int gheight = board.get_garbage_height();
+    for (auto& row : board.board) {
+        row = row >> gheight;
+    }
+    uint32_t hash = fasthash32(&board, sizeof(Board), 0x9012'3456);
     hash = fasthash32(&game.current_piece.type, sizeof(PieceType), hash);
     hash = fasthash32(&game.b2b, sizeof(u16), hash);
     hash = fasthash32(&game.combo, sizeof(u16), hash);

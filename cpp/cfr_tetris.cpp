@@ -339,7 +339,8 @@ private:
 
         if ((GetKey(olc::Key::Q).bPressed || time % 20 == 21) && Search::searching) {
             Search::endSearch();
-            game.set_move(Search::bestMove());
+
+            game.set_move(game.specific_move(Search::bestMove()));
 
             game.play_moves();
             game.chance_move();
@@ -351,13 +352,14 @@ private:
             std::cout << "APP:" << game.app() << std::endl;
             std::cout << "True APP:" << game.true_app() << std::endl;
 
-            //std::cout << Opponent(game.game).stateString().str() << std::endl;
+            std::cout << Opponent(game.game).stateString().str() << std::endl;
 
             for (int garbage : game.garbage_meter) {
                 // do this to get rid of unused variable warning
                 (void)garbage;
                 //std::cout << "garbage meter:" << garbage << std::endl;
             }
+
         }
         
         if (GetKey(olc::Key::R).bPressed) {
