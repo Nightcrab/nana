@@ -8,6 +8,7 @@ namespace Eval {
 double eval_LUT(const Board& board);
 double eval_CC(const Board& board, int lines, bool tspin, bool waste_t);
 double eval_CC(Game game, Move move);
+double eval_SG(Game &game);
 
 [[maybe_unused]] static bool is_top_quarter(const Board& board);
 

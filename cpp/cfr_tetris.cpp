@@ -281,10 +281,16 @@ private:
             std::cout << "min height: " << values.first << std::endl;
             std::cout << "max height: " << values.second << std::endl;
             std::cout << "has TSD: " << Eval::has_tsd(game.game.board, values.first, values.second) << std::endl;
+
+            std::cout << "SG eval:" << Eval::eval_SG(game.game) << std::endl;
+
             //std::cout << "is convex: " << game.game.is_convex() << std::endl;
         }
 
+        game.opponent.freeze();
+
         if (GetKey(olc::Key::P).bPressed) {
+
             if (Search::searching) {
                 Search::endSearch();
             }
@@ -351,6 +357,8 @@ private:
 
             std::cout << "APP:" << game.app() << std::endl;
             std::cout << "True APP:" << game.true_app() << std::endl;
+            std::cout << "SG eval:" << Eval::eval_SG(game.game) << std::endl;
+
 
             std::cout << Opponent(game.game).stateString().str() << std::endl;
 

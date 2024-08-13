@@ -22,7 +22,7 @@ namespace Search {
 
     extern bool searching;
 
-    constexpr SearchType search_style = NANA;
+    constexpr SearchType search_style = CC;
 
     extern int core_count;
 

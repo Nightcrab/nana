@@ -135,6 +135,8 @@ public:
     float pieces = 0;
     float total_damage = 0;
 
+    bool frozen = false;
+
     double nextI = rng.getRand(7);;
     double nextSpinPiece = rng.getRand(7);
 
@@ -665,8 +667,20 @@ public:
         nextSpinPiece--;
     }
 
+    void freeze() {
+        frozen = true;
+    }
+
+    void unfreeze() {
+        frozen = false;
+    }
+
     // Advances internal state and returns outgoing damage this turn
     double play() {
+
+        if (frozen) {
+            return 0;
+        }
 
         if (dead) {
             // revive

@@ -33,10 +33,10 @@ static float quick_sqrt(const float x)
 }
 
 void Action::addN() {
-	N = N * 0.9999 + 1;
+	N = N * 0.99999 + 1;
 }
 void Action::addReward(float reward) {
-	R = R * 0.9999 + reward;
+	R = R * 0.99999 + reward;
 }
 
 // Q, the average return
@@ -68,7 +68,7 @@ UCTNode::UCTNode(const EmulationGame &state) {
 	sort_des(prior);
 
 	for (int rank = 1; rank <= prior.size(); rank++) {
-		float prob = 1.0 / quick_sqrt(rank);
+		float prob = 1 + 1.0 / quick_sqrt(rank);
 		prior[rank - 1].probability = prob;
 	}
 

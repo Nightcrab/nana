@@ -715,3 +715,34 @@ double Eval::eval_CC(Game game, Move move) {
 
     return eval_CC(game.board, lines, tspin, waste_t);
 }
+
+double Eval::eval_SG(Game &game) {
+
+    double score = 0;
+
+    uint32_t rows[20] = { 0 };
+    for (int y = 0; y < 20; y++) {
+        for (int x = 0; x < 10; x++) {
+            rows[y] = rows[y] | (game.board.get(x, y) << (9-x));
+        }
+        score -= 0.75;
+        if (rows[y] == 0) {
+            break;
+        }
+    }
+    for (int y = 0; y < 20; y++) {
+        uint32_t target = ~(1 << y) & 0b1111111111;
+        if (y > 9) {
+            target = ~(1 << (18 - y)) & 0b1111111111;
+        }
+        score += std::popcount(rows[y] & target) * (std::sqrt(20.0 - y)) / 10;
+
+        if (target != rows[y]) {
+            break;
+        }
+
+        score += 0.1;
+    }
+
+    return score;
+}

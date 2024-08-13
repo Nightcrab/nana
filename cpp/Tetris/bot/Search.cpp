@@ -114,7 +114,7 @@ void Search::continueSearch(EmulationGame state) {
     root_state.pieces = 0;
     root_state.lines = 2;
     root_state.opponent.deaths = 0;
-    root_state.opponent = Opponent();
+    //root_state.opponent = Opponent();
 
     if (!uct.nodeExists(state.hash())) {
         uct.insertNode(UCTNode(state));
@@ -460,22 +460,7 @@ float Search::rollout(EmulationGame& state, int threadIdx) {
 
     maybeInsertNode(node, threadIdx);
 
-    float max_eval = 0.0;
-
-    for (auto& action : node.actions) {
-        max_eval = std::max(max_eval, action.eval);
-    }
-
-    maybeInsertNode(node, threadIdx);
-
-    if constexpr (search_style == NANA) {
-        float r = state.true_app() / 3 + max_eval / 2;
-        reward = std::max(reward, r);
-    }
-    if constexpr (search_style == CC) {
-        float r = state.true_app() / 3 + max_eval / 2;
-        reward = std::max(reward, r);
-    }
+    reward = Eval::eval_SG(state.game);
 
     if (state.opponent.garbage_height() > 15) {
         reward += state.opponent.garbage_height() / 20;
@@ -511,7 +496,7 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
 #ifndef TBP
-           std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
+           //std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
 #endif
         }
         if constexpr (search_style == CC) {
