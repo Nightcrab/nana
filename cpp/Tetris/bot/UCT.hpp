@@ -180,4 +180,6 @@ class UCT {
     uint32_t getOwner(uint32_t hash);
 
     void collect();
+
+    int map_size();
 };

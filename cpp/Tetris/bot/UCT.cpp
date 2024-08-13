@@ -269,3 +269,14 @@ void UCT::collect() {
 	// exchange sides
 	std::swap(nodes_left, nodes_right);
 }
+
+int UCT::map_size() {
+	int ret = 0;
+	for (auto& map : nodes_left) {
+		ret += map.size();
+	}
+	for (auto& map : nodes_right) {
+		ret += map.size();
+	}
+	return ret;
+}

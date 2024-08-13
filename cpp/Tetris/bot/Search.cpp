@@ -171,8 +171,11 @@ void Search::endSearch() {
     // reset the thread stopper
     thread_stopper = std::stop_source();
 
+    // garbage collect
+    if (uct.map_size() > 200000) {
+        uct.collect();
+    }
 
-    uct.collect();
     queues.clear();
 
     //std::cout << "stopped searching" << std::endl;
