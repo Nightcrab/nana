@@ -414,7 +414,7 @@ public:
         if (stack.back().type == CLEAN) {
 
             // Continue current build
-            stack.back().height += 0.4;
+            stack.back().height += 0.6;
 
         }
         else {
@@ -429,16 +429,16 @@ public:
             // Combo stack can borrow excess minos from the layer underneath
             leftover = height - (double)height;
 
-            // Start building combo
-            stack.push_back({ CLEAN, 0.4 + leftover, true});
+            // Start building clean
+            stack.push_back({ CLEAN, 0.6 + leftover, true});
 
         }
     }
 
     void attackSpin(double& damage, StackLayer& topLayer) {
         if (topLayer.height < 2) {
-            topLayer.type = COMBO;
-            attackCombo(damage, topLayer);
+            //topLayer.type = COMBO;
+            //attackCombo(damage, topLayer);
             return;
         }
         if (!hasSpinPiece) {
@@ -655,7 +655,7 @@ public:
     void advance_queue() {
         if (nextI == 0) {
             hasI = true;
-            nextI = rng.getRand(4) + 1;
+            nextI = rng.getRand(2) + 1;
         }
         if (nextSpinPiece == 0) {
             hasSpinPiece = true;
