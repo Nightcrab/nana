@@ -511,7 +511,7 @@ Move Search::bestMove() {
                 best_move = action.move;
             }
 #ifndef TBP
-           std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
+           //std::cout << "N:" << action.N << " R_avg:" << action.Q() << std::endl;
 #endif
         }
         if constexpr (search_style == CC) {

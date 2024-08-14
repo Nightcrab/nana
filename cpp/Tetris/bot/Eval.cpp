@@ -542,6 +542,36 @@ bool Eval::has_tsd(const Board& board, int min_height, int max_height) {
     return ret;
 }
 
+
+int get_donuts(const Board& board, int min_height, int max_height) {
+    uint32_t col1 = 0b010;
+    uint32_t col2 = 0b101;
+    uint32_t col3 = 0b010;
+
+    uint32_t mask1 = 0b010;
+    uint32_t mask2 = 0b111;
+    uint32_t mask3 = 0b010;
+
+    int ret = 0;
+
+    for (int y = min_height; y < max_height - 3; y++) {
+
+        for (int i = 0; i < Board::width - 3; ++i) {
+            auto& b_col1 = board.board[i];
+            auto& b_col2 = board.board[i + 1];
+            auto& b_col3 = board.board[i + 2];
+            bool tsd = true;
+            tsd = tsd && (((b_col1 & (mask1 << y)) >> y) == col1);
+            tsd = tsd && (((b_col2 & (mask2 << y)) >> y) == col2);
+            tsd = tsd && (((b_col3 & (mask3 << y)) >> y) == col3);
+            if (tsd) {
+                return 1.0;
+            }
+        }
+    }
+    return ret;
+}
+
 // Identify clean count to 4
 static bool Eval::ct4(const Board& board) {
 
@@ -606,6 +636,7 @@ namespace eval_constants {
     [[maybe_unused]]constexpr float well_depth = 91.0; // todo
     [[maybe_unused]]constexpr float max_well_depth = 17.0; // todo
     [[maybe_unused]]constexpr float row_transitions = -5.0;
+    [[maybe_unused]]constexpr float donuts = -10.0;
     [[maybe_unused]]constexpr float v_shape = 50.0;
     [[maybe_unused]]constexpr float s_shape = 80.0;
     [[maybe_unused]]constexpr float l_shape = 80.0;
@@ -620,16 +651,16 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
     double score = 0.0;
 
     std::pair<int, int> values;
-
+    
     if (is_top_half(board))
         score += top_half;
 
     if (is_top_quarter(board))
         score += top_quarter;
-
+    
     if (is_low(board))
         score += low;
-
+    
     if (is_perfect_clear(board))
         score += perfect_clear;
 
@@ -666,6 +697,12 @@ double Eval::eval_CC(const Board& board, int lines, bool tspin, bool waste_t) {
         score += l2_shape;
     }
     */
+    /*
+    int donut_count = get_donuts(board, values.first, values.second);
+
+    score += donut_count * donut_count * donuts;
+    */
+
     if (ct4(board)) {
         score += counting;
     }
