@@ -53,8 +53,8 @@ target_link_libraries(cfr_tetris ShakTris)
 target_link_libraries(tbp_tetris ShakTris)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 20)
-  set_property(TARGET tbp_tetris PROPERTY CXX_STANDARD 20)
+  set_property(TARGET cfr_tetris PROPERTY CXX_STANDARD 23)
+  set_property(TARGET tbp_tetris PROPERTY CXX_STANDARD 23)
 endif()
 
 # TODO: Add tests and install targets if needed.
