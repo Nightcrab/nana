@@ -27,7 +27,7 @@
 567567567
 
 */
-consteval auto something() {
+consteval auto generate_tilings() {
 	std::array<Image, 256> lut{};
 
 	for (int iter = 0; iter < 256; ++iter) {
@@ -75,7 +75,7 @@ consteval auto something() {
 }
 
 
-constexpr std::array<Image, 256> lut = something();
+constexpr std::array<Image, 256> lut = generate_tilings();
 
 
 int dot_product(const Image& input, const Image& weight) {

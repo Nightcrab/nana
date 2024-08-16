@@ -41,8 +41,8 @@ void Action::addReward(float reward) {
 
 void Action::updateTime(int newtime) {
 	if (time != newtime) {
-		N = N / 2;
-		R = R / 2;
+		N = N / 5;
+		R = R / 5;
 		time = newtime;
 	}
 }
