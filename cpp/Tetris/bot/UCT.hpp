@@ -38,6 +38,7 @@ class Action {
     void addReward(float reward);
     void addN();
     float Q();
+    void updateTime(int newtime);
 
     static const int WINDOW_SIZE = 1000;
     Move move;
@@ -45,6 +46,7 @@ class Action {
     float prior;
     float eval;
     float N;
+    int time;
     uint32_t id;
 };
 

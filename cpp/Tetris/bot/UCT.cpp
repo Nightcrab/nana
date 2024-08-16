@@ -39,6 +39,14 @@ void Action::addReward(float reward) {
 	R = R * 0.9999 + reward;
 }
 
+void Action::updateTime(int newtime) {
+	if (time != newtime) {
+		N = N / 2;
+		R = R / 2;
+		time = newtime;
+	}
+}
+
 // Q, the average return
 float Action::Q() {
 	return R / N;

@@ -36,6 +36,7 @@ std::vector<std::jthread> worker_threads;
 std::chrono::steady_clock::time_point search_start_time;
 
 bool Search::initialised = false;
+int Search::time = 0;
 
 constexpr int LOAD_FACTOR = 6;
 
@@ -53,6 +54,8 @@ void Search::startSearch(const EmulationGame &state, int core_count) {
     Search::core_count = core_count;
 
     root_state = state;
+
+    time = 0;
 
     // Create new search tree
     uct = UCT(core_count);
@@ -108,6 +111,8 @@ void Search::continueSearch(EmulationGame state) {
     thread_stopper = std::stop_source();
 
     root_state = state;
+
+    time = time + 1;
 
     root_state.attack = state.app() * 0;
     root_state.true_attack = state.true_app() * 0;
@@ -285,6 +290,8 @@ void Search::processJob(const int threadIdx, Job job) {
             node.N += 1;
 
             action->addN();
+
+            action->updateTime(time);
 
             state.set_move(state.specific_move(action->move));
 

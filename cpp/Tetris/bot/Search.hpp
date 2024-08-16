@@ -36,6 +36,8 @@ namespace Search {
 
     extern bool initialised;
 
+    extern int time;
+
     void startSearch(const EmulationGame& state, int core_count);
 
     void continueSearch(EmulationGame state);

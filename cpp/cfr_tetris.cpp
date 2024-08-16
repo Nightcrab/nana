@@ -115,7 +115,6 @@ class Tetris : public olc::PixelGameEngine {
         }
 
         auto board = Board();
-        Eval::eval_LUT(board);
         return true;
     }
 
@@ -280,7 +279,6 @@ private:
             std::pair<int, int> values = Eval::height_features(game.game.board);
             std::cout << "min height: " << values.first << std::endl;
             std::cout << "max height: " << values.second << std::endl;
-            std::cout << "has TSD: " << Eval::has_tsd(game.game.board, values.first, values.second) << std::endl;
             //std::cout << "is convex: " << game.game.is_convex() << std::endl;
         }
 

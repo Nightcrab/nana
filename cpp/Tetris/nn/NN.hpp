@@ -2,6 +2,9 @@
 
 #include <array>
 
+// 16x32 binary matrix
+using Image = std::array<uint32_t, 16>;
+
 // Channel-Height-Width
 template <std::size_t C, std::size_t H, std::size_t W>
 using Tensor = std::array<std::array<std::bitset<W>, H>, C>;
