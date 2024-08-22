@@ -141,8 +141,8 @@ void Search::continueSearch(EmulationGame state) {
 
     int rootOwnerIdx = uct.getOwner(state.hash());
     for (int j = 0; j < core_count; j++) {
-        root_state.opponent.reset_rng();
         for (int i = 0; i < LOAD_FACTOR; i++) {
+            root_state.opponent.reset_rng();
             root_state.rng.new_seed();
             queues[rootOwnerIdx]->enqueue(Job(root_state, SELECT), core_count);
         }
@@ -348,6 +348,8 @@ void Search::processJob(const int threadIdx, Job job) {
         job.path.pop_back();
 
         if (job.path.empty()) {
+            root_state.opponent.reset_rng();
+            root_state.rng.new_seed();
             Job select_job(root_state, SELECT);
 
             if (threadIdx == uct.getOwner(root_state.hash())) {
