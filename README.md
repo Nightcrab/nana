@@ -7,7 +7,7 @@
 
 --------------------------
 
-Nana is a game searching program for multi-agent games based on tetrominoes. 
+Nana is a parallel search program for multi-agent stacking games. 
 
 Features:
 
@@ -22,4 +22,3 @@ Features:
 
 To use, Nana needs to be built from its C++ source code. (no distributions available yet)
 
-Note: Parallelisation is available on shared memory models only.
